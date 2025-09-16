@@ -1,7 +1,56 @@
 import axios from 'axios';
 import type { AxiosInstance, AxiosError, AxiosResponse } from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+
+// Get auth tokens from Zustand store
+const getAuthTokens = () => {
+  try {
+    const stored = localStorage.getItem('auth-storage');
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      return parsed.state?.tokens || null;
+    }
+  } catch (error) {
+    console.error('Failed to get stored tokens:', error);
+  }
+  return null;
+};
+
+// Update auth tokens in Zustand store
+const updateAuthTokens = (tokens: any) => {
+  try {
+    const stored = localStorage.getItem('auth-storage');
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      parsed.state.tokens = tokens;
+      localStorage.setItem('auth-storage', JSON.stringify(parsed));
+    }
+  } catch (error) {
+    console.error('Failed to update stored tokens:', error);
+  }
+};
+
+// Clear auth from Zustand store
+const clearAuth = () => {
+  try {
+    const stored = localStorage.getItem('auth-storage');
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      parsed.state = {
+        ...parsed.state,
+        user: null,
+        customerProfile: null,
+        providerProfile: null,
+        tokens: null,
+        isAuthenticated: false,
+      };
+      localStorage.setItem('auth-storage', JSON.stringify(parsed));
+    }
+  } catch (error) {
+    console.error('Failed to clear auth:', error);
+  }
+};
 
 // Create axios instance
 const api: AxiosInstance = axios.create({
@@ -13,13 +62,24 @@ const api: AxiosInstance = axios.create({
   withCredentials: true,
 });
 
-// Request interceptor
+let isRefreshing = false;
+let refreshSubscribers: Array<(token: string) => void> = [];
+
+const addRefreshSubscriber = (callback: (token: string) => void) => {
+  refreshSubscribers.push(callback);
+};
+
+const onRefreshed = (token: string) => {
+  refreshSubscribers.map((callback) => callback(token));
+  refreshSubscribers = [];
+};
+
+// Request interceptor - Add JWT token to requests
 api.interceptors.request.use(
   (config) => {
-    // Add auth token if exists
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    const tokens = getAuthTokens();
+    if (tokens?.accessToken) {
+      config.headers.Authorization = `Bearer ${tokens.accessToken}`;
     }
     return config;
   },
@@ -28,18 +88,64 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor
+// Response interceptor - Handle token refresh and errors
 api.interceptors.response.use(
   (response: AxiosResponse) => {
     return response;
   },
-  (error: AxiosError) => {
-    if (error.response?.status === 401) {
-      // Handle unauthorized
-      localStorage.removeItem('token');
-      // In a real app, redirect to login
-      // window.location.href = '/login';
+  async (error: AxiosError) => {
+    const originalRequest = error.config as any;
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      if (isRefreshing) {
+        return new Promise((resolve) => {
+          addRefreshSubscriber((token: string) => {
+            originalRequest.headers.Authorization = `Bearer ${token}`;
+            resolve(axios(originalRequest));
+          });
+        });
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      try {
+        const tokens = getAuthTokens();
+        if (tokens?.refreshToken) {
+          const response = await axios.post(`${API_URL}/auth/refresh-token`, {
+            refreshToken: tokens.refreshToken,
+          });
+
+          const newTokens = response.data.data.tokens;
+          updateAuthTokens(newTokens);
+          
+          api.defaults.headers.common.Authorization = `Bearer ${newTokens.accessToken}`;
+          onRefreshed(newTokens.accessToken);
+          
+          return axios(originalRequest);
+        }
+      } catch (refreshError) {
+        console.error('Token refresh failed:', refreshError);
+        clearAuth();
+        
+        // Redirect to login page
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login';
+        }
+      } finally {
+        isRefreshing = false;
+      }
     }
+
+    // Handle other error types
+    if (error.response?.status === 403) {
+      console.error('Access forbidden:', error.response.data);
+    }
+
+    if (error.response?.status >= 500) {
+      console.error('Server error:', error.response.data);
+    }
+
     return Promise.reject(error);
   }
 );
@@ -48,7 +154,7 @@ api.interceptors.response.use(
 export const apiService = {
   // Health check
   checkHealth: async () => {
-    const response = await axios.get(`http://localhost:5000/health`);
+    const response = await axios.get(`http://localhost:5001/health`);
     return response.data;
   },
 
@@ -84,6 +190,39 @@ export const apiService = {
   verifyEmail: async () => {
     const response = await api.get('/verify/email');
     return response.data;
+  },
+
+  // Admin services
+  admin: {
+    // Get pending providers for verification
+    getPendingProviders: async (params?: { page?: number; limit?: number; search?: string }) => {
+      const response = await api.get('/admin/providers/pending', { params });
+      return response.data;
+    },
+
+    // Get provider details for verification
+    getProviderDetails: async (id: string) => {
+      const response = await api.get(`/admin/providers/${id}`);
+      return response.data;
+    },
+
+    // Approve provider
+    approveProvider: async (id: string, notes?: string) => {
+      const response = await api.post(`/admin/providers/${id}/approve`, { notes });
+      return response.data;
+    },
+
+    // Reject provider
+    rejectProvider: async (id: string, reason: string, notes?: string) => {
+      const response = await api.post(`/admin/providers/${id}/reject`, { reason, notes });
+      return response.data;
+    },
+
+    // Get verification statistics
+    getVerificationStats: async () => {
+      const response = await api.get('/admin/providers/stats');
+      return response.data;
+    },
   },
 };
 

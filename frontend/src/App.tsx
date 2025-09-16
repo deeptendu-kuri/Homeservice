@@ -1,7 +1,249 @@
+import React, { useEffect } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useAuthStore } from './stores/authStore';
+import { 
+  ProtectedRoute, 
+  CustomerRoute, 
+  ProviderRoute, 
+  AdminRoute, 
+  PublicRoute 
+} from './components/auth/ProtectedRoute';
+
+// Import components
 import StatusDashboard from './components/StatusDashboard';
+import CustomerRegistration from './components/auth/CustomerRegistration';
+import ProviderRegistration from './components/auth/ProviderRegistration';
+import LoginForm from './components/auth/LoginForm';
+import ForgotPassword from './components/auth/ForgotPassword';
+import ResetPassword from './components/auth/ResetPassword';
+import EmailVerification from './components/auth/EmailVerification';
+import EmailVerificationRequired from './components/auth/EmailVerificationRequired';
+import CustomerDashboard from './components/dashboard/CustomerDashboard';
+import ProviderDashboard from './components/dashboard/ProviderDashboard';
+import AdminDashboard from './components/dashboard/AdminDashboard';
+import SearchPage from './pages/SearchPage';
+import ServiceDetailPage from './pages/ServiceDetailPage';
+import ServiceManagementPage from './pages/ServiceManagementPage';
+
+
+
+const AccountSuspended = () => (
+  <div className="flex items-center justify-center min-h-screen bg-gray-50">
+    <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8">
+      <h1 className="text-2xl font-bold text-center mb-6">Account Suspended</h1>
+      <p className="text-gray-600 text-center">Your account has been suspended. Please contact support.</p>
+    </div>
+  </div>
+);
+
+const ProviderVerificationPending = () => (
+  <div className="flex items-center justify-center min-h-screen bg-gray-50">
+    <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8">
+      <h1 className="text-2xl font-bold text-center mb-6">Verification Pending</h1>
+      <p className="text-gray-600 text-center">Your provider account is under review. We'll notify you once it's approved.</p>
+    </div>
+  </div>
+);
+
+const NotFound = () => (
+  <div className="flex items-center justify-center min-h-screen bg-gray-50">
+    <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8">
+      <h1 className="text-2xl font-bold text-center mb-6">404 - Page Not Found</h1>
+      <p className="text-gray-600 text-center">The page you're looking for doesn't exist.</p>
+    </div>
+  </div>
+);
 
 function App() {
-  return <StatusDashboard />;
+  const { initialize, isInitialized } = useAuthStore();
+
+  useEffect(() => {
+    if (!isInitialized) {
+      initialize();
+    }
+  }, [initialize, isInitialized]);
+
+  return (
+    <div className="App">
+      <Routes>
+        {/* Public Routes */}
+        <Route 
+          path="/login" 
+          element={
+            <PublicRoute>
+              <LoginForm />
+            </PublicRoute>
+          } 
+        />
+        
+        <Route 
+          path="/register/customer" 
+          element={
+            <PublicRoute>
+              <CustomerRegistration />
+            </PublicRoute>
+          } 
+        />
+        
+        <Route 
+          path="/register/provider" 
+          element={
+            <PublicRoute>
+              <ProviderRegistration />
+            </PublicRoute>
+          } 
+        />
+
+        {/* Password Management Routes */}
+        <Route 
+          path="/forgot-password" 
+          element={
+            <PublicRoute redirectAuthenticated={false}>
+              <ForgotPassword />
+            </PublicRoute>
+          } 
+        />
+        
+        <Route 
+          path="/reset-password/:token" 
+          element={
+            <PublicRoute redirectAuthenticated={false}>
+              <ResetPassword />
+            </PublicRoute>
+          } 
+        />
+
+        {/* Email Verification Routes */}
+        <Route 
+          path="/verify-email/:token" 
+          element={
+            <PublicRoute redirectAuthenticated={false}>
+              <EmailVerification />
+            </PublicRoute>
+          } 
+        />
+
+        {/* Search Routes */}
+        <Route 
+          path="/search" 
+          element={<SearchPage />} 
+        />
+        
+        <Route 
+          path="/services" 
+          element={<SearchPage />} 
+        />
+
+        {/* Service Detail Route */}
+        <Route 
+          path="/services/:id" 
+          element={<ServiceDetailPage />} 
+        />
+
+        {/* Status/Development Routes */}
+        <Route 
+          path="/status" 
+          element={<StatusDashboard />} 
+        />
+
+        {/* Authentication Status Routes */}
+        <Route 
+          path="/verify-email-required" 
+          element={
+            <ProtectedRoute requireAuth={true} requireEmailVerified={false}>
+              <EmailVerificationRequired />
+            </ProtectedRoute>
+          } 
+        />
+        
+        <Route 
+          path="/account-suspended" 
+          element={<AccountSuspended />} 
+        />
+        
+        <Route 
+          path="/provider/verification-pending" 
+          element={<ProviderVerificationPending />} 
+        />
+
+        {/* Protected Customer Routes */}
+        <Route 
+          path="/customer/dashboard" 
+          element={
+            <CustomerRoute>
+              <CustomerDashboard />
+            </CustomerRoute>
+          } 
+        />
+
+        {/* Protected Provider Routes */}
+        <Route 
+          path="/provider/dashboard" 
+          element={
+            <ProviderRoute>
+              <ProviderDashboard />
+            </ProviderRoute>
+          } 
+        />
+        
+        <Route 
+          path="/provider/services" 
+          element={
+            <ProviderRoute>
+              <ServiceManagementPage />
+            </ProviderRoute>
+          } 
+        />
+
+        {/* Protected Admin Routes */}
+        <Route 
+          path="/admin/dashboard" 
+          element={
+            <AdminRoute>
+              <AdminDashboard />
+            </AdminRoute>
+          } 
+        />
+
+        {/* Default Route - Redirect based on authentication */}
+        <Route 
+          path="/" 
+          element={
+            <ProtectedRoute 
+              requireAuth={false}
+              fallback={
+                <div className="flex items-center justify-center min-h-screen">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                </div>
+              }
+            >
+              <RedirectToDashboard />
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* 404 Route */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </div>
+  );
 }
+
+// Component to handle default redirects based on user role
+const RedirectToDashboard = () => {
+  const { isAuthenticated, user } = useAuthStore();
+
+  if (!isAuthenticated || !user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  const dashboardPath = user.role === 'admin' 
+    ? '/admin/dashboard' 
+    : user.role === 'provider' 
+      ? '/provider/dashboard' 
+      : '/customer/dashboard';
+
+  return <Navigate to={dashboardPath} replace />;
+};
 
 export default App;

@@ -1,0 +1,484 @@
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { useAuthStore } from '../../stores/authStore';
+import { 
+  User, 
+  Heart, 
+  Calendar, 
+  Star, 
+  TrendingUp, 
+  Gift, 
+  Search, 
+  MapPin,
+  Clock,
+  Coins,
+  Crown,
+  Settings,
+  LogOut,
+  Bell,
+  Plus,
+  ArrowRight,
+  ChevronDown
+} from 'lucide-react';
+
+interface StatCard {
+  title: string;
+  value: string | number;
+  subtitle?: string;
+  icon: React.ElementType;
+  trend?: {
+    value: number;
+    isPositive: boolean;
+  };
+  color: string;
+}
+
+interface RecentBooking {
+  id: string;
+  serviceName: string;
+  providerName: string;
+  date: string;
+  status: 'completed' | 'upcoming' | 'cancelled';
+  rating?: number;
+  price: number;
+}
+
+interface FavoriteProvider {
+  id: string;
+  name: string;
+  category: string;
+  rating: number;
+  reviewCount: number;
+  imageUrl?: string;
+  isOnline: boolean;
+}
+
+const CustomerDashboard: React.FC = () => {
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const { user, customerProfile, logout } = useAuthStore();
+
+  // Mock data - in real app, this would come from API
+  const [stats] = useState<StatCard[]>([
+    {
+      title: 'Total Bookings',
+      value: customerProfile?.bookingStats?.totalBookings || 12,
+      subtitle: 'All time',
+      icon: Calendar,
+      trend: { value: 2, isPositive: true },
+      color: 'bg-blue-500'
+    },
+    {
+      title: 'Loyalty Coins',
+      value: user?.loyaltySystem?.totalCoins || 1250,
+      subtitle: `${user?.loyaltySystem?.tier || 'Bronze'} tier`,
+      icon: Coins,
+      trend: { value: 150, isPositive: true },
+      color: 'bg-yellow-500'
+    },
+    {
+      title: 'Saved Providers',
+      value: customerProfile?.favoriteProviders?.length || 5,
+      subtitle: 'In favorites',
+      icon: Heart,
+      color: 'bg-red-500'
+    },
+    {
+      title: 'Avg Rating Given',
+      value: '4.8',
+      subtitle: 'Your reviews',
+      icon: Star,
+      color: 'bg-green-500'
+    }
+  ]);
+
+  const [recentBookings] = useState<RecentBooking[]>([
+    {
+      id: '1',
+      serviceName: 'Deep House Cleaning',
+      providerName: 'Sarah\'s Cleaning Co',
+      date: '2024-01-15',
+      status: 'completed',
+      rating: 5,
+      price: 120
+    },
+    {
+      id: '2',
+      serviceName: 'Hair Styling',
+      providerName: 'Bella Beauty Salon',
+      date: '2024-01-20',
+      status: 'upcoming',
+      price: 85
+    },
+    {
+      id: '3',
+      serviceName: 'Personal Training',
+      providerName: 'FitLife Gym',
+      date: '2024-01-10',
+      status: 'completed',
+      rating: 4,
+      price: 60
+    }
+  ]);
+
+  const [favoriteProviders] = useState<FavoriteProvider[]>([
+    {
+      id: '1',
+      name: 'Sarah\'s Cleaning Co',
+      category: 'Home Services',
+      rating: 4.9,
+      reviewCount: 127,
+      isOnline: true
+    },
+    {
+      id: '2',
+      name: 'Bella Beauty Salon',
+      category: 'Beauty & Personal Care',
+      rating: 4.8,
+      reviewCount: 203,
+      isOnline: false
+    },
+    {
+      id: '3',
+      name: 'FitLife Gym',
+      category: 'Fitness & Training',
+      rating: 4.7,
+      reviewCount: 89,
+      isOnline: true
+    }
+  ]);
+
+  const handleLogout = () => {
+    logout();
+  };
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good morning';
+    if (hour < 17) return 'Good afternoon';
+    return 'Good evening';
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return 'text-green-600 bg-green-100';
+      case 'upcoming':
+        return 'text-blue-600 bg-blue-100';
+      case 'cancelled':
+        return 'text-red-600 bg-red-100';
+      default:
+        return 'text-gray-600 bg-gray-100';
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Navigation Header */}
+      <nav className="bg-white shadow-sm border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between h-16">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <h1 className="text-xl font-bold text-gray-900">🏠 Home Service</h1>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-4">
+              {/* Notifications */}
+              <button className="p-2 rounded-full text-gray-400 hover:text-gray-500 hover:bg-gray-100">
+                <Bell className="h-5 w-5" />
+              </button>
+
+              {/* User Menu */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  className="flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center">
+                    <User className="h-5 w-5 text-white" />
+                  </div>
+                  <ChevronDown className="ml-2 h-4 w-4 text-gray-500" />
+                </button>
+
+                {showUserMenu && (
+                  <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+                    <div className="py-1">
+                      <div className="px-4 py-2 text-sm text-gray-700 border-b">
+                        <div className="font-medium">{user?.firstName} {user?.lastName}</div>
+                        <div className="text-gray-500">{user?.email}</div>
+                      </div>
+                      <Link
+                        to="/customer/profile"
+                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        <Settings className="mr-3 h-4 w-4" />
+                        Profile Settings
+                      </Link>
+                      <button
+                        onClick={handleLogout}
+                        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        <LogOut className="mr-3 h-4 w-4" />
+                        Sign out
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Welcome Section */}
+        <div className="mb-8">
+          <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg p-6 text-white">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold mb-2">
+                  {getGreeting()}, {user?.firstName}! 👋
+                </h2>
+                <p className="text-blue-100 mb-4">
+                  Ready to book your next service? Discover amazing providers near you.
+                </p>
+                <div className="flex items-center space-x-6 text-sm">
+                  <div className="flex items-center">
+                    <Coins className="h-4 w-4 mr-1" />
+                    <span>{user?.loyaltySystem?.totalCoins || 0} coins</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Crown className="h-4 w-4 mr-1" />
+                    <span>{user?.loyaltySystem?.tier || 'Bronze'} member</span>
+                  </div>
+                  <div className="flex items-center">
+                    <TrendingUp className="h-4 w-4 mr-1" />
+                    <span>{user?.loyaltySystem?.currentStreak || 0} day streak</span>
+                  </div>
+                </div>
+              </div>
+              <div className="hidden md:block">
+                <Link
+                  to="/services"
+                  className="bg-white text-blue-600 px-6 py-3 rounded-lg font-medium hover:bg-blue-50 transition-colors inline-flex items-center"
+                >
+                  <Search className="mr-2 h-4 w-4" />
+                  Browse Services
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Statistics Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {stats.map((stat, index) => {
+            const IconComponent = stat.icon;
+            return (
+              <div key={index} className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+                <div className="flex items-center">
+                  <div className={`p-2 rounded-lg ${stat.color}`}>
+                    <IconComponent className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="ml-4 flex-1">
+                    <p className="text-sm font-medium text-gray-600">{stat.title}</p>
+                    <div className="flex items-baseline">
+                      <p className="text-2xl font-semibold text-gray-900">{stat.value}</p>
+                      {stat.trend && (
+                        <span className={`ml-2 text-sm font-medium ${
+                          stat.trend.isPositive ? 'text-green-600' : 'text-red-600'
+                        }`}>
+                          {stat.trend.isPositive ? '+' : '-'}{stat.trend.value}
+                        </span>
+                      )}
+                    </div>
+                    {stat.subtitle && (
+                      <p className="text-sm text-gray-500">{stat.subtitle}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Recent Bookings */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-medium text-gray-900">Recent Bookings</h3>
+                <Link
+                  to="/customer/bookings"
+                  className="text-blue-600 hover:text-blue-500 text-sm font-medium flex items-center"
+                >
+                  View all
+                  <ArrowRight className="ml-1 h-4 w-4" />
+                </Link>
+              </div>
+            </div>
+            <div className="p-6">
+              {recentBookings.length > 0 ? (
+                <div className="space-y-4">
+                  {recentBookings.map((booking) => (
+                    <div key={booking.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                      <div className="flex-1">
+                        <h4 className="text-sm font-medium text-gray-900">{booking.serviceName}</h4>
+                        <p className="text-sm text-gray-500">{booking.providerName}</p>
+                        <div className="flex items-center mt-1 space-x-4">
+                          <div className="flex items-center text-xs text-gray-500">
+                            <Calendar className="mr-1 h-3 w-3" />
+                            {formatDate(booking.date)}
+                          </div>
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(booking.status)}`}>
+                            {booking.status}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-medium text-gray-900">${booking.price}</p>
+                        {booking.rating && (
+                          <div className="flex items-center">
+                            <Star className="h-3 w-3 text-yellow-400 fill-current" />
+                            <span className="text-xs text-gray-500 ml-1">{booking.rating}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-6">
+                  <Calendar className="mx-auto h-12 w-12 text-gray-400" />
+                  <h3 className="mt-2 text-sm font-medium text-gray-900">No bookings yet</h3>
+                  <p className="mt-1 text-sm text-gray-500">Start by browsing our amazing services</p>
+                  <div className="mt-6">
+                    <Link
+                      to="/services"
+                      className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+                    >
+                      <Plus className="mr-2 h-4 w-4" />
+                      Book Service
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Favorite Providers */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-medium text-gray-900">Favorite Providers</h3>
+                <Link
+                  to="/customer/favorites"
+                  className="text-blue-600 hover:text-blue-500 text-sm font-medium flex items-center"
+                >
+                  View all
+                  <ArrowRight className="ml-1 h-4 w-4" />
+                </Link>
+              </div>
+            </div>
+            <div className="p-6">
+              {favoriteProviders.length > 0 ? (
+                <div className="space-y-4">
+                  {favoriteProviders.map((provider) => (
+                    <div key={provider.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
+                      <div className="flex items-center space-x-3">
+                        <div className="relative">
+                          <div className="h-10 w-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                            <span className="text-white font-medium">
+                              {provider.name.charAt(0)}
+                            </span>
+                          </div>
+                          {provider.isOnline && (
+                            <div className="absolute -bottom-0 -right-0 h-3 w-3 bg-green-400 border-2 border-white rounded-full"></div>
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="text-sm font-medium text-gray-900">{provider.name}</h4>
+                          <p className="text-sm text-gray-500">{provider.category}</p>
+                          <div className="flex items-center mt-1">
+                            <Star className="h-3 w-3 text-yellow-400 fill-current" />
+                            <span className="text-xs text-gray-600 ml-1">
+                              {provider.rating} ({provider.reviewCount} reviews)
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <button className="p-2 text-red-500 hover:bg-red-50 rounded-full">
+                          <Heart className="h-4 w-4 fill-current" />
+                        </button>
+                        <Link
+                          to={`/providers/${provider.id}`}
+                          className="text-blue-600 hover:text-blue-500 text-sm font-medium"
+                        >
+                          View
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-6">
+                  <Heart className="mx-auto h-12 w-12 text-gray-400" />
+                  <h3 className="mt-2 text-sm font-medium text-gray-900">No favorites yet</h3>
+                  <p className="mt-1 text-sm text-gray-500">Heart providers you love to see them here</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="mt-8 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Quick Actions</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Link
+              to="/services"
+              className="flex flex-col items-center p-4 text-center border border-gray-200 rounded-lg hover:shadow-md transition-shadow"
+            >
+              <Search className="h-8 w-8 text-blue-500 mb-2" />
+              <span className="text-sm font-medium text-gray-900">Browse Services</span>
+            </Link>
+            <Link
+              to="/customer/bookings"
+              className="flex flex-col items-center p-4 text-center border border-gray-200 rounded-lg hover:shadow-md transition-shadow"
+            >
+              <Calendar className="h-8 w-8 text-green-500 mb-2" />
+              <span className="text-sm font-medium text-gray-900">My Bookings</span>
+            </Link>
+            <Link
+              to="/customer/profile"
+              className="flex flex-col items-center p-4 text-center border border-gray-200 rounded-lg hover:shadow-md transition-shadow"
+            >
+              <User className="h-8 w-8 text-purple-500 mb-2" />
+              <span className="text-sm font-medium text-gray-900">Edit Profile</span>
+            </Link>
+            <Link
+              to="/customer/rewards"
+              className="flex flex-col items-center p-4 text-center border border-gray-200 rounded-lg hover:shadow-md transition-shadow"
+            >
+              <Gift className="h-8 w-8 text-yellow-500 mb-2" />
+              <span className="text-sm font-medium text-gray-900">Rewards</span>
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default CustomerDashboard;
