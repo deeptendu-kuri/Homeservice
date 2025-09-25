@@ -143,6 +143,9 @@ export const getServiceById = asyncHandler(async (req: Request, res: Response) =
  */
 export const createService = asyncHandler(async (req: Request, res: Response) => {
   try {
+    console.log('🚀 [createService] Starting service creation');
+    console.log('🔍 [createService] Request body:', JSON.stringify(req.body, null, 2));
+
     // Get provider's location from their profile
     const ProviderProfile = require('../models/providerProfile.model').default;
     const providerProfile = await ProviderProfile.findOne({ userId: (req.user as any)._id });
@@ -151,15 +154,51 @@ export const createService = asyncHandler(async (req: Request, res: Response) =>
       throw new ApiError(400, 'Provider location not found. Please complete your profile first.');
     }
 
+    console.log('🔍 [createService] Provider profile location:', JSON.stringify(providerProfile.locationInfo.primaryAddress, null, 2));
+
+    // ✅ FIX: Extract coordinates properly from provider profile and convert to array format
+    let serviceCoordinates;
+    if (providerProfile.locationInfo.primaryAddress.coordinates) {
+      const coords = providerProfile.locationInfo.primaryAddress.coordinates;
+
+      // Check if coordinates are in lat/lng object format
+      if (coords.lat && coords.lng) {
+        // Convert lat/lng object to [lng, lat] array format
+        serviceCoordinates = [coords.lng, coords.lat];
+        console.log(`🔄 [createService] Converted lat/lng object to array: [${coords.lng}, ${coords.lat}]`);
+      }
+      // Check if coordinates are already in GeoJSON format
+      else if (coords.coordinates && Array.isArray(coords.coordinates)) {
+        serviceCoordinates = coords.coordinates;
+        console.log(`✅ [createService] Using existing GeoJSON coordinates: [${coords.coordinates}]`);
+      }
+      // Check if coordinates are directly an array
+      else if (Array.isArray(coords)) {
+        serviceCoordinates = coords;
+        console.log(`✅ [createService] Using direct array coordinates: [${coords}]`);
+      }
+      else {
+        // Fallback to Assam coordinates
+        console.log('⚠️ [createService] Unknown coordinate format, using Assam default');
+        serviceCoordinates = [92.9376, 26.2006]; // [lng, lat]
+      }
+    } else {
+      // No coordinates - use Assam, India as default
+      console.log('⚠️ [createService] No coordinates found, using default for Assam');
+      serviceCoordinates = [92.9376, 26.2006]; // Assam, India coordinates [lng, lat]
+    }
+
+    console.log('🔍 [createService] Using coordinates:', serviceCoordinates);
+
     // Add provider ID and audit fields with inherited location
     const serviceData = {
       ...req.body,
       // Inherit location from provider profile
       location: {
         address: providerProfile.locationInfo.primaryAddress,
-        coordinates: providerProfile.locationInfo.primaryAddress.coordinates || {
+        coordinates: {
           type: 'Point',
-          coordinates: [-74.006, 40.7128] // Default NYC coordinates if none
+          coordinates: serviceCoordinates // ✅ FIX: Properly formatted coordinates array
         },
         serviceArea: {
           type: 'radius',
@@ -167,7 +206,24 @@ export const createService = asyncHandler(async (req: Request, res: Response) =>
           maxDistance: providerProfile.locationInfo.serviceRadius || 25
         }
       },
+      // ✅ FIX: Add default availability schedule to prevent validation errors
+      availability: req.body.availability || {
+        schedule: {
+          monday: { isAvailable: true, timeSlots: [] },
+          tuesday: { isAvailable: true, timeSlots: [] },
+          wednesday: { isAvailable: true, timeSlots: [] },
+          thursday: { isAvailable: true, timeSlots: [] },
+          friday: { isAvailable: true, timeSlots: [] },
+          saturday: { isAvailable: true, timeSlots: [] },
+          sunday: { isAvailable: false, timeSlots: [] }
+        },
+        exceptions: [],
+        bufferTime: 15,
+        instantBooking: false,
+        advanceBookingDays: 7
+      },
       status: 'pending_review', // Require admin approval for all new services
+      isActive: false, // ✅ FIX: Keep inactive until admin approval
       providerId: (req.user as any)._id.toString(),
       createdBy: (req.user as any)._id,
       updatedBy: (req.user as any)._id,
@@ -187,15 +243,21 @@ export const createService = asyncHandler(async (req: Request, res: Response) =>
       }
     };
 
+    console.log('🔍 [createService] Final service data:', JSON.stringify(serviceData, null, 2));
+
     const service = new Service(serviceData);
     await service.save();
-    
+
+    console.log('✅ [createService] Service created successfully:', service._id);
+
     res.status(201).json({
       success: true,
       message: 'Service submitted for admin approval',
       data: { service }
     });
   } catch (error: any) {
+    console.error('❌ [createService] Error creating service:', error);
+    console.error('❌ [createService] Error stack:', error.stack);
     throw new ApiError(500, 'Failed to create service', error.message);
   }
 });

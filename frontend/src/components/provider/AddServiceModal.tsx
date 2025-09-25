@@ -6,7 +6,7 @@ import {
   DollarSign,
   AlertCircle
 } from 'lucide-react';
-import { authenticatedFetch } from '../../stores/authStore';
+import authService from '../../services/AuthService';
 
 interface AddServiceModalProps {
   isOpen: boolean;
@@ -146,19 +146,8 @@ export const AddServiceModal: React.FC<AddServiceModalProps> = ({ isOpen, onClos
         status: 'active'
       };
 
-      const response = await authenticatedFetch('/api/provider/services', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(serviceData)
-      });
+      const data = await authService.post<{success: boolean}>('/provider/services', serviceData);
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const data = await response.json();
       if (data.success) {
         onServiceAdded();
         onClose();

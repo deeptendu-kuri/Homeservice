@@ -33,10 +33,10 @@ async function resetDatabase() {
     for (const { name, model } of collections) {
       try {
         const count = await model.countDocuments();
-        await model.deleteMany({});
+        await (model as any).deleteMany({});
         console.log(`   ✅ Cleared ${name}: ${count} documents removed`);
       } catch (error) {
-        console.log(`   ⚠️  Warning: Could not clear ${name}: ${error.message}`);
+        console.log(`   ⚠️  Warning: Could not clear ${name}: ${error instanceof Error ? error.message : String(error)}`);
       }
     }
     

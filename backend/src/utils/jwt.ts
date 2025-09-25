@@ -32,7 +32,7 @@ class JWTService {
       expiresIn: this.accessTokenExpiry,
       issuer: 'home-service-platform',
       audience: 'home-service-users'
-    });
+    } as jwt.SignOptions);
   }
 
   generateRefreshToken(payload: Omit<TokenPayload, 'isEmailVerified'>): string {
@@ -40,12 +40,12 @@ class JWTService {
       expiresIn: this.refreshTokenExpiry,
       issuer: 'home-service-platform',
       audience: 'home-service-users'
-    });
+    } as jwt.SignOptions);
   }
 
   generateTokenPair(user: IUser): TokenPair {
     const payload: TokenPayload = {
-      userId: user._id.toString(),
+      userId: (user._id as any).toString(),
       email: user.email,
       role: user.role,
       isEmailVerified: user.isEmailVerified
@@ -124,7 +124,7 @@ class JWTService {
         expiresIn: '24h',
         issuer: 'home-service-platform',
         audience: 'email-verification'
-      }
+      } as jwt.SignOptions
     );
   }
 
@@ -159,7 +159,7 @@ class JWTService {
         expiresIn: '1h',
         issuer: 'home-service-platform',
         audience: 'password-reset'
-      }
+      } as jwt.SignOptions
     );
   }
 

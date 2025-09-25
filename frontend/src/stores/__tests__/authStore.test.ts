@@ -1,10 +1,23 @@
 import { renderHook, act } from '@testing-library/react';
 import { useAuthStore } from '../authStore';
-import { authApi } from '../../services/auth.api';
 
-// Mock the auth API
-jest.mock('../../services/auth.api');
-const mockAuthApi = authApi as jest.Mocked<typeof authApi>;
+// Mock the AuthService
+jest.mock('../../services/AuthService', () => ({
+  __esModule: true,
+  default: {
+    login: jest.fn(),
+    register: jest.fn(),
+    logout: jest.fn(),
+    getCurrentUser: jest.fn(),
+    forgotPassword: jest.fn(),
+    resendVerification: jest.fn(),
+    updateProfile: jest.fn(),
+    changePassword: jest.fn(),
+  }
+}));
+
+import authService from '../../services/AuthService';
+const mockAuthService = authService as jest.Mocked<typeof authService>;
 
 // Mock localStorage
 const localStorageMock = {
@@ -23,10 +36,12 @@ describe('Auth Store', () => {
     // Reset store state
     useAuthStore.setState({
       user: null,
-      profile: null,
-      token: null,
+      customerProfile: null,
+      providerProfile: null,
+      tokens: null,
       isAuthenticated: false,
       isLoading: false,
+      isInitialized: false,
       errors: []
     });
   });
@@ -34,34 +49,42 @@ describe('Auth Store', () => {
   describe('login', () => {
     it('should login successfully', async () => {
       const mockResponse = {
-        message: 'Login successful',
-        token: 'mock-token',
-        user: {
-          id: '123',
-          firstName: 'John',
-          lastName: 'Doe',
-          email: 'john@example.com',
-          role: 'customer' as const,
-          isEmailVerified: true,
-          isActive: true
+        success: true,
+        data: {
+          user: {
+            id: '123',
+            firstName: 'John',
+            lastName: 'Doe',
+            email: 'john@example.com',
+            role: 'customer' as const,
+            isEmailVerified: true,
+            accountStatus: 'active'
+          },
+          tokens: {
+            accessToken: 'mock-access-token',
+            refreshToken: 'mock-refresh-token',
+            expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString()
+          },
+          profile: {
+            userId: '123'
+          },
+          redirectUrl: '/customer/dashboard'
         },
-        redirectPath: '/customer/dashboard'
+        message: 'Login successful'
       };
 
-      mockAuthApi.login.mockResolvedValue(mockResponse);
+      mockAuthService.login.mockResolvedValue(mockResponse);
 
       const { result } = renderHook(() => useAuthStore());
 
       await act(async () => {
-        const loginResult = await result.current.login('john@example.com', 'password');
-        expect(loginResult.success).toBe(true);
-        expect(loginResult.redirectPath).toBe('/customer/dashboard');
+        await result.current.login({ email: 'john@example.com', password: 'password' });
       });
 
       expect(result.current.isAuthenticated).toBe(true);
       expect(result.current.user?.email).toBe('john@example.com');
-      expect(result.current.token).toBe('mock-token');
-      expect(localStorageMock.setItem).toHaveBeenCalledWith('token', 'mock-token');
+      expect(result.current.tokens?.accessToken).toBe('mock-access-token');
+      expect(result.current.customerProfile).toBeDefined();
     });
 
     it('should handle login failure', async () => {

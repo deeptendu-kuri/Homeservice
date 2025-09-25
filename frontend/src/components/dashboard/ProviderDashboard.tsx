@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 import PageLayout from '../layout/PageLayout';
+import { bookingService } from '../../services/BookingService';
 import { 
   Building, 
   DollarSign, 
@@ -40,13 +41,24 @@ interface StatCard {
 }
 
 interface BookingRequest {
-  id: string;
+  _id: string;
+  bookingNumber: string;
   customerName: string;
   serviceName: string;
-  date: string;
-  time: string;
-  status: 'pending' | 'accepted' | 'declined';
-  price: number;
+  scheduledDate: string;
+  scheduledTime: string;
+  status: 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'in_progress';
+  totalAmount: number;
+  customer?: {
+    firstName: string;
+    lastName: string;
+  };
+  service?: {
+    name: string;
+  };
+  pricing?: {
+    totalAmount: number;
+  };
 }
 
 interface RecentReview {
@@ -60,6 +72,8 @@ interface RecentReview {
 
 const ProviderDashboard: React.FC = () => {
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [bookingRequests, setBookingRequests] = useState<BookingRequest[]>([]);
+  const [loadingBookings, setLoadingBookings] = useState(true);
   const { user, providerProfile, logout } = useAuthStore();
 
   // Mock data - in real app, this would come from API
@@ -97,35 +111,6 @@ const ProviderDashboard: React.FC = () => {
     }
   ]);
 
-  const [bookingRequests] = useState<BookingRequest[]>([
-    {
-      id: '1',
-      customerName: 'Emily Johnson',
-      serviceName: 'Deep House Cleaning',
-      date: '2024-01-25',
-      time: '2:00 PM',
-      status: 'pending',
-      price: 120
-    },
-    {
-      id: '2',
-      customerName: 'Michael Brown',
-      serviceName: 'Regular Cleaning',
-      date: '2024-01-26',
-      time: '10:00 AM',
-      status: 'pending',
-      price: 80
-    },
-    {
-      id: '3',
-      customerName: 'Sarah Wilson',
-      serviceName: 'Move-out Cleaning',
-      date: '2024-01-27',
-      time: '3:00 PM',
-      status: 'accepted',
-      price: 180
-    }
-  ]);
 
   const [recentReviews] = useState<RecentReview[]>([
     {
@@ -154,6 +139,45 @@ const ProviderDashboard: React.FC = () => {
     }
   ]);
 
+  // Fetch booking requests
+  useEffect(() => {
+    const fetchBookingRequests = async () => {
+      try {
+        setLoadingBookings(true);
+        const response = await bookingService.getProviderBookings({
+          status: 'pending',
+          limit: 5,
+          sortBy: 'createdAt',
+          sortOrder: 'desc'
+        });
+
+        if (response.success && response.data.bookings) {
+          const transformedBookings = response.data.bookings.map((booking: any) => ({
+            _id: booking._id,
+            bookingNumber: booking.bookingNumber,
+            customerName: `${booking.customer?.firstName} ${booking.customer?.lastName}` || 'Customer',
+            serviceName: booking.service?.name || 'Service',
+            scheduledDate: booking.scheduledDate,
+            scheduledTime: booking.scheduledTime,
+            status: booking.status,
+            totalAmount: booking.pricing?.totalAmount || 0,
+            customer: booking.customer,
+            service: booking.service,
+            pricing: booking.pricing
+          }));
+          setBookingRequests(transformedBookings);
+        }
+      } catch (error) {
+        console.error('Error fetching booking requests:', error);
+        setBookingRequests([]);
+      } finally {
+        setLoadingBookings(false);
+      }
+    };
+
+    fetchBookingRequests();
+  }, []);
+
   const handleLogout = () => {
     logout();
   };
@@ -166,7 +190,9 @@ const ProviderDashboard: React.FC = () => {
   };
 
   const getVerificationStatusDisplay = () => {
-    const status = providerProfile?.verificationStatus?.overall || 'pending';
+    // Get verification status with proper fallbacks
+    const verificationStatus = providerProfile?.verificationStatus;
+    const status = verificationStatus?.overall || (typeof verificationStatus === 'string' ? verificationStatus : 'pending');
 
     // Debug logging
     console.log('🔍 Provider Profile Debug:', {
@@ -207,14 +233,34 @@ const ProviderDashboard: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'accepted':
+      case 'confirmed':
+      case 'in_progress':
         return 'text-green-600 bg-green-100';
       case 'pending':
         return 'text-yellow-600 bg-yellow-100';
-      case 'declined':
+      case 'cancelled':
         return 'text-red-600 bg-red-100';
+      case 'completed':
+        return 'text-blue-600 bg-blue-100';
       default:
         return 'text-gray-600 bg-gray-100';
+    }
+  };
+
+  const getStatusDisplayText = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return 'Pending';
+      case 'confirmed':
+        return 'Confirmed';
+      case 'in_progress':
+        return 'In Progress';
+      case 'completed':
+        return 'Completed';
+      case 'cancelled':
+        return 'Cancelled';
+      default:
+        return status;
     }
   };
 
@@ -417,6 +463,21 @@ const ProviderDashboard: React.FC = () => {
               </div>
             </div>
           </Link>
+
+          <Link
+            to="/provider/availability"
+            className="group bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:border-indigo-300 hover:shadow-md transition-all duration-200"
+          >
+            <div className="flex items-center">
+              <div className="p-2 bg-indigo-100 rounded-lg group-hover:bg-indigo-200 transition-colors">
+                <Clock className="h-6 w-6 text-indigo-600" />
+              </div>
+              <div className="ml-4">
+                <h3 className="text-sm font-medium text-gray-900">Availability</h3>
+                <p className="text-xs text-gray-500">Manage your schedule</p>
+              </div>
+            </div>
+          </Link>
         </div>
 
         {/* Statistics Cards */}
@@ -469,26 +530,31 @@ const ProviderDashboard: React.FC = () => {
               </div>
             </div>
             <div className="p-6">
-              {bookingRequests.length > 0 ? (
+              {loadingBookings ? (
+                <div className="flex items-center justify-center py-6">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                  <span className="ml-2 text-gray-600">Loading booking requests...</span>
+                </div>
+              ) : bookingRequests.length > 0 ? (
                 <div className="space-y-4">
                   {bookingRequests.map((request) => (
-                    <div key={request.id} className="border border-gray-200 rounded-lg p-4">
+                    <div key={request._id} className="border border-gray-200 rounded-lg p-4">
                       <div className="flex items-center justify-between mb-3">
                         <div>
                           <h4 className="text-sm font-medium text-gray-900">{request.customerName}</h4>
                           <p className="text-sm text-gray-500">{request.serviceName}</p>
                         </div>
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(request.status)}`}>
-                          {request.status}
+                          {getStatusDisplayText(request.status)}
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-sm text-gray-600 mb-3">
                         <div className="flex items-center">
                           <Calendar className="mr-1 h-4 w-4" />
-                          {formatDate(request.date)} at {request.time}
+                          {formatDate(request.scheduledDate)} at {request.scheduledTime}
                         </div>
                         <div className="font-medium text-gray-900">
-                          ${request.price}
+                          ${request.totalAmount}
                         </div>
                       </div>
                       {request.status === 'pending' && (
@@ -507,7 +573,7 @@ const ProviderDashboard: React.FC = () => {
               ) : (
                 <div className="text-center py-6">
                   <Calendar className="mx-auto h-12 w-12 text-gray-400" />
-                  <h3 className="mt-2 text-sm font-medium text-gray-900">No booking requests</h3>
+                  <h3 className="mt-2 text-sm font-medium text-gray-900">No pending booking requests</h3>
                   <p className="mt-1 text-sm text-gray-500">New requests will appear here</p>
                 </div>
               )}
@@ -583,11 +649,11 @@ const ProviderDashboard: React.FC = () => {
               <span className="text-sm font-medium text-gray-900">Add Service</span>
             </Link>
             <Link
-              to="/provider/schedule"
+              to="/provider/availability"
               className="flex flex-col items-center p-4 text-center border border-gray-200 rounded-lg hover:shadow-md transition-shadow"
             >
               <Calendar className="h-8 w-8 text-green-500 mb-2" />
-              <span className="text-sm font-medium text-gray-900">Manage Schedule</span>
+              <span className="text-sm font-medium text-gray-900">Manage Availability</span>
             </Link>
             <Link
               to="/provider/portfolio"

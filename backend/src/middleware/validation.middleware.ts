@@ -78,16 +78,26 @@ export const uploadConfig = {
 // JSON parsing middleware for FormData
 export const parseFormDataJSON = (fields: string[]) => {
   return (req: Request, _res: Response, next: NextFunction): void => {
+    console.log('🔍 [parseFormDataJSON] Raw request body:', req.body);
+    console.log('🔍 [parseFormDataJSON] Fields to parse:', fields);
+
     // Parse JSON strings in specified fields
     fields.forEach(field => {
       if (req.body[field] && typeof req.body[field] === 'string') {
         try {
+          console.log(`🔍 [parseFormDataJSON] Parsing field "${field}":`, req.body[field]);
           req.body[field] = JSON.parse(req.body[field]);
+          console.log(`✅ [parseFormDataJSON] Parsed field "${field}":`, req.body[field]);
         } catch (error) {
+          console.log(`❌ [parseFormDataJSON] Failed to parse field "${field}":`, error);
           // Keep as string if parsing fails, let validation handle it
         }
+      } else {
+        console.log(`🔍 [parseFormDataJSON] Field "${field}" not found or not a string:`, req.body[field]);
       }
     });
+
+    console.log('🔍 [parseFormDataJSON] Final parsed body:', req.body);
     next();
   };
 };
@@ -117,14 +127,21 @@ const validate = (schema: Joi.ObjectSchema, options?: {
       dataToValidate = { ...req.body, ...req.query };
     }
 
+    console.log('🔍 [validate] Data to validate:', JSON.stringify(dataToValidate, null, 2));
+    console.log('🔍 [validate] Validation options:', validationOptions);
+
     const { error, value } = schema.validate(dataToValidate, validationOptions);
 
     if (error) {
+      console.log('❌ [validate] Validation failed:', error.details);
+
       const validationErrors = error.details.map(detail => ({
         field: detail.path.join('.'),
         message: detail.message,
         value: detail.context?.value
       }));
+
+      console.log('❌ [validate] Formatted validation errors:', validationErrors);
 
       return res.status(400).json({
         success: false,
@@ -132,6 +149,8 @@ const validate = (schema: Joi.ObjectSchema, options?: {
         errors: validationErrors
       });
     }
+
+    console.log('✅ [validate] Validation successful, validated value:', JSON.stringify(value, null, 2));
 
     // Update request object with validated data
     if (options?.validateParams && options?.validateQuery) {

@@ -4,6 +4,7 @@ import authRoutes from './auth.routes';
 import searchRoutes from './search.routes';
 import adminRoutes from './admin.routes';
 import providerRoutes from './provider.routes';
+import bookingRoutes from './booking.routes';
 
 const router = Router();
 
@@ -22,6 +23,8 @@ router.get('/', (_req, res) => {
       search: '/api/search',
       admin: '/api/admin',
       provider: '/api/provider',
+      bookings: '/api/bookings',
+      availability: '/api/availability',
       documentation: '/api-docs'
     }
   });
@@ -42,9 +45,11 @@ router.use('/admin', adminRoutes);
 // Provider routes
 router.use('/provider', providerRoutes);
 
+// Booking and Availability routes
+router.use('/', bookingRoutes);
+
 // Future route imports will go here
 // router.use('/users', userRoutes);
-// router.use('/bookings', bookingRoutes);
 // router.use('/payments', paymentRoutes);
 
 export default router;

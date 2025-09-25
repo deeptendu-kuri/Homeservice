@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuthStore, authenticatedFetch } from '../../stores/authStore';
+import { useAuthStore } from '../../stores/authStore';
+import authService from '../../services/AuthService';
 import PageLayout from '../layout/PageLayout';
 import {
   Users,
@@ -466,10 +467,7 @@ const AdminDashboard: React.FC = () => {
 
   const fetchDashboardStats = async () => {
     try {
-      const response = await authenticatedFetch('/api/admin/providers/stats');
-      if (!response.ok) throw new Error('Failed to fetch stats');
-
-      const data = await response.json();
+      const data = await authService.get<{success: boolean, data: any}>('/admin/providers/stats');
       if (data.success) {
         const stats = data.data.stats;
         setStats({
@@ -490,10 +488,7 @@ const AdminDashboard: React.FC = () => {
 
   const fetchProviders = async () => {
     try {
-      const response = await authenticatedFetch('/api/admin/providers/pending?limit=10');
-      if (!response.ok) throw new Error('Failed to fetch providers');
-
-      const data = await response.json();
+      const data = await authService.get<{success: boolean, data: any}>('/admin/providers/pending?limit=10');
       if (data.success) {
         setProviders(data.data.providers);
       }
@@ -504,10 +499,7 @@ const AdminDashboard: React.FC = () => {
 
   const fetchProvidersWithServices = async () => {
     try {
-      const response = await authenticatedFetch('/api/admin/providers-with-services?limit=50');
-      if (!response.ok) throw new Error('Failed to fetch providers with services');
-
-      const data = await response.json();
+      const data = await authService.get<{success: boolean, data: any}>('/admin/providers-with-services?limit=50');
       if (data.success) {
         setProvidersWithServices(data.data.providers);
       }
@@ -518,10 +510,7 @@ const AdminDashboard: React.FC = () => {
 
   const fetchPendingServices = async () => {
     try {
-      const response = await authenticatedFetch('/api/admin/services/pending?limit=50');
-      if (!response.ok) throw new Error('Failed to fetch pending services');
-
-      const data = await response.json();
+      const data = await authService.get<{success: boolean, data: any}>('/admin/services/pending?limit=50');
       if (data.success) {
         setPendingServices(data.data.services);
       }
@@ -538,21 +527,19 @@ const AdminDashboard: React.FC = () => {
         ...(serviceSearch && { search: serviceSearch }),
       });
 
-      const response = await authenticatedFetch(`/api/admin/services?${queryParams}`);
-      if (!response.ok) throw new Error('Failed to fetch services');
-
-      const data = await response.json();
+      const data = await authService.get<{success: boolean, data: any}>(`/admin/services?${queryParams}`);
       if (data.success) {
         setServices(data.data.services);
       }
 
       // Fetch service stats
-      const statsResponse = await authenticatedFetch('/api/admin/services/stats');
-      if (statsResponse.ok) {
-        const statsData = await statsResponse.json();
+      try {
+        const statsData = await authService.get<{success: boolean, data: any}>('/admin/services/stats');
         if (statsData.success) {
           setServiceStats(statsData.data.stats);
         }
+      } catch (statsError) {
+        console.error('Error fetching service stats:', statsError);
       }
     } catch (error) {
       console.error('Error fetching services:', error);
@@ -567,21 +554,19 @@ const AdminDashboard: React.FC = () => {
         ...(userSearch && { search: userSearch }),
       });
 
-      const response = await authenticatedFetch(`/api/admin/users?${queryParams}`);
-      if (!response.ok) throw new Error('Failed to fetch users');
-
-      const data = await response.json();
+      const data = await authService.get<{success: boolean, data: any}>(`/admin/users?${queryParams}`);
       if (data.success) {
         setUsers(data.data.users);
       }
 
       // Fetch user stats
-      const statsResponse = await authenticatedFetch('/api/admin/users/stats');
-      if (statsResponse.ok) {
-        const statsData = await statsResponse.json();
+      try {
+        const statsData = await authService.get<{success: boolean, data: any}>('/admin/users/stats');
         if (statsData.success) {
           setUserStats(statsData.data.stats);
         }
+      } catch (userStatsError) {
+        console.error('Error fetching user stats:', userStatsError);
       }
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -590,18 +575,14 @@ const AdminDashboard: React.FC = () => {
 
   const handleVerificationAction = async (id: string, action: 'approve' | 'reject') => {
     try {
-      const endpoint = `/api/admin/providers/${id}/${action}`;
+      const endpoint = `/admin/providers/${id}/${action}`;
       const body = action === 'approve' ?
         { notes: 'Approved by admin' } :
         { reason: 'incomplete-documentation', notes: 'Rejected by admin' };
 
-      const response = await authenticatedFetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      });
+      const response = await authService.post(endpoint, body);
 
-      if (response.ok) {
+      if (response.success) {
         await fetchProviders();
         await fetchDashboardStats();
         if (selectedProvider && selectedProvider._id === id) {
@@ -617,13 +598,9 @@ const AdminDashboard: React.FC = () => {
 
   const handleServiceStatusUpdate = async (serviceId: string, newStatus: string) => {
     try {
-      const response = await authenticatedFetch(`/api/admin/services/${serviceId}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus })
-      });
+      const response = await authService.patch(`/admin/services/${serviceId}/status`, { status: newStatus });
 
-      if (response.ok) {
+      if (response.success) {
         // Refresh relevant data
         if (showProvidersServices) await fetchProvidersWithServices();
         if (showServices) await fetchServices();
@@ -655,24 +632,17 @@ const AdminDashboard: React.FC = () => {
     if (selectedServices.size === 0) return;
 
     try {
-      const response = await authenticatedFetch('/api/admin/services/batch-action', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          serviceIds: Array.from(selectedServices),
-          action,
-          reason: action === 'reject' ? 'Batch rejection by admin' : undefined
-        })
+      const response = await authService.post('/admin/services/batch-action', {
+        serviceIds: Array.from(selectedServices),
+        action,
+        reason: action === 'reject' ? 'Batch rejection by admin' : undefined
       });
 
-      if (!response.ok) throw new Error('Batch action failed');
-
-      const data = await response.json();
-      if (data.success) {
+      if (response.success) {
         await fetchPendingServices();
         await fetchProvidersWithServices();
         setSelectedServices(new Set());
-        alert(`Successfully ${action}d ${data.data.modified} services`);
+        alert(`Successfully ${action}d ${response.data.modified} services`);
       }
     } catch (error) {
       console.error(`Bulk ${action} failed:`, error);
@@ -694,11 +664,7 @@ const AdminDashboard: React.FC = () => {
 
   const handleUserStatusUpdate = async (userId: string, newStatus: string) => {
     try {
-      const response = await authenticatedFetch(`/api/admin/users/${userId}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus })
-      });
+      const response = await authService.patch(`/admin/users/${userId}/status`, { status: newStatus });
 
       if (response.ok) {
         await fetchUsers();

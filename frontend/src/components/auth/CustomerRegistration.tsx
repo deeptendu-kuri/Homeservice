@@ -134,6 +134,7 @@ const CustomerRegistration: React.FC = () => {
         lastName: data.lastName,
         email: data.email,
         password: data.password,
+        role: 'customer' as const, // ✅ FIXED: Add role field to route to correct endpoint
         phone: data.phone,
         dateOfBirth: data.dateOfBirth,
         gender: data.gender,
@@ -145,9 +146,9 @@ const CustomerRegistration: React.FC = () => {
       };
 
       await registerCustomer(registrationData);
-      
-      // Registration successful - redirect to email verification
-      navigate('/verify-email-required');
+
+      // ✅ EMAIL VERIFICATION DISABLED - Redirect to customer dashboard
+      navigate('/customer/dashboard');
     } catch (error) {
       // Handle registration errors
       if (errors && errors.length > 0) {

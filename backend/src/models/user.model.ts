@@ -183,6 +183,7 @@ export interface IUser extends Document {
   verificationToken?: string;
   verificationExpire?: Date;
   refreshTokens: string[];
+  tokenVersion?: number;
   
   // Audit
   createdAt: Date;
@@ -208,6 +209,8 @@ export interface IUser extends Document {
   addLoyaltyPoints(amount: number, type: string, description: string, bookingId?: string): Promise<void>;
   spendLoyaltyPoints(amount: number, description: string, bookingId?: string): Promise<boolean>;
   updateTier(): Promise<void>;
+  invalidateAllTokens(): Promise<any>;
+  updateSecurityInfo(req: any): Promise<any>;
 }
 
 const userSchema = new Schema<IUser>(
@@ -505,6 +508,7 @@ const userSchema = new Schema<IUser>(
     verificationToken: String,
     verificationExpire: Date,
     refreshTokens: [String],
+    tokenVersion: { type: Number, default: 1 },
     
     // Audit
     createdBy: { type: Schema.Types.ObjectId, ref: 'User' },
@@ -567,7 +571,11 @@ userSchema.pre('save', async function(next) {
   if (this.isModified('password')) {
     const saltRounds = parseInt(process.env.BCRYPT_SALT_ROUNDS || '12');
     this.password = await bcrypt.hash(this.password, saltRounds);
-    this.passwordChangedAt = new Date();
+
+    // ✅ FIX: Only set passwordChangedAt for existing users, not during initial registration
+    if (!this.isNew) {
+      this.passwordChangedAt = new Date();
+    }
   }
   
   // Generate referral code if new user and doesn't have one
@@ -596,39 +604,58 @@ userSchema.methods.comparePassword = async function(candidatePassword: string): 
 
 userSchema.methods.generateAuthToken = function(): string {
   const payload = {
-    id: this._id,
+    id: this._id.toString(),
     email: this.email,
     role: this.role,
     firstName: this.firstName,
     lastName: this.lastName,
     isEmailVerified: this.isEmailVerified,
-    accountStatus: this.accountStatus
+    accountStatus: this.accountStatus,
+    tokenVersion: this.tokenVersion || 1  // For token invalidation
   };
 
   return jwt.sign(
     payload,
-    process.env.JWT_SECRET as string,
+    process.env.JWT_ACCESS_SECRET as string,
     {
-      expiresIn: process.env.JWT_EXPIRE || '30d',
+      expiresIn: process.env.JWT_ACCESS_EXPIRE || '15m',  // Short-lived access tokens
       issuer: 'home-service-platform'
     } as jwt.SignOptions
   );
 };
 
 userSchema.methods.generateRefreshToken = function(): string {
-  const refreshToken = jwt.sign(
-    { 
-      id: this._id,
-      tokenVersion: Date.now() // For token invalidation
-    },
-    process.env.JWT_REFRESH_SECRET as string,
-    { expiresIn: '7d' }
-  );
+  const payload = {
+    id: this._id.toString(),
+    tokenVersion: this.tokenVersion || 1,
+    deviceFingerprint: this.currentSession?.deviceFingerprint || 'unknown'
+  };
 
-  // Store refresh token
+  const secret = process.env.JWT_REFRESH_SECRET as string;
+  const options = {
+    expiresIn: process.env.JWT_REFRESH_EXPIRE || '30d',  // Long-lived refresh tokens
+    issuer: 'home-service-platform'
+  } as jwt.SignOptions;
+
+  const refreshToken = jwt.sign(payload, secret, options);
+
+  // Implement token rotation if enabled
+  if (process.env.JWT_REFRESH_ROTATE === 'true') {
+    // Remove expired tokens
+    this.refreshTokens = this.refreshTokens.filter((token: string) => {
+      try {
+        jwt.verify(token, process.env.JWT_REFRESH_SECRET as string);
+        return true;
+      } catch (error) {
+        return false; // Remove expired tokens
+      }
+    });
+  }
+
+  // Store new refresh token
   this.refreshTokens.push(refreshToken);
-  
-  // Limit stored tokens (keep only last 5)
+
+  // Limit stored tokens per device (keep only last 5)
   if (this.refreshTokens.length > 5) {
     this.refreshTokens = this.refreshTokens.slice(-5);
   }
@@ -772,6 +799,38 @@ userSchema.methods.updateTier = async function() {
   if (newTier !== this.loyaltySystem.tier) {
     await this.updateOne({ 'loyaltySystem.tier': newTier });
   }
+};
+
+// Security Methods
+userSchema.methods.invalidateAllTokens = async function() {
+  const currentVersion = this.tokenVersion || 1;
+  await this.updateOne({
+    tokenVersion: currentVersion + 1,
+    refreshTokens: []  // Clear all refresh tokens
+  });
+};
+
+userSchema.methods.updateSecurityInfo = async function(req: any) {
+  const updates: any = {
+    'socialProfiles.lastActiveAt': new Date()
+  };
+
+  // Track IP if available
+  if (req.ip || req.connection?.remoteAddress) {
+    updates.lastLoginIP = req.ip || req.connection.remoteAddress;
+  }
+
+  // Security audit trail (if enabled)
+  if (process.env.SECURITY_AUDIT === 'true') {
+    const userAgent = req.get('User-Agent') || 'unknown';
+    updates.lastSecurityCheck = {
+      timestamp: new Date(),
+      ip: req.ip || req.connection?.remoteAddress || 'unknown',
+      userAgent: userAgent.substring(0, 200) // Limit length
+    };
+  }
+
+  return this.updateOne(updates, { validateBeforeSave: false });
 };
 
 const User: Model<IUser> = mongoose.model<IUser>('User', userSchema);

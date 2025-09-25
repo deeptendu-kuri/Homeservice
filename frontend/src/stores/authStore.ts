@@ -1,43 +1,23 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
+import type { AuthTokens, AuthUser, LoginCredentials, RegisterData } from '../services/AuthService';
 
-// Types
-export interface User {
-  _id: string;
-  email: string;
-  role: 'customer' | 'provider' | 'admin';
-  isEmailVerified: boolean;
-  firstName: string;
-  lastName: string;
-  phone?: string;
-  avatar?: string;
-  isActive: boolean;
-  accountStatus: 'active' | 'suspended' | 'deactivated';
-  createdAt: string;
-  updatedAt: string;
-  lastLoginAt?: string;
-  
-  // Social features
-  followers: number;
-  following: number;
-  socialProfiles?: {
-    instagram?: string;
-    facebook?: string;
-    twitter?: string;
-    linkedin?: string;
-  };
-  
-  // Loyalty system
-  loyaltySystem: {
-    totalCoins: number;
-    availableCoins: number;
-    tier: 'bronze' | 'silver' | 'gold' | 'platinum';
-    tierProgress: number;
-    referralCode: string;
-    totalReferrals: number;
-    currentStreak: number;
-  };
+// Re-export types for backward compatibility
+export type User = AuthUser;
+export type { AuthTokens, LoginCredentials };
+
+// Legacy type compatibility
+export interface RegisterCustomerData extends RegisterData {
+  role: 'customer';
+}
+
+export interface RegisterProviderData extends RegisterData {
+  role: 'provider';
+  businessInfo?: any;
+  locationInfo?: any;
+  services?: any[];
+  [key: string]: any;
 }
 
 export interface CustomerProfile {
@@ -96,156 +76,27 @@ export interface ProviderProfile {
     website?: string;
     establishedDate?: string;
   };
-  verificationStatus: 'pending' | 'approved' | 'rejected' | 'suspended';
-  services: Array<{
-    name: string;
-    category: string;
-    subcategory?: string;
-    description: string;
-    duration: number;
-    price: {
-      amount: number;
-      currency: string;
-      type: 'fixed' | 'hourly' | 'custom';
-    };
-    tags: string[];
-  }>;
-  locationInfo: {
-    primaryAddress: {
-      street: string;
-      city: string;
-      state: string;
-      zipCode: string;
-      country: string;
-      coordinates: {
-        lat: number;
-        lng: number;
-      };
-    };
-    serviceRadius: number;
-    mobileService: boolean;
-    hasFixedLocation: boolean;
+  verificationStatus: {
+    overall: 'pending' | 'approved' | 'rejected' | 'suspended';
+    documents: 'pending' | 'approved' | 'rejected';
+    backgroundCheck: 'pending' | 'approved' | 'rejected';
+    businessVerification: 'pending' | 'approved' | 'rejected';
   };
-  portfolio: Array<{
+  services: Array<{
     _id: string;
-    title: string;
-    description: string;
-    imageUrl: string;
-    category: string;
-    isBeforeAfter: boolean;
-    tags: string[];
-    uploadedAt: string;
-  }>;
-  ratings: {
-    average: number;
-    count: number;
-    breakdown: {
-      5: number;
-      4: number;
-      3: number;
-      2: number;
-      1: number;
-    };
-  };
-  earnings: {
-    totalEarned: number;
-    availableBalance: number;
-    pendingBalance: number;
-    lastPayout?: string;
-  };
-  analytics: {
-    profileViews: number;
-    bookingRequests: number;
-    conversionRate: number;
-    repeatCustomers: number;
-  };
-}
-
-export interface AuthTokens {
-  accessToken: string;
-  refreshToken: string;
-  expiresAt: string;
-}
-
-export interface LoginCredentials {
-  email: string;
-  password: string;
-  rememberMe?: boolean;
-  loginAs?: 'customer' | 'provider' | 'admin';
-}
-
-export interface RegisterCustomerData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-  phone?: string;
-  dateOfBirth?: string;
-  gender?: 'male' | 'female' | 'other' | 'prefer_not_to_say';
-  address?: {
-    street: string;
-    city: string;
-    state: string;
-    country: string;
-    zipCode: string;
-    coordinates?: {
-      lat: number;
-      lng: number;
-    };
-  };
-  referralCode?: string;
-  agreeToTerms: boolean;
-  agreeToPrivacy: boolean;
-}
-
-export interface RegisterProviderData extends RegisterCustomerData {
-  businessInfo: {
-    businessName: string;
-    businessType: 'individual' | 'small_business' | 'company' | 'franchise';
-    description: string;
-    tagline?: string;
-    website?: string;
-    establishedDate?: string;
-    serviceRadius: number;
-  };
-  locationInfo: {
-    primaryAddress: {
-      street: string;
-      city: string;
-      state: string;
-      zipCode: string;
-      country: string;
-      coordinates: {
-        lat: number;
-        lng: number;
-      };
-    };
-    mobileService: boolean;
-    hasFixedLocation: boolean;
-  };
-  services: Array<{
     name: string;
     category: string;
-    subcategory?: string;
-    description: string;
-    duration: number;
-    price: {
-      amount: number;
-      currency: string;
-      type: 'fixed' | 'hourly' | 'custom';
-    };
-    tags?: string[];
+    status: 'active' | 'inactive' | 'pending_review';
   }>;
-  agreeToBackground: boolean;
 }
 
 export interface AuthError {
   message: string;
+  code: string;
   field?: string;
-  code?: string;
 }
 
-interface AuthState {
+export interface AuthState {
   // State
   user: User | null;
   customerProfile: CustomerProfile | null;
@@ -255,16 +106,17 @@ interface AuthState {
   isLoading: boolean;
   isInitialized: boolean;
   errors: AuthError[];
-  
+
   // Actions
   login: (credentials: LoginCredentials) => Promise<void>;
   registerCustomer: (data: RegisterCustomerData) => Promise<void>;
   registerProvider: (data: RegisterProviderData, files?: FormData) => Promise<void>;
   logout: () => Promise<void>;
   logoutAll: () => Promise<void>;
+  clearAuth: () => void;
   getCurrentUser: () => Promise<void>;
   updateProfile: (data: Partial<User>, files?: FormData) => Promise<void>;
-  changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
+  changePassword: (currentPassword: string, newPassword: string, confirmPassword: string) => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
   resetPassword: (token: string, password: string, confirmPassword: string) => Promise<void>;
   verifyEmail: (token: string) => Promise<void>;
@@ -274,286 +126,15 @@ interface AuthState {
   setError: (error: AuthError) => void;
   setLoading: (loading: boolean) => void;
   initialize: () => Promise<void>;
+
+  // New method for AuthService integration
+  setTokens: (tokens: AuthTokens) => void;
+  setUser: (user: User | null) => void;
+  setCustomerProfile: (profile: CustomerProfile | null) => void;
+  setProviderProfile: (profile: ProviderProfile | null) => void;
 }
 
-// API Service (will be moved to separate file)
-class AuthAPI {
-  private baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-
-  private async request<T>(
-    endpoint: string,
-    options: RequestInit = {}
-  ): Promise<T> {
-    const url = `${this.baseURL}${endpoint}`;
-    const config: RequestInit = {
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
-      ...options,
-    };
-
-    // Add auth token if available
-    const authStore = useAuthStore.getState();
-    if (authStore.tokens?.accessToken) {
-      config.headers = {
-        ...config.headers,
-        Authorization: `Bearer ${authStore.tokens.accessToken}`,
-      };
-    }
-
-    try {
-      const response = await fetch(url, config);
-
-      // Handle 401 Unauthorized - just pass it through, don't auto-logout
-      // Let the user handle authentication errors manually
-
-      if (!response.ok) {
-        const error = await response.json().catch(() => ({
-          message: 'An error occurred',
-          error: 'NETWORK_ERROR'
-        }));
-        throw new Error(error.message || 'Request failed');
-      }
-
-      return await response.json();
-    } catch (error) {
-      if (error instanceof Error) {
-        throw error;
-      }
-      throw new Error('Network error occurred');
-    }
-  }
-
-  async login(credentials: LoginCredentials) {
-    return this.request<{
-      success: boolean;
-      data: {
-        user: User;
-        tokens: AuthTokens;
-        profile?: CustomerProfile;
-        providerProfile?: ProviderProfile;
-        redirectUrl?: string;
-        requiresEmailVerification?: boolean;
-      };
-    }>('/auth/login', {
-      method: 'POST',
-      body: JSON.stringify(credentials),
-    });
-  }
-
-  async registerCustomer(data: RegisterCustomerData) {
-    return this.request<{
-      success: boolean;
-      data: {
-        user: User;
-        tokens: AuthTokens;
-        profile: CustomerProfile;
-      };
-    }>('/auth/register/customer', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  }
-
-  async registerProvider(data: RegisterProviderData, files?: FormData) {
-    console.log('🔧 RegisterProvider called with data:', data);
-    console.log('🔧 Files provided:', files ? 'Yes' : 'No');
-    
-    const formData = files || new FormData();
-    
-    // Properly serialize all the required fields for provider registration
-    const fieldsToSerialize = [
-      'firstName', 'lastName', 'email', 'password', 'phone', 'dateOfBirth',
-      'agreeToTerms', 'agreeToPrivacy', 'agreeToBackground'
-    ];
-    
-    fieldsToSerialize.forEach(field => {
-      if (data[field as keyof RegisterProviderData] !== undefined) {
-        formData.append(field, String(data[field as keyof RegisterProviderData]));
-      }
-    });
-    
-    // Handle nested objects properly
-    if (data.businessInfo) {
-      formData.append('businessInfo', JSON.stringify(data.businessInfo));
-    }
-    
-    if (data.locationInfo) {
-      formData.append('locationInfo', JSON.stringify(data.locationInfo));
-    }
-    
-    if (data.services) {
-      formData.append('services', JSON.stringify(data.services));
-    }
-    
-    console.log('🔧 FormData entries:');
-    for (let [key, value] of formData.entries()) {
-      console.log(`  ${key}: ${typeof value === 'object' ? '[File]' : value}`);
-    }
-
-    return this.request<{
-      success: boolean;
-      data: {
-        user: User;
-        tokens: AuthTokens;
-        profile: ProviderProfile;
-      };
-    }>('/auth/register/provider', {
-      method: 'POST',
-      body: formData,
-      headers: {}, // Let browser set Content-Type for FormData
-    });
-  }
-
-  async getCurrentUser() {
-    return this.request<{
-      success: boolean;
-      data: {
-        user: User;
-        profile?: CustomerProfile | ProviderProfile;
-      };
-    }>('/auth/me');
-  }
-
-  async updateProfile(data: Partial<User>, files?: FormData) {
-    if (files) {
-      Object.entries(data).forEach(([key, value]) => {
-        if (typeof value === 'object' && value !== null) {
-          files.append(key, JSON.stringify(value));
-        } else {
-          files.append(key, String(value));
-        }
-      });
-
-      return this.request<{
-        success: boolean;
-        data: {
-          user: User;
-          profile?: CustomerProfile | ProviderProfile;
-        };
-      }>('/auth/me', {
-        method: 'PATCH',
-        body: files,
-        headers: {},
-      });
-    } else {
-      return this.request<{
-        success: boolean;
-        data: {
-          user: User;
-          profile?: CustomerProfile | ProviderProfile;
-        };
-      }>('/auth/me', {
-        method: 'PATCH',
-        body: JSON.stringify(data),
-      });
-    }
-  }
-
-  async logout() {
-    return this.request<{ success: boolean }>('/auth/logout', {
-      method: 'POST',
-    });
-  }
-
-  async logoutAll() {
-    return this.request<{ success: boolean }>('/auth/logout-all', {
-      method: 'POST',
-    });
-  }
-
-  async changePassword(currentPassword: string, newPassword: string, confirmPassword: string) {
-    return this.request<{ success: boolean }>('/auth/change-password', {
-      method: 'POST',
-      body: JSON.stringify({
-        currentPassword,
-        newPassword,
-        confirmPassword,
-      }),
-    });
-  }
-
-  async forgotPassword(email: string) {
-    return this.request<{ success: boolean }>('/auth/forgot-password', {
-      method: 'POST',
-      body: JSON.stringify({ email }),
-    });
-  }
-
-  async resetPassword(token: string, password: string, confirmPassword: string) {
-    return this.request<{ success: boolean }>('/auth/reset-password', {
-      method: 'POST',
-      body: JSON.stringify({
-        token,
-        password,
-        confirmPassword,
-      }),
-    });
-  }
-
-  async verifyEmail(token: string) {
-    return this.request<{ success: boolean }>('/auth/verify-email', {
-      method: 'POST',
-      body: JSON.stringify({ token }),
-    });
-  }
-
-  async resendVerification(email: string) {
-    return this.request<{ success: boolean }>('/auth/resend-verification', {
-      method: 'POST',
-      body: JSON.stringify({ email }),
-    });
-  }
-
-  async refreshToken() {
-    const authStore = useAuthStore.getState();
-    if (!authStore.tokens?.refreshToken) {
-      throw new Error('No refresh token available');
-    }
-
-    return this.request<{
-      success: boolean;
-      data: {
-        tokens: AuthTokens;
-      };
-    }>('/auth/refresh-token', {
-      method: 'POST',
-      body: JSON.stringify({
-        refreshToken: authStore.tokens.refreshToken,
-      }),
-    });
-  }
-}
-
-const authAPI = new AuthAPI();
-
-// Authenticated fetch helper
-export const authenticatedFetch = async (url: string, options: RequestInit = {}): Promise<Response> => {
-  const authStore = useAuthStore.getState();
-
-  if (!authStore.tokens?.accessToken) {
-    throw new Error('No access token available');
-  }
-
-  // Ensure URL is absolute
-  const baseURL = 'http://localhost:5000';
-  const fullUrl = url.startsWith('http') ? url : `${baseURL}${url}`;
-
-  // Add authorization header
-  const config: RequestInit = {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-      Authorization: `Bearer ${authStore.tokens.accessToken}`,
-    },
-  };
-
-  return await fetch(fullUrl, config);
-};
-
-// Create the Zustand store
+// Create the Zustand store with AuthService delegation
 export const useAuthStore = create<AuthState>()(
   persist(
     immer((set, get) => ({
@@ -567,30 +148,30 @@ export const useAuthStore = create<AuthState>()(
       isInitialized: false,
       errors: [],
 
-      // Actions
+      // Actions - All delegate to AuthService for single source of truth
       login: async (credentials: LoginCredentials) => {
+        // Lazy import to avoid circular dependency
+        const authService = (await import('../services/AuthService')).default;
+
         try {
           set((state) => {
             state.isLoading = true;
             state.errors = [];
           });
 
-          const response = await authAPI.login(credentials);
-          
+          const response = await authService.login(credentials);
+
           set((state) => {
             state.user = response.data.user;
-            state.tokens = {
-              accessToken: response.data.tokens?.accessToken || (response.data as any).accessToken,
-              refreshToken: response.data.tokens?.refreshToken || (response.data as any).refreshToken,
-              expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days
-            };
+            state.tokens = response.data.tokens;
             state.isAuthenticated = true;
             state.isLoading = false;
 
-            if (response.data.user.role === 'customer' && response.data.profile) {
-              state.customerProfile = response.data.profile as CustomerProfile;
-            } else if (response.data.user.role === 'provider' && (response.data as any).providerProfile) {
-              state.providerProfile = (response.data as any).providerProfile as ProviderProfile;
+            // Set role-specific profiles using correct property names
+            if (response.data.user.role === 'customer' && response.data.customerProfile) {
+              state.customerProfile = response.data.customerProfile;
+            } else if (response.data.user.role === 'provider' && response.data.providerProfile) {
+              state.providerProfile = response.data.providerProfile;
             }
           });
         } catch (error) {
@@ -606,22 +187,20 @@ export const useAuthStore = create<AuthState>()(
       },
 
       registerCustomer: async (data: RegisterCustomerData) => {
+        const authService = (await import('../services/AuthService')).default;
+
         try {
           set((state) => {
             state.isLoading = true;
             state.errors = [];
           });
 
-          const response = await authAPI.registerCustomer(data);
-          
+          const response = await authService.register(data);
+
           set((state) => {
             state.user = response.data.user;
-            state.customerProfile = response.data.profile;
-            state.tokens = {
-              accessToken: response.data.tokens?.accessToken || (response.data as any).accessToken,
-              refreshToken: response.data.tokens?.refreshToken || (response.data as any).refreshToken,
-              expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days
-            };
+            state.tokens = response.data.tokens;
+            state.customerProfile = response.data.customerProfile;
             state.isAuthenticated = true;
             state.isLoading = false;
           });
@@ -638,36 +217,65 @@ export const useAuthStore = create<AuthState>()(
       },
 
       registerProvider: async (data: RegisterProviderData, files?: FormData) => {
+        const authService = (await import('../services/AuthService')).default;
+
         try {
-          console.log('🏪 AuthStore: Starting provider registration');
           set((state) => {
             state.isLoading = true;
             state.errors = [];
           });
 
-          console.log('🌐 AuthStore: Making API call');
-          const response = await authAPI.registerProvider(data, files);
-          console.log('✅ AuthStore: API call successful', response);
-          
+          let finalData = data;
+
+          // Handle file uploads if provided
+          if (files) {
+            // Create FormData with all the registration data
+            const formData = new FormData();
+
+            // Add registration data to FormData
+            Object.entries(data).forEach(([key, value]) => {
+              if (value !== undefined && value !== null) {
+                if (typeof value === 'object' && !(value instanceof File)) {
+                  formData.append(key, JSON.stringify(value));
+                } else {
+                  formData.append(key, String(value));
+                }
+              }
+            });
+
+            // Add files
+            for (const [key, file] of files.entries()) {
+              formData.append(key, file);
+            }
+
+            // Use file upload method
+            const response = await authService.uploadFile('/auth/register/provider', formData);
+
+            set((state) => {
+              state.user = (response as any).data.user;
+              state.tokens = (response as any).data.tokens;
+              state.providerProfile = (response as any).data.providerProfile;
+              state.isAuthenticated = true;
+              state.isLoading = false;
+            });
+            return;
+          }
+
+          const response = await authService.register(finalData);
+
           set((state) => {
             state.user = response.data.user;
-            state.providerProfile = response.data.profile;
-            state.tokens = {
-              accessToken: response.data.tokens?.accessToken || (response.data as any).accessToken,
-              refreshToken: response.data.tokens?.refreshToken || (response.data as any).refreshToken,
-              expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days
-            };
+            state.tokens = response.data.tokens;
+            state.providerProfile = response.data.providerProfile;
             state.isAuthenticated = true;
             state.isLoading = false;
           });
-          console.log('💾 AuthStore: State updated successfully');
         } catch (error) {
-          console.error('💥 AuthStore: Registration failed:', error);
           set((state) => {
             state.isLoading = false;
             state.errors = [{
-              message: error instanceof Error ? error.message : 'Registration failed',
-              code: 'REGISTER_ERROR'
+              message: error instanceof Error ? error.message : 'Provider registration failed',
+              code: 'REGISTER_PROVIDER_ERROR'
             }];
           });
           throw error;
@@ -675,14 +283,14 @@ export const useAuthStore = create<AuthState>()(
       },
 
       logout: async () => {
+        const authService = (await import('../services/AuthService')).default;
+
         try {
-          // Call logout API before clearing tokens
-          await authAPI.logout();
+          await authService.logout();
         } catch (error) {
-          // Log error but don't prevent local logout
-          console.error('Server logout failed:', error);
+          console.error('Logout error:', error);
+          // Continue with local logout even if API fails
         } finally {
-          // Always clear local state
           set((state) => {
             state.user = null;
             state.customerProfile = null;
@@ -695,10 +303,12 @@ export const useAuthStore = create<AuthState>()(
       },
 
       logoutAll: async () => {
+        const authService = (await import('../services/AuthService')).default;
+
         try {
-          await authAPI.logoutAll();
+          await authService.logoutAll();
         } catch (error) {
-          console.error('Logout all failed:', error);
+          console.error('Logout all error:', error);
         } finally {
           set((state) => {
             state.user = null;
@@ -711,54 +321,69 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      getCurrentUser: async () => {
-        try {
-          set((state) => {
-            state.isLoading = true;
-          });
+      clearAuth: () => {
+        set((state) => {
+          state.user = null;
+          state.customerProfile = null;
+          state.providerProfile = null;
+          state.tokens = null;
+          state.isAuthenticated = false;
+          state.errors = [];
+        });
+      },
 
-          const response = await authAPI.getCurrentUser();
-          
+      getCurrentUser: async () => {
+        const authService = (await import('../services/AuthService')).default;
+
+        try {
+          const response = await authService.getCurrentUser();
+
           set((state) => {
             state.user = response.data.user;
-            state.isLoading = false;
             
-            if (response.data.user.role === 'customer' && response.data.profile) {
-              state.customerProfile = response.data.profile as CustomerProfile;
-            } else if (response.data.user.role === 'provider' && (response.data as any).providerProfile) {
-              state.providerProfile = (response.data as any).providerProfile as ProviderProfile;
+            // Handle role-specific profiles using correct property names
+            if (response.data.user.role === 'customer' && response.data.customerProfile) {
+              state.customerProfile = response.data.customerProfile;
+            } else if (response.data.user.role === 'provider' && response.data.providerProfile) {
+              state.providerProfile = response.data.providerProfile;
             }
           });
         } catch (error) {
-          set((state) => {
-            state.isLoading = false;
-            state.errors = [{
-              message: error instanceof Error ? error.message : 'Failed to get user data',
-              code: 'GET_USER_ERROR'
-            }];
-          });
-          throw error;
+          console.error('Get current user error:', error);
+          // Don't throw error, just log it
         }
       },
 
       updateProfile: async (data: Partial<User>, files?: FormData) => {
+        const authService = (await import('../services/AuthService')).default;
+
         try {
           set((state) => {
             state.isLoading = true;
             state.errors = [];
           });
 
-          const response = await authAPI.updateProfile(data, files);
-          
-          set((state) => {
-            state.user = response.data.user;
-            state.isLoading = false;
-            
-            if (response.data.user.role === 'customer' && response.data.profile) {
-              state.customerProfile = response.data.profile as CustomerProfile;
-            } else if (response.data.user.role === 'provider' && (response.data as any).providerProfile) {
-              state.providerProfile = (response.data as any).providerProfile as ProviderProfile;
+          let response;
+
+          if (files) {
+            const formData = new FormData();
+            Object.entries(data).forEach(([key, value]) => {
+              if (value !== undefined && value !== null) {
+                formData.append(key, String(value));
+              }
+            });
+            for (const [key, file] of files.entries()) {
+              formData.append(key, file);
             }
+
+            response = await authService.uploadFile('/auth/me', formData);
+          } else {
+            response = await authService.updateProfile(data);
+          }
+
+          set((state) => {
+            state.user = (response as any).data.user;
+            state.isLoading = false;
           });
         } catch (error) {
           set((state) => {
@@ -772,15 +397,17 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      changePassword: async (currentPassword: string, newPassword: string) => {
+      changePassword: async (currentPassword: string, newPassword: string, confirmPassword: string) => {
+        const authService = (await import('../services/AuthService')).default;
+
         try {
           set((state) => {
             state.isLoading = true;
             state.errors = [];
           });
 
-          await authAPI.changePassword(currentPassword, newPassword, newPassword);
-          
+          await authService.changePassword(currentPassword, newPassword, confirmPassword);
+
           set((state) => {
             state.isLoading = false;
           });
@@ -797,14 +424,16 @@ export const useAuthStore = create<AuthState>()(
       },
 
       forgotPassword: async (email: string) => {
+        const authService = (await import('../services/AuthService')).default;
+
         try {
           set((state) => {
             state.isLoading = true;
             state.errors = [];
           });
 
-          await authAPI.forgotPassword(email);
-          
+          await authService.forgotPassword(email);
+
           set((state) => {
             state.isLoading = false;
           });
@@ -812,7 +441,7 @@ export const useAuthStore = create<AuthState>()(
           set((state) => {
             state.isLoading = false;
             state.errors = [{
-              message: error instanceof Error ? error.message : 'Forgot password request failed',
+              message: error instanceof Error ? error.message : 'Password reset request failed',
               code: 'FORGOT_PASSWORD_ERROR'
             }];
           });
@@ -821,14 +450,16 @@ export const useAuthStore = create<AuthState>()(
       },
 
       resetPassword: async (token: string, password: string, confirmPassword: string) => {
+        const authService = (await import('../services/AuthService')).default;
+
         try {
           set((state) => {
             state.isLoading = true;
             state.errors = [];
           });
 
-          await authAPI.resetPassword(token, password, confirmPassword);
-          
+          await authService.resetPassword(token, password, confirmPassword);
+
           set((state) => {
             state.isLoading = false;
           });
@@ -845,19 +476,21 @@ export const useAuthStore = create<AuthState>()(
       },
 
       verifyEmail: async (token: string) => {
+        const authService = (await import('../services/AuthService')).default;
+
         try {
           set((state) => {
             state.isLoading = true;
             state.errors = [];
           });
 
-          await authAPI.verifyEmail(token);
-          
+          await authService.verifyEmail(token);
+
+          // Refresh user data after verification
+          await get().getCurrentUser();
+
           set((state) => {
             state.isLoading = false;
-            if (state.user) {
-              state.user.isEmailVerified = true;
-            }
           });
         } catch (error) {
           set((state) => {
@@ -872,14 +505,16 @@ export const useAuthStore = create<AuthState>()(
       },
 
       resendVerification: async (email: string) => {
+        const authService = (await import('../services/AuthService')).default;
+
         try {
           set((state) => {
             state.isLoading = true;
             state.errors = [];
           });
 
-          await authAPI.resendVerification(email);
-          
+          await authService.resendVerification(email);
+
           set((state) => {
             state.isLoading = false;
           });
@@ -887,7 +522,7 @@ export const useAuthStore = create<AuthState>()(
           set((state) => {
             state.isLoading = false;
             state.errors = [{
-              message: error instanceof Error ? error.message : 'Resend verification failed',
+              message: error instanceof Error ? error.message : 'Failed to resend verification',
               code: 'RESEND_VERIFICATION_ERROR'
             }];
           });
@@ -896,18 +531,21 @@ export const useAuthStore = create<AuthState>()(
       },
 
       refreshToken: async () => {
+        // This is now handled automatically by AuthService interceptors
+        // But we keep this method for backward compatibility
+        const authService = (await import('../services/AuthService')).default;
+
         try {
-          const response = await authAPI.refreshToken();
-          
-          set((state) => {
-            state.tokens = {
-              accessToken: response.data.tokens?.accessToken || response.data.accessToken,
-              refreshToken: response.data.tokens?.refreshToken || response.data.refreshToken || state.tokens?.refreshToken || '',
-              expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days
-            };
-          });
+          // AuthService handles refresh automatically through interceptors
+          // This method can be used for manual refresh if needed
+          const tokens = get().tokens;
+          if (tokens?.refreshToken) {
+            await authService.post('/auth/refresh-token', {
+              refreshToken: tokens.refreshToken
+            });
+          }
         } catch (error) {
-          // Don't auto-logout on refresh failure, just throw error
+          // Auto-logout handled by AuthService
           throw error;
         }
       },
@@ -938,15 +576,47 @@ export const useAuthStore = create<AuthState>()(
             await get().getCurrentUser();
             set((state) => {
               state.isAuthenticated = true;
+              state.isInitialized = true;
             });
           } catch (error) {
             console.error('Failed to initialize auth:', error);
-            // Don't auto-logout, just continue
+            // Clear invalid tokens
+            set((state) => {
+              state.tokens = null;
+              state.isAuthenticated = false;
+              state.isInitialized = true;
+            });
           }
+        } else {
+          set((state) => {
+            state.isInitialized = true;
+          });
         }
+      },
 
+      // New methods for AuthService integration
+      setTokens: (tokens: AuthTokens) => {
         set((state) => {
-          state.isInitialized = true;
+          state.tokens = tokens;
+        });
+      },
+
+      setUser: (user: User | null) => {
+        set((state) => {
+          state.user = user;
+          state.isAuthenticated = !!user;
+        });
+      },
+
+      setCustomerProfile: (profile: CustomerProfile | null) => {
+        set((state) => {
+          state.customerProfile = profile;
+        });
+      },
+
+      setProviderProfile: (profile: ProviderProfile | null) => {
+        set((state) => {
+          state.providerProfile = profile;
         });
       },
     })),
@@ -964,7 +634,6 @@ export const useAuthStore = create<AuthState>()(
   )
 );
 
-// Auto-initialize on store creation
-if (typeof window !== 'undefined') {
-  useAuthStore.getState().initialize();
-}
+// Remove the old authenticatedFetch and authAPI exports
+// These are now handled by the AuthService
+export { useAuthStore as default };

@@ -71,16 +71,16 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     );
   }
 
-  // Check email verification requirement
-  if (requireEmailVerified && !user.isEmailVerified) {
-    return (
-      <Navigate 
-        to="/verify-email-required" 
-        state={{ from: location.pathname }} 
-        replace 
-      />
-    );
-  }
+  // ✅ EMAIL VERIFICATION DISABLED - Comment out email verification check
+  // if (requireEmailVerified && !user.isEmailVerified) {
+  //   return (
+  //     <Navigate
+  //       to="/verify-email-required"
+  //       state={{ from: location.pathname }}
+  //       replace
+  //     />
+  //   );
+  // }
 
   // Check account status requirement
   if (requireActiveAccount && user.accountStatus !== 'active' && user.accountStatus !== 'pending_verification') {
@@ -247,8 +247,9 @@ export const useRouteAccess = () => {
     canAccessProvider: (requireVerification = false) => {
       if (!isAuthenticated || !user || user.role !== 'provider') return false;
       if (!requireVerification) return true;
-      // Additional provider verification checks would go here
-      return user.isEmailVerified;
+      // ✅ EMAIL VERIFICATION DISABLED - Always return true
+      // return user.isEmailVerified;
+      return true;
     },
     
     isAdmin: () => isAuthenticated && user?.role === 'admin',

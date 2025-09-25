@@ -18,7 +18,8 @@ import {
   AlertCircle,
   CheckCircle
 } from 'lucide-react';
-import { useAuthStore, authenticatedFetch } from '../../stores/authStore';
+import { useAuthStore } from '../../stores/authStore';
+import authService from '../../services/AuthService';
 import { AddServiceModal } from './AddServiceModal';
 import { EditServiceModal } from './EditServiceModal';
 
@@ -151,13 +152,12 @@ const ServiceManagement: React.FC = () => {
         limit: '20'
       });
 
-      const response = await authenticatedFetch(`/api/provider/services?${queryParams}`);
+      const data = await authService.get<{success: boolean, data: {services: Service[]}}>(`/provider/services?${queryParams}`);
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      if (!data.success) {
+        throw new Error('Failed to fetch services');
       }
 
-      const data = await response.json();
       setServices(data.data.services);
       
     } catch (err) {
@@ -170,10 +170,9 @@ const ServiceManagement: React.FC = () => {
 
   const fetchOverviewStats = async () => {
     try {
-      const response = await authenticatedFetch('/api/provider/analytics');
+      const data = await authService.get<{success: boolean, data: {overview: {serviceStats: ServiceStats, performanceStats: PerformanceStats}}}>('/provider/analytics');
 
-      if (response.ok) {
-        const data = await response.json();
+      if (data.success) {
         setServiceStats(data.data.overview.serviceStats);
         setPerformanceStats(data.data.overview.performanceStats);
       }
@@ -186,12 +185,9 @@ const ServiceManagement: React.FC = () => {
     try {
       const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
 
-      const response = await authenticatedFetch(`/api/provider/services/${serviceId}/status`, {
-        method: 'PATCH',
-        body: JSON.stringify({ status: newStatus })
-      });
+      const data = await authService.patch<{success: boolean}>(`/provider/services/${serviceId}/status`, { status: newStatus });
 
-      if (response.ok) {
+      if (data.success) {
         fetchServices(); // Refresh the list
       } else {
         throw new Error('Failed to update service status');
@@ -208,11 +204,9 @@ const ServiceManagement: React.FC = () => {
     }
 
     try {
-      const response = await authenticatedFetch(`/api/provider/services/${serviceId}`, {
-        method: 'DELETE'
-      });
+      const data = await authService.delete<{success: boolean}>(`/provider/services/${serviceId}`);
 
-      if (response.ok) {
+      if (data.success) {
         fetchServices(); // Refresh the list
         fetchOverviewStats(); // Refresh stats
       } else {

@@ -158,8 +158,8 @@ const ServiceDetailPage: React.FC = () => {
       return;
     }
     
-    // TODO: Navigate to booking flow
-    console.log('Book service:', service?.name);
+    // Navigate to booking page with service details
+    navigate(`/book/${id}`, { state: { service } });
   };
 
   const handleContactProvider = () => {

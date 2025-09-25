@@ -24,6 +24,14 @@ import AdminDashboard from './components/dashboard/AdminDashboard';
 import SearchPage from './pages/SearchPage';
 import ServiceDetailPage from './pages/ServiceDetailPage';
 import ServiceManagementPage from './pages/ServiceManagementPage';
+// Booking pages
+import {
+  CustomerBookingsPage,
+  ProviderBookingsPage,
+  BookingDetailPage,
+  ProviderAvailabilityPage,
+  BookServicePage
+} from './pages/booking';
 
 
 
@@ -135,9 +143,19 @@ function App() {
         />
 
         {/* Service Detail Route */}
-        <Route 
-          path="/services/:id" 
-          element={<ServiceDetailPage />} 
+        <Route
+          path="/services/:id"
+          element={<ServiceDetailPage />}
+        />
+
+        {/* Book Service Route */}
+        <Route
+          path="/book/:serviceId"
+          element={
+            <ProtectedRoute>
+              <BookServicePage />
+            </ProtectedRoute>
+          }
         />
 
         {/* Status/Development Routes */}
@@ -167,13 +185,31 @@ function App() {
         />
 
         {/* Protected Customer Routes */}
-        <Route 
-          path="/customer/dashboard" 
+        <Route
+          path="/customer/dashboard"
           element={
             <CustomerRoute>
               <CustomerDashboard />
             </CustomerRoute>
-          } 
+          }
+        />
+
+        <Route
+          path="/customer/bookings"
+          element={
+            <CustomerRoute>
+              <CustomerBookingsPage />
+            </CustomerRoute>
+          }
+        />
+
+        <Route
+          path="/customer/bookings/:bookingId"
+          element={
+            <CustomerRoute>
+              <BookingDetailPage />
+            </CustomerRoute>
+          }
         />
 
         {/* Protected Provider Routes */}
@@ -186,13 +222,40 @@ function App() {
           } 
         />
         
-        <Route 
-          path="/provider/services" 
+        <Route
+          path="/provider/services"
           element={
             <ProviderRoute>
               <ServiceManagementPage />
             </ProviderRoute>
-          } 
+          }
+        />
+
+        <Route
+          path="/provider/bookings"
+          element={
+            <ProviderRoute>
+              <ProviderBookingsPage />
+            </ProviderRoute>
+          }
+        />
+
+        <Route
+          path="/provider/bookings/:bookingId"
+          element={
+            <ProviderRoute>
+              <BookingDetailPage />
+            </ProviderRoute>
+          }
+        />
+
+        <Route
+          path="/provider/availability"
+          element={
+            <ProviderRoute>
+              <ProviderAvailabilityPage />
+            </ProviderRoute>
+          }
         />
 
         {/* Protected Admin Routes */}

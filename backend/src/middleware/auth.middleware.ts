@@ -22,6 +22,7 @@ export interface JWTPayload {
   lastName: string;
   isEmailVerified: boolean;
   accountStatus: string;
+  tokenVersion?: number;
   iat: number;
   exp: number;
 }
@@ -42,16 +43,21 @@ export const authenticate = asyncHandler(async (req: Request, _res: Response, ne
       throw new ApiError(401, 'Access token is required for authentication');
     }
 
-    // Verify and decode the token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as JWTPayload;
-    
+    // Verify and decode the token using ACCESS token secret
+    const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET as string) as JWTPayload;
+
     // Find user and check if still exists and active
     const user = await User.findById(decoded.id)
-      .select('+password') // Include password for security checks
+      .select('+password +tokenVersion +refreshTokens') // Include fields for security checks
       .populate('loyaltySystem.referredBy', 'firstName lastName email');
 
     if (!user) {
       throw new ApiError(401, 'User associated with this token no longer exists');
+    }
+
+    // Check token version for invalidation
+    if (decoded.tokenVersion && decoded.tokenVersion !== (user.tokenVersion || 1)) {
+      throw new ApiError(401, 'Token has been invalidated');
     }
 
     // Check if user account is active
@@ -74,9 +80,8 @@ export const authenticate = asyncHandler(async (req: Request, _res: Response, ne
       throw new ApiError(401, 'Password was recently changed. Please login again');
     }
 
-    // Update last active timestamp
-    user.socialProfiles.lastActiveAt = new Date();
-    await user.save({ validateBeforeSave: false });
+    // Update security tracking
+    await user.updateSecurityInfo(req);
 
     // Attach user to request object (excluding sensitive fields)
     req.user = user;

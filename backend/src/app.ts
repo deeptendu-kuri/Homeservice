@@ -16,6 +16,10 @@ import { errorHandler } from './middleware/error.middleware';
 // Load environment variables
 dotenv.config({ path: path.join(__dirname, '../.env') });
 
+// Perform security audit on startup
+import securityValidator from './utils/securityValidator';
+securityValidator.performSecurityAudit();
+
 // Create Express application
 const app: Application = express();
 
@@ -40,7 +44,15 @@ const corsOptions = {
   origin: true, // Allow all origins in development
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'X-Requested-With',
+    'skipAuth', // Allow skipAuth header for AuthService
+    'skipauth', // Allow lowercase variant
+    'x-csrf-token', // Allow CSRF token header
+    'x-2fa-token' // Allow 2FA token header
+  ],
   exposedHeaders: ['X-Total-Count', 'X-Page', 'X-Page-Size'],
   maxAge: 86400 // 24 hours
 };

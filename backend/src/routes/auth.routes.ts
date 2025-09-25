@@ -86,14 +86,14 @@ router.patch('/me',
   authController.updateProfile
 );
 
-// Logout Routes
+// Logout Routes - Use optional auth (logout should work even with expired tokens)
 router.post('/logout',
-  authMiddleware.authenticate,
+  authMiddleware.optionalAuth,
   authController.logout
 );
 
 router.post('/logout-all',
-  authMiddleware.authenticate,
+  authMiddleware.optionalAuth,
   authController.logoutAll
 );
 

@@ -263,17 +263,22 @@ export const registerCustomer = asyncHandler(async (req: Request, res: Response)
         await user.addLoyaltyPoints(100, 'bonus', 'Welcome to the platform!', undefined);
       }
 
+      // ✅ DISABLED EMAIL VERIFICATION FOR NOW
       // Generate verification token
-      const verificationToken = user.generateVerificationToken();
-      await user.save();
+      // const verificationToken = user.generateVerificationToken();
+      // await user.save();
 
       // Send verification email
-      try {
-        await sendVerificationEmail(user.email, user.firstName, verificationToken);
-      } catch (emailError) {
-        console.error('Failed to send verification email:', emailError);
-        // Don't fail registration if email fails
-      }
+      // try {
+      //   await sendVerificationEmail(user.email, user.firstName, verificationToken);
+      // } catch (emailError) {
+      //   console.error('Failed to send verification email:', emailError);
+      //   // Don't fail registration if email fails
+      // }
+
+      // ✅ AUTO-VERIFY EMAIL FOR NOW (SKIP EMAIL VERIFICATION)
+      user.isEmailVerified = true;
+      await user.save();
 
       // Generate tokens for immediate login (optional - some apps require email verification first)
       const { accessToken, refreshToken } = generateTokens(user);
@@ -283,7 +288,7 @@ export const registerCustomer = asyncHandler(async (req: Request, res: Response)
 
       res.status(201).json({
         success: true,
-        message: 'Customer registration successful! Please check your email for verification instructions.',
+        message: 'Customer registration successful! Welcome to the platform!', // ✅ Updated message
         data: {
           user: {
             id: user._id,
@@ -301,7 +306,7 @@ export const registerCustomer = asyncHandler(async (req: Request, res: Response)
             accessToken,
             refreshToken
           },
-          requiresEmailVerification: !user.isEmailVerified
+          requiresEmailVerification: false // ✅ Always false now
         }
       });
   } catch (error) {
@@ -312,6 +317,10 @@ export const registerCustomer = asyncHandler(async (req: Request, res: Response)
 // Provider Registration
 export const registerProvider = asyncHandler(async (req: Request, res: Response) => {
   try {
+      console.log('🚀 [registerProvider] Starting provider registration');
+      console.log('🔍 [registerProvider] Request body:', JSON.stringify(req.body, null, 2));
+      console.log('🔍 [registerProvider] Request files:', req.files);
+
       const {
         firstName,
         lastName,
@@ -626,16 +635,21 @@ export const registerProvider = asyncHandler(async (req: Request, res: Response)
       // Award provider welcome bonus
       await user.addLoyaltyPoints(500, 'bonus', 'Welcome to our provider community!', undefined);
 
+      // ✅ DISABLED EMAIL VERIFICATION FOR NOW
       // Generate verification token
-      const verificationToken = user.generateVerificationToken();
-      await user.save();
+      // const verificationToken = user.generateVerificationToken();
+      // await user.save();
 
       // Send verification email
-      try {
-        await sendVerificationEmail(user.email, user.firstName, verificationToken);
-      } catch (emailError) {
-        console.error('Failed to send verification email:', emailError);
-      }
+      // try {
+      //   await sendVerificationEmail(user.email, user.firstName, verificationToken);
+      // } catch (emailError) {
+      //   console.error('Failed to send verification email:', emailError);
+      // }
+
+      // ✅ AUTO-VERIFY EMAIL FOR NOW (SKIP EMAIL VERIFICATION)
+      user.isEmailVerified = true;
+      await user.save();
 
       // Generate tokens
       const { accessToken, refreshToken } = generateTokens(user);
@@ -645,7 +659,7 @@ export const registerProvider = asyncHandler(async (req: Request, res: Response)
 
       res.status(201).json({
         success: true,
-        message: 'Provider registration successful! Please check your email for verification instructions and complete your profile setup.',
+        message: 'Provider registration successful! Welcome to our provider community!', // ✅ Updated message - email verification disabled
         data: {
           user: {
             id: user._id,
@@ -663,7 +677,7 @@ export const registerProvider = asyncHandler(async (req: Request, res: Response)
             id: providerProfile._id,
             businessName: providerProfile.businessInfo.businessName,
             completionPercentage: providerProfile.completionPercentage,
-            verificationStatus: providerProfile.verificationStatus.overall,
+            verificationStatus: providerProfile.verificationStatus,
             servicesCount: providerProfile.services.length
           },
           tokens: {
@@ -899,7 +913,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
         id: providerProfile._id,
         businessName: providerProfile.businessInfo.businessName,
         completionPercentage: providerProfile.completionPercentage,
-        verificationStatus: providerProfile.verificationStatus.overall,
+        verificationStatus: providerProfile.verificationStatus,
         servicesCount: providerProfile.services.length,
         averageRating: providerProfile.reviewsData.averageRating,
         totalEarnings: providerProfile.analytics.revenueStats.totalEarnings
@@ -1019,16 +1033,17 @@ export const refreshToken = asyncHandler(async (req: Request, res: Response) => 
 
 // Logout
 export const logout = asyncHandler(async (req: Request, res: Response) => {
-  const user = req.user!;
+  const user = req.user; // May be null with optionalAuth
   const refreshToken = req.cookies?.refreshToken;
 
-  if (refreshToken) {
+  // Only remove refresh token if user is authenticated
+  if (user && refreshToken) {
     // Remove refresh token from user's tokens array
     user.refreshTokens = user.refreshTokens.filter(token => token !== refreshToken);
     await user.save({ validateBeforeSave: false });
   }
 
-  // Clear refresh token cookie
+  // Always clear refresh token cookie (even if user is not authenticated)
   res.clearCookie('refreshToken');
 
   res.json({
@@ -1039,13 +1054,16 @@ export const logout = asyncHandler(async (req: Request, res: Response) => {
 
 // Logout from all devices
 export const logoutAll = asyncHandler(async (req: Request, res: Response) => {
-  const user = req.user!;
+  const user = req.user; // May be null with optionalAuth
 
-  // Clear all refresh tokens
-  user.refreshTokens = [];
-  await user.save({ validateBeforeSave: false });
+  // Only clear tokens if user is authenticated
+  if (user) {
+    // Clear all refresh tokens
+    user.refreshTokens = [];
+    await user.save({ validateBeforeSave: false });
+  }
 
-  // Clear refresh token cookie
+  // Always clear refresh token cookie (even if user is not authenticated)
   res.clearCookie('refreshToken');
 
   res.json({

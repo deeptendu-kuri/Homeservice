@@ -11,13 +11,11 @@ const loginSchema = z.object({
   email: z.string()
     .email('Please enter a valid email address')
     .toLowerCase(),
-  
+
   password: z.string()
     .min(1, 'Password is required'),
-  
+
   rememberMe: z.boolean().default(false),
-  
-  loginAs: z.enum(['customer', 'provider', 'admin']).default('customer'),
 });
 
 type LoginForm = z.infer<typeof loginSchema>;
@@ -53,12 +51,10 @@ const LoginFormComponent: React.FC = () => {
       email: '',
       password: '',
       rememberMe: false,
-      loginAs: 'customer',
     },
   });
 
   const watchedEmail = watch('email');
-  const watchedRole = watch('loginAs');
 
   // Clear auth store errors when component mounts or email changes
   useEffect(() => {
@@ -92,7 +88,6 @@ const LoginFormComponent: React.FC = () => {
         email: data.email,
         password: data.password,
         rememberMe: data.rememberMe,
-        loginAs: data.loginAs,
       });
       
       setIsSubmitted(true);
@@ -171,35 +166,6 @@ const LoginFormComponent: React.FC = () => {
           )}
 
           <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
-            {/* Role Selection */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Login as:
-              </label>
-              <div className="grid grid-cols-3 gap-2">
-                {[
-                  { value: 'customer', label: 'Customer', desc: 'Book services' },
-                  { value: 'provider', label: 'Provider', desc: 'Offer services' },
-                  { value: 'admin', label: 'Admin', desc: 'Manage platform' }
-                ].map((role) => (
-                  <button
-                    key={role.value}
-                    type="button"
-                    onClick={() => setValue('loginAs', role.value as 'customer' | 'provider' | 'admin')}
-                    className={`px-3 py-3 text-sm font-medium rounded-lg border transition-all ${
-                      watchedRole === role.value
-                        ? 'bg-blue-600 text-white border-blue-600 shadow-md'
-                        : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'
-                    }`}
-                  >
-                    <div className="text-center">
-                      <div className="font-semibold">{role.label}</div>
-                      <div className="text-xs opacity-80">{role.desc}</div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
 
             {/* Email */}
             <div>

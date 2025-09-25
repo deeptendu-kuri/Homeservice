@@ -216,6 +216,7 @@ export const getTrendingServices = asyncHandler(async (req: Request, res: Respon
 
     const trendingServices = await Service.find({
       isActive: true,
+      status: 'active', // ✅ SECURITY FIX: Only show approved services in trending
       ...dateFilter
     })
     .populate('provider', 'firstName lastName avatar rating')
@@ -347,10 +348,12 @@ function buildServiceSearchQuery(filters: SearchFilters) {
   let query: any = {};
   let countQuery: any = {};
 
-  // Base filter - only active services
+  // Base filter - only active services with approved status
   if (filters.isActive !== false) {
     query.isActive = true;
+    query.status = 'active'; // ✅ SECURITY FIX: Only show approved services to customers
     countQuery.isActive = true;
+    countQuery.status = 'active';
   }
 
   // Text search
@@ -558,11 +561,15 @@ export const getServiceById = asyncHandler(async (req: Request, res: Response) =
   const { id } = req.params;
   
   try {
-    // First get the service
-    const service = await Service.findById(id).lean();
-    
+    // First get the service - only show active approved services to customers
+    const service = await Service.findOne({
+      _id: id,
+      isActive: true,
+      status: 'active' // ✅ SECURITY FIX: Only allow customers to view approved services
+    }).lean();
+
     if (!service) {
-      throw new ApiError(404, 'Service not found');
+      throw new ApiError(404, 'Service not found or not available');
     }
 
     // Get provider details from ProviderProfile and User
@@ -651,7 +658,7 @@ export const getPopularServices = asyncHandler(async (req: Request, res: Respons
   const { limit = 20, category } = req.query;
   
   try {
-    let query: any = { isActive: true, isPopular: true };
+    let query: any = { isActive: true, status: 'active', isPopular: true }; // ✅ SECURITY FIX: Only show approved services in popular
     if (category) {
       query.category = category;
     }

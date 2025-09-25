@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
+import { bookingService } from '../../services/BookingService';
 import { 
   User, 
   Heart, 
@@ -34,13 +35,27 @@ interface StatCard {
 }
 
 interface RecentBooking {
-  id: string;
+  _id: string;
+  bookingNumber: string;
   serviceName: string;
   providerName: string;
-  date: string;
-  status: 'completed' | 'upcoming' | 'cancelled';
+  scheduledDate: string;
+  status: 'pending' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled';
   rating?: number;
-  price: number;
+  totalAmount: number;
+  service?: {
+    name: string;
+  };
+  provider?: {
+    firstName: string;
+    lastName: string;
+    businessInfo?: {
+      businessName: string;
+    };
+  };
+  pricing?: {
+    totalAmount: number;
+  };
 }
 
 interface FavoriteProvider {
@@ -55,6 +70,8 @@ interface FavoriteProvider {
 
 const CustomerDashboard: React.FC = () => {
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [recentBookings, setRecentBookings] = useState<RecentBooking[]>([]);
+  const [loadingBookings, setLoadingBookings] = useState(true);
   const { user, customerProfile, logout } = useAuthStore();
 
   // Mock data - in real app, this would come from API
@@ -91,34 +108,6 @@ const CustomerDashboard: React.FC = () => {
     }
   ]);
 
-  const [recentBookings] = useState<RecentBooking[]>([
-    {
-      id: '1',
-      serviceName: 'Deep House Cleaning',
-      providerName: 'Sarah\'s Cleaning Co',
-      date: '2024-01-15',
-      status: 'completed',
-      rating: 5,
-      price: 120
-    },
-    {
-      id: '2',
-      serviceName: 'Hair Styling',
-      providerName: 'Bella Beauty Salon',
-      date: '2024-01-20',
-      status: 'upcoming',
-      price: 85
-    },
-    {
-      id: '3',
-      serviceName: 'Personal Training',
-      providerName: 'FitLife Gym',
-      date: '2024-01-10',
-      status: 'completed',
-      rating: 4,
-      price: 60
-    }
-  ]);
 
   const [favoriteProviders] = useState<FavoriteProvider[]>([
     {
@@ -147,6 +136,44 @@ const CustomerDashboard: React.FC = () => {
     }
   ]);
 
+  // Fetch recent bookings
+  useEffect(() => {
+    const fetchRecentBookings = async () => {
+      try {
+        setLoadingBookings(true);
+        const response = await bookingService.getCustomerBookings({
+          limit: 3,
+          sortBy: 'createdAt',
+          sortOrder: 'desc'
+        });
+
+        if (response.success && response.data.bookings) {
+          const transformedBookings = response.data.bookings.map((booking: any) => ({
+            _id: booking._id,
+            bookingNumber: booking.bookingNumber,
+            serviceName: booking.service?.name || 'Service',
+            providerName: booking.provider?.businessInfo?.businessName ||
+                         `${booking.provider?.firstName} ${booking.provider?.lastName}` || 'Provider',
+            scheduledDate: booking.scheduledDate,
+            status: booking.status,
+            totalAmount: booking.pricing?.totalAmount || 0,
+            service: booking.service,
+            provider: booking.provider,
+            pricing: booking.pricing
+          }));
+          setRecentBookings(transformedBookings);
+        }
+      } catch (error) {
+        console.error('Error fetching recent bookings:', error);
+        setRecentBookings([]);
+      } finally {
+        setLoadingBookings(false);
+      }
+    };
+
+    fetchRecentBookings();
+  }, []);
+
   const handleLogout = () => {
     logout();
   };
@@ -162,12 +189,32 @@ const CustomerDashboard: React.FC = () => {
     switch (status) {
       case 'completed':
         return 'text-green-600 bg-green-100';
-      case 'upcoming':
+      case 'confirmed':
+      case 'in_progress':
         return 'text-blue-600 bg-blue-100';
+      case 'pending':
+        return 'text-yellow-600 bg-yellow-100';
       case 'cancelled':
         return 'text-red-600 bg-red-100';
       default:
         return 'text-gray-600 bg-gray-100';
+    }
+  };
+
+  const getStatusDisplayText = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return 'Pending';
+      case 'confirmed':
+        return 'Upcoming';
+      case 'in_progress':
+        return 'In Progress';
+      case 'completed':
+        return 'Completed';
+      case 'cancelled':
+        return 'Cancelled';
+      default:
+        return status;
     }
   };
 
@@ -328,25 +375,30 @@ const CustomerDashboard: React.FC = () => {
               </div>
             </div>
             <div className="p-6">
-              {recentBookings.length > 0 ? (
+              {loadingBookings ? (
+                <div className="flex items-center justify-center py-6">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                  <span className="ml-2 text-gray-600">Loading bookings...</span>
+                </div>
+              ) : recentBookings.length > 0 ? (
                 <div className="space-y-4">
                   {recentBookings.map((booking) => (
-                    <div key={booking.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                    <div key={booking._id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
                       <div className="flex-1">
                         <h4 className="text-sm font-medium text-gray-900">{booking.serviceName}</h4>
                         <p className="text-sm text-gray-500">{booking.providerName}</p>
                         <div className="flex items-center mt-1 space-x-4">
                           <div className="flex items-center text-xs text-gray-500">
                             <Calendar className="mr-1 h-3 w-3" />
-                            {formatDate(booking.date)}
+                            {formatDate(booking.scheduledDate)}
                           </div>
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(booking.status)}`}>
-                            {booking.status}
+                            {getStatusDisplayText(booking.status)}
                           </span>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-medium text-gray-900">${booking.price}</p>
+                        <p className="text-sm font-medium text-gray-900">${booking.totalAmount}</p>
                         {booking.rating && (
                           <div className="flex items-center">
                             <Star className="h-3 w-3 text-yellow-400 fill-current" />

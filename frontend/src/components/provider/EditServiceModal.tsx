@@ -7,7 +7,7 @@ import {
   AlertCircle,
   Loader2
 } from 'lucide-react';
-import { authenticatedFetch } from '../../stores/authStore';
+import authService from '../../services/AuthService';
 
 interface EditServiceModalProps {
   isOpen: boolean;
@@ -109,13 +109,8 @@ export const EditServiceModal: React.FC<EditServiceModalProps> = ({
 
     setIsLoadingService(true);
     try {
-      const response = await authenticatedFetch(`/api/provider/services/${serviceId}`);
+      const data = await authService.get<{success: boolean, data: {service: any}}>(`/provider/services/${serviceId}`);
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const data = await response.json();
       if (data.success && data.data) {
         const service = data.data.service;
 
@@ -216,19 +211,8 @@ export const EditServiceModal: React.FC<EditServiceModalProps> = ({
 
     setIsLoading(true);
     try {
-      const response = await authenticatedFetch(`/api/provider/services/${serviceId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(formData)
-      });
+      const data = await authService.put<{success: boolean}>(`/provider/services/${serviceId}`, formData);
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const data = await response.json();
       if (data.success) {
         onServiceUpdated();
         onClose();
