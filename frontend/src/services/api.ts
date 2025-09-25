@@ -25,6 +25,9 @@ const updateAuthTokens = (tokens: any) => {
       const parsed = JSON.parse(stored);
       parsed.state.tokens = tokens;
       localStorage.setItem('auth-storage', JSON.stringify(parsed));
+
+      // Dispatch custom event to notify store of token update
+      window.dispatchEvent(new CustomEvent('auth-tokens-updated', { detail: tokens }));
     }
   } catch (error) {
     console.error('Failed to update stored tokens:', error);
@@ -118,11 +121,12 @@ api.interceptors.response.use(
 
           const newTokens = response.data.data.tokens;
           updateAuthTokens(newTokens);
-          
+
           api.defaults.headers.common.Authorization = `Bearer ${newTokens.accessToken}`;
+          originalRequest.headers.Authorization = `Bearer ${newTokens.accessToken}`;
           onRefreshed(newTokens.accessToken);
-          
-          return axios(originalRequest);
+
+          return api(originalRequest);
         }
       } catch (refreshError) {
         console.error('Token refresh failed:', refreshError);
@@ -139,10 +143,10 @@ api.interceptors.response.use(
 
     // Handle other error types
     if (error.response?.status === 403) {
-      console.error('Access forbidden:', error.response.data);
+      console.error('Access forbidden:', error.response?.data);
     }
 
-    if (error.response?.status >= 500) {
+    if (error.response && error.response.status >= 500) {
       console.error('Server error:', error.response.data);
     }
 

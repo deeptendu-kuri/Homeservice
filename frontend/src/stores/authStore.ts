@@ -63,6 +63,12 @@ export interface CustomerProfile {
       expiryDate: string;
     };
   };
+  // Add missing loyaltySystem property
+  loyaltySystem: {
+    points: number;
+    tier: string;
+    benefits: string[];
+  };
 }
 
 export interface ProviderProfile {
@@ -88,6 +94,27 @@ export interface ProviderProfile {
     category: string;
     status: 'active' | 'inactive' | 'pending_review';
   }>;
+  // Add missing properties for provider
+  earnings?: {
+    total: number;
+    thisMonth: number;
+    pending: number;
+    totalEarned: number;
+    availableBalance: number;
+    pendingBalance: number;
+  };
+  ratings?: {
+    average: number;
+    count: number;
+    distribution: { [key: number]: number };
+  };
+  analytics?: {
+    views: number;
+    bookings: number;
+    completionRate: number;
+    profileViews: number;
+    repeatCustomers: number;
+  };
 }
 
 export interface AuthError {
@@ -137,7 +164,8 @@ export interface AuthState {
 // Create the Zustand store with AuthService delegation
 export const useAuthStore = create<AuthState>()(
   persist(
-    immer((set, get) => ({
+    immer((set, get) => {
+      const store = {
       // Initial state
       user: null,
       customerProfile: null,
@@ -573,18 +601,48 @@ export const useAuthStore = create<AuthState>()(
 
         if (tokens?.accessToken) {
           try {
+            // First try to get current user
             await get().getCurrentUser();
             set((state) => {
               state.isAuthenticated = true;
               state.isInitialized = true;
             });
-          } catch (error) {
+          } catch (error: any) {
             console.error('Failed to initialize auth:', error);
-            // Clear invalid tokens
+
+            // If it's a 401 and we have refresh token, try to refresh
+            if (error?.response?.status === 401 && tokens?.refreshToken) {
+              try {
+                const authService = (await import('../services/AuthService')).default;
+                const response = await authService.post('/auth/refresh-token', {
+                  refreshToken: tokens.refreshToken
+                });
+
+                const newTokens = (response as any).data.tokens;
+                set((state) => {
+                  state.tokens = newTokens;
+                });
+
+                // Now try to get user again with new token
+                await get().getCurrentUser();
+                set((state) => {
+                  state.isAuthenticated = true;
+                  state.isInitialized = true;
+                });
+                return;
+              } catch (refreshError) {
+                console.error('Token refresh failed during init:', refreshError);
+              }
+            }
+
+            // Only clear tokens if refresh also failed
             set((state) => {
               state.tokens = null;
               state.isAuthenticated = false;
               state.isInitialized = true;
+              state.user = null;
+              state.customerProfile = null;
+              state.providerProfile = null;
             });
           }
         } else {
@@ -619,7 +677,29 @@ export const useAuthStore = create<AuthState>()(
           state.providerProfile = profile;
         });
       },
-    })),
+
+      // Initialize event listener for token updates from API service
+      _initTokenListener: () => {
+        if (typeof window !== 'undefined') {
+          window.addEventListener('auth-tokens-updated', ((event: CustomEvent) => {
+            const newTokens = event.detail;
+            if (newTokens) {
+              set((state) => {
+                state.tokens = newTokens;
+              });
+            }
+          }) as EventListener);
+        }
+      },
+      };
+
+      // Initialize token listener when store is created
+      if (typeof window !== 'undefined') {
+        setTimeout(() => store._initTokenListener(), 0);
+      }
+
+      return store;
+    }),
     {
       name: 'auth-storage',
       storage: createJSONStorage(() => localStorage),

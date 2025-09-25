@@ -582,7 +582,7 @@ const AdminDashboard: React.FC = () => {
 
       const response = await authService.post(endpoint, body);
 
-      if (response.success) {
+      if ((response as any).success) {
         await fetchProviders();
         await fetchDashboardStats();
         if (selectedProvider && selectedProvider._id === id) {
@@ -600,7 +600,7 @@ const AdminDashboard: React.FC = () => {
     try {
       const response = await authService.patch(`/admin/services/${serviceId}/status`, { status: newStatus });
 
-      if (response.success) {
+      if ((response as any).success) {
         // Refresh relevant data
         if (showProvidersServices) await fetchProvidersWithServices();
         if (showServices) await fetchServices();
@@ -638,11 +638,11 @@ const AdminDashboard: React.FC = () => {
         reason: action === 'reject' ? 'Batch rejection by admin' : undefined
       });
 
-      if (response.success) {
+      if ((response as any).success) {
         await fetchPendingServices();
         await fetchProvidersWithServices();
         setSelectedServices(new Set());
-        alert(`Successfully ${action}d ${response.data.modified} services`);
+        alert(`Successfully ${action}d ${(response as any).data.modified} services`);
       }
     } catch (error) {
       console.error(`Bulk ${action} failed:`, error);

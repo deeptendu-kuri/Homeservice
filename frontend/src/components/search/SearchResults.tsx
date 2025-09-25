@@ -113,11 +113,11 @@ const SearchResults: React.FC<SearchResultsProps> = ({
             <p className="text-sm text-gray-700">
               Showing{' '}
               <span className="font-medium">
-                {(currentPage - 1) * filters.limit + 1}
+                {(currentPage - 1) * (filters.limit || 10) + 1}
               </span>{' '}
               to{' '}
               <span className="font-medium">
-                {Math.min(currentPage * filters.limit, totalCount)}
+                {Math.min(currentPage * (filters.limit || 10), totalCount)}
               </span>{' '}
               of{' '}
               <span className="font-medium">{totalCount}</span> results

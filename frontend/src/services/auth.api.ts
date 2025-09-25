@@ -1,11 +1,11 @@
-import { 
-  User, 
-  CustomerProfile, 
-  ProviderProfile, 
-  AuthTokens, 
-  LoginCredentials, 
-  RegisterCustomerData, 
-  RegisterProviderData 
+import type {
+  User,
+  CustomerProfile,
+  ProviderProfile,
+  AuthTokens,
+  LoginCredentials,
+  RegisterCustomerData,
+  RegisterProviderData
 } from '../stores/authStore';
 
 // API Response Types

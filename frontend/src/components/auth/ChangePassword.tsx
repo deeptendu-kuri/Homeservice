@@ -60,7 +60,7 @@ const ChangePassword: React.FC<ChangePasswordProps> = ({ onSuccess, onCancel }) 
     try {
       clearErrors();
       
-      await changePassword(data.currentPassword, data.newPassword);
+      await changePassword(data.currentPassword, data.newPassword, data.confirmPassword);
       
       setIsSuccess(true);
       reset();

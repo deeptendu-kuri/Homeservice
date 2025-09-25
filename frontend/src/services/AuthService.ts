@@ -17,6 +17,11 @@ export interface AuthUser {
   role: 'customer' | 'provider' | 'admin';
   isEmailVerified: boolean;
   accountStatus: string;
+  loyaltySystem?: {
+    points: number;
+    tier: string;
+    benefits: string[];
+  };
 }
 
 export interface LoginCredentials {
@@ -69,7 +74,7 @@ export interface RegisterResponse {
  * security monitoring, and comprehensive error handling.
  */
 class AuthService {
-  private httpClient: typeof axios;
+  private httpClient: ReturnType<typeof axios.create>;
   private refreshPromise: Promise<void> | null = null;
   private isRefreshing = false;
   private isLoggingOut = false;
@@ -691,7 +696,7 @@ class AuthService {
   /**
    * Get the underlying axios instance for advanced usage
    */
-  getHttpClient(): typeof axios {
+  getHttpClient(): ReturnType<typeof axios.create> {
     return this.httpClient;
   }
 

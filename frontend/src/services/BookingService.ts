@@ -76,6 +76,7 @@ export interface Booking {
     subtotal: number;
     taxes: number;
     total: number;
+    totalAmount: number; // Add missing totalAmount property
     currency: string;
   };
 
@@ -145,6 +146,17 @@ export interface Booking {
     rating: number;
     review?: string;
     ratedAt: string;
+  };
+
+  // Provider Response
+  providerResponse?: {
+    status: 'pending' | 'accepted' | 'rejected';
+    message?: string;
+    estimatedArrival?: string;
+    notes?: string;
+    respondedAt?: string;
+    completedAt?: string;
+    arrivalTime?: string;
   };
 
   // Timestamps

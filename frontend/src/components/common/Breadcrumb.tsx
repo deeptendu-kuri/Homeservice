@@ -81,19 +81,19 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, className = '' }) => {
           break;
         case 'register':
           label = 'Register';
-          href = isLast ? undefined : href;
+          href = isLast ? '' : (href || '');
           break;
         case 'verification-pending':
           label = 'Verification Pending';
-          href = undefined;
+          href = '';
           break;
         case 'account-suspended':
           label = 'Account Suspended';
-          href = undefined;
+          href = '';
           break;
         case 'verify-email-required':
           label = 'Email Verification Required';
-          href = undefined;
+          href = '';
           break;
         default:
           // Capitalize and remove hyphens/underscores
