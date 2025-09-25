@@ -342,7 +342,7 @@ const BookingDetail: React.FC<BookingDetailProps> = ({ userType, className }) =>
                   <h3 className="text-sm font-medium text-green-800">Service Completed</h3>
                   <p className="text-sm text-green-700 mt-1">
                     This service has been successfully completed.
-                    {currentBooking.providerResponse.completedAt && (
+                    {currentBooking.providerResponse?.completedAt && (
                       <span className="ml-1">
                         Completed on {new Date(currentBooking.providerResponse.completedAt).toLocaleDateString()}
                       </span>
@@ -362,7 +362,7 @@ const BookingDetail: React.FC<BookingDetailProps> = ({ userType, className }) =>
                   <h3 className="text-sm font-medium text-blue-800">Service In Progress</h3>
                   <p className="text-sm text-blue-700 mt-1">
                     This service is currently being performed.
-                    {currentBooking.providerResponse.arrivalTime && (
+                    {currentBooking.providerResponse?.arrivalTime && (
                       <span className="ml-1">
                         Started at {new Date(currentBooking.providerResponse.arrivalTime).toLocaleTimeString()}
                       </span>

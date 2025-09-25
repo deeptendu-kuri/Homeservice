@@ -666,7 +666,7 @@ const AdminDashboard: React.FC = () => {
     try {
       const response = await authService.patch(`/admin/users/${userId}/status`, { status: newStatus });
 
-      if (response.ok) {
+      if ((response as any).ok) {
         await fetchUsers();
       }
     } catch (error) {

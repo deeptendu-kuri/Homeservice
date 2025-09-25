@@ -21,6 +21,8 @@ export interface AuthUser {
     points: number;
     tier: string;
     benefits: string[];
+    totalCoins: number;
+    currentStreak: number;
   };
 }
 
