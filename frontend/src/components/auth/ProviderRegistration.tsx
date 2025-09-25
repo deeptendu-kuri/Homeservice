@@ -290,7 +290,10 @@ const ProviderRegistration: React.FC = () => {
       });
 
       console.log('🔄 Calling registerProvider...');
-      await registerProvider(data, formData);
+      await registerProvider({
+        ...data,
+        role: 'provider' as const // ✅ FIXED: Add role field for type compatibility
+      }, formData);
       console.log('✅ Registration successful, navigating to dashboard...');
       navigate('/provider/dashboard');
     } catch (error) {
@@ -897,7 +900,7 @@ const ServicesStep = ({ register, formErrors, services, addService, removeServic
     </div>
 
     <div className="space-y-6">
-      {services.map((_, index: number) => (
+      {services.map((_: any, index: number) => (
         <div key={index} className="p-4 border border-gray-200 rounded-lg">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-md font-medium text-gray-900">Service {index + 1}</h3>

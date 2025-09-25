@@ -134,6 +134,7 @@ const CustomerRegistration: React.FC = () => {
         lastName: data.lastName,
         email: data.email,
         password: data.password,
+        confirmPassword: data.password, // ✅ FIXED: Add confirmPassword field for type compatibility
         role: 'customer' as const, // ✅ FIXED: Add role field to route to correct endpoint
         phone: data.phone,
         dateOfBirth: data.dateOfBirth,

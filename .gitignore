@@ -43,6 +43,17 @@ desktop.ini
 coverage/
 .nyc_output/
 *.lcov
+**/__tests__/
+**/*.test.js
+**/*.test.jsx
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.js
+**/*.spec.jsx
+**/*.spec.ts
+**/*.spec.tsx
+test-results/
+jest-output/
 
 # Temporary files
 tmp/

@@ -154,7 +154,7 @@ api.interceptors.response.use(
 export const apiService = {
   // Health check
   checkHealth: async () => {
-    const response = await axios.get(`http://localhost:5001/health`);
+    const response = await axios.get(`${API_URL.replace('/api', '')}/health`);
     return response.data;
   },
 

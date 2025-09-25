@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { CheckCircle, XCircle, AlertCircle, RefreshCw, Server, Database, Cloud, Mail, CreditCard, Wifi } from 'lucide-react';
 import { apiService } from '../services/api';
+import { API_BASE_URL } from '../config/api';
 
 interface ServiceStatus {
   name: string;
@@ -250,20 +251,20 @@ const StatusDashboard: React.FC = () => {
               <ul className="space-y-1 text-sm">
                 <li>
                   <span className="text-gray-600">Health Check:</span>{' '}
-                  <a href="http://localhost:5000/health" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                    http://localhost:5000/health
+                  <a href={`${API_BASE_URL.replace('/api', '')}/health`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                    {API_BASE_URL.replace('/api', '')}/health
                   </a>
                 </li>
                 <li>
                   <span className="text-gray-600">API Test:</span>{' '}
-                  <a href="http://localhost:5000/api/test" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                    http://localhost:5000/api/test
+                  <a href={`${API_BASE_URL}/test`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                    {API_BASE_URL}/test
                   </a>
                 </li>
                 <li>
                   <span className="text-gray-600">Verify Services:</span>{' '}
-                  <a href="http://localhost:5000/api/verify" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                    http://localhost:5000/api/verify
+                  <a href={`${API_BASE_URL}/verify`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                    {API_BASE_URL}/verify
                   </a>
                 </li>
               </ul>

@@ -134,29 +134,29 @@ export const ProviderRoute: React.FC<Omit<ProtectedRouteProps, 'allowedRoles'> &
   
   // Check provider verification status
   if (requireVerification && user?.role === 'provider' && providerProfile) {
-    if (providerProfile.verificationStatus === 'pending') {
+    if (providerProfile.verificationStatus.overall === 'pending') {
       return (
-        <Navigate 
-          to="/provider/verification-pending" 
-          replace 
+        <Navigate
+          to="/provider/verification-pending"
+          replace
         />
       );
     }
-    
-    if (providerProfile.verificationStatus === 'rejected') {
+
+    if (providerProfile.verificationStatus.overall === 'rejected') {
       return (
-        <Navigate 
-          to="/provider/verification-rejected" 
-          replace 
+        <Navigate
+          to="/provider/verification-rejected"
+          replace
         />
       );
     }
-    
-    if (providerProfile.verificationStatus === 'suspended') {
+
+    if (providerProfile.verificationStatus.overall === 'suspended') {
       return (
-        <Navigate 
-          to="/provider/suspended" 
-          replace 
+        <Navigate
+          to="/provider/suspended"
+          replace
         />
       );
     }

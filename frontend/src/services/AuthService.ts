@@ -49,6 +49,8 @@ export interface LoginResponse {
   user: AuthUser;
   tokens: AuthTokens;
   profile?: any;
+  customerProfile?: any;
+  providerProfile?: any;
   redirectUrl?: string;
   requiresEmailVerification?: boolean;
 }
@@ -56,7 +58,9 @@ export interface LoginResponse {
 export interface RegisterResponse {
   user: AuthUser;
   tokens: AuthTokens;
-  profile: any;
+  profile?: any;
+  customerProfile?: any;
+  providerProfile?: any;
 }
 
 /**
@@ -379,7 +383,7 @@ class AuthService {
   /**
    * Get current authenticated user
    */
-  async getCurrentUser(): Promise<AuthResponse<{ user: AuthUser; profile?: any }>> {
+  async getCurrentUser(): Promise<AuthResponse<{ user: AuthUser; profile?: any; customerProfile?: any; providerProfile?: any }>> {
     try {
       const response = await this.httpClient.get<AuthResponse<{ user: AuthUser; profile?: any }>>('/auth/me');
       return response.data;

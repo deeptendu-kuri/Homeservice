@@ -13,6 +13,8 @@
     "lint": "eslint src/**/*.ts",
     "format": "prettier --write src/**/*.ts",
     "db:seed": "ts-node src/seeders/index.ts",
+    "db:create-admin": "ts-node src/scripts/create-admin.ts",
+    "db:create-production-admin": "ts-node src/scripts/create-production-admin.ts",
     "db:reset": "ts-node src/scripts/reset-db.ts",
     "db:stats": "ts-node src/scripts/db-stats.ts",
     "db:health": "ts-node src/scripts/db-health.ts",

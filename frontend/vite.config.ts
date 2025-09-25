@@ -20,13 +20,15 @@ export default defineConfig(({ mode }) => {
     server: {
       port: parseInt(env.VITE_PORT || '3000'),
       open: true,
-      proxy: {
-        '/api': {
-          target: `http://localhost:${env.VITE_API_PORT || '5000'}`,
-          changeOrigin: true,
-          secure: false,
-        },
-      },
+      // Disable proxy when using production backend
+      // Comment out proxy to use VITE_API_URL from .env
+      // proxy: {
+      //   '/api': {
+      //     target: `http://localhost:${env.VITE_API_PORT || '5000'}`,
+      //     changeOrigin: true,
+      //     secure: false,
+      //   },
+      // },
     },
     build: {
       outDir: 'dist',

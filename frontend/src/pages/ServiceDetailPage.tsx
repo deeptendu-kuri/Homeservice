@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from '../config/api';
 import { 
   MapPin, 
   Clock, 
@@ -127,7 +128,7 @@ const ServiceDetailPage: React.FC = () => {
       setLoading(true);
       setError(null);
       
-      const response = await fetch(`/api/search/service/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/search/service/${id}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
