@@ -44,7 +44,7 @@ export interface Service {
   isPopular: boolean;
   isNew?: boolean;
   provider?: {
-    _id?: string;
+    _id: string;
     firstName: string;
     lastName: string;
     name?: string; // Computed full name
@@ -53,7 +53,6 @@ export interface Service {
     location?: string;
     isVerified?: boolean;
   };
-  providerId?: any; // Legacy support
   distance?: number;
   fullLocation?: string;
   createdAt: string;

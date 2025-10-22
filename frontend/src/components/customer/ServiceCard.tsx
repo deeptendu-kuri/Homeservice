@@ -30,7 +30,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
   const displayTitle = service.title || service.name;
   const displayPrice = typeof service.price === 'number'
     ? service.price
-    : (service.price?.amount || service.price?.basePrice || 0);
+    : (service.price?.amount || 0);
 
   const displayRating = typeof service.rating === 'number'
     ? service.rating

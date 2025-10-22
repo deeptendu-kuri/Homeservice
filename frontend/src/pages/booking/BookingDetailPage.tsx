@@ -49,7 +49,7 @@ const BookingDetailPage: React.FC = () => {
 
   const handleCancelBooking = async () => {
     if (currentBooking && window.confirm('Are you sure you want to cancel this booking?')) {
-      await cancelBooking(currentBooking._id, 'Customer requested cancellation');
+      await cancelBooking(currentBooking._id, { reason: 'Customer requested cancellation' });
       navigate('/customer/bookings');
     }
   };
@@ -231,7 +231,7 @@ const BookingDetailPage: React.FC = () => {
                 </div>
                 <div className="p-4 bg-gray-50 rounded-lg">
                   <div className="text-sm text-gray-600 mb-1">Total Amount</div>
-                  <div className="text-2xl font-bold text-gray-900">${currentBooking.totalAmount}</div>
+                  <div className="text-2xl font-bold text-gray-900">${currentBooking.pricing.totalAmount}</div>
                 </div>
               </div>
             </div>

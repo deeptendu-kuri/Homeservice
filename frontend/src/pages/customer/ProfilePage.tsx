@@ -104,6 +104,7 @@ const ProfilePage: React.FC = () => {
         useAuthStore.setState({
           user: {
             ...user,
+            id: user.id,
             firstName: updatedUser.firstName,
             lastName: updatedUser.lastName,
             phone: updatedUser.phone

@@ -98,7 +98,7 @@ const ServiceDetailPage: React.FC = () => {
       const response = await searchApi.getServiceById(id);
 
       if (response.success && response.data.service) {
-        setService(response.data.service as ServiceDetail);
+        setService(response.data.service);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load service');
