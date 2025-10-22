@@ -14,6 +14,8 @@ export interface AuthUser {
   firstName: string;
   lastName: string;
   email: string;
+  phone?: string;
+  name?: string; // Computed full name
   role: 'customer' | 'provider' | 'admin';
   isEmailVerified: boolean;
   accountStatus: string;

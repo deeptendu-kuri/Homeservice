@@ -1,51 +1,9 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Star, Clock, MapPin, TrendingUp } from 'lucide-react';
+import type { Service } from '../../types/service';
 
-export interface Service {
-  _id: string;
-  title: string;
-  name?: string;
-  description?: string;
-  category: string;
-  subcategory?: string;
-  price: number | {
-    amount?: number;
-    basePrice?: number;
-    currency?: string;
-    type?: string;
-    discounts?: any[];
-  };
-  duration?: number;
-  rating?: number | {
-    average?: number;
-    count?: number;
-    distribution?: any;
-  };
-  reviewCount?: number;
-  reviews?: {
-    average?: number;
-    count?: number;
-  };
-  provider?: {
-    _id: string;
-    name?: string;
-    firstName?: string;
-    lastName?: string;
-    location?: string;
-  };
-  providerId?: {
-    firstName?: string;
-    lastName?: string;
-    businessInfo?: {
-      businessName?: string;
-    };
-  };
-  image?: string;
-  images?: string[];
-  isFeatured?: boolean;
-  isNew?: boolean;
-}
+export type { Service };
 
 interface ServiceCardProps {
   service: Service;
@@ -69,6 +27,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
   };
 
   // Extract display values from potentially nested objects
+  const displayTitle = service.title || service.name;
   const displayPrice = typeof service.price === 'number'
     ? service.price
     : (service.price?.amount || service.price?.basePrice || 0);
@@ -101,7 +60,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
         <div className={`h-32 ${gradientClass} flex items-center justify-center`}>
           <div className="text-4xl opacity-50">
             {service.image ? (
-              <img src={service.image} alt={service.title} className="w-full h-full object-cover" />
+              <img src={service.image} alt={displayTitle} className="w-full h-full object-cover" />
             ) : (
               '🏠'
             )}
@@ -109,7 +68,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
         </div>
         <div className="p-4">
           <h3 className="font-semibold text-gray-900 text-sm mb-1 line-clamp-1">
-            {service.title}
+            {displayTitle}
           </h3>
           <div className="flex items-center justify-between">
             <span className="text-lg font-bold text-gray-900">
@@ -137,7 +96,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
         {service.image ? (
           <img
             src={service.image}
-            alt={service.title}
+            alt={displayTitle}
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
           />
         ) : (
@@ -182,7 +141,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
 
         {/* Title */}
         <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
-          {service.title}
+          {displayTitle}
         </h3>
 
         {/* Description */}

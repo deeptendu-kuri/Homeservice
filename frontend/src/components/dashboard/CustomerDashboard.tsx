@@ -5,7 +5,7 @@ import Footer from '../layout/Footer';
 import CategoryGrid from '../customer/CategoryGrid';
 import ServiceCard from '../customer/ServiceCard';
 import PromoCard from '../customer/PromoCard';
-import type { Service } from '../customer/ServiceCard';
+import type { Service } from '../../types/service';
 import type { Promo } from '../customer/PromoCard';
 import { searchApi } from '../../services/searchApi';
 
@@ -55,23 +55,22 @@ const CustomerDashboard: React.FC = () => {
 
         // Fetch popular services
         const popularResponse = await searchApi.getPopularServices();
-        if (popularResponse.success && popularResponse.data) {
+        if (popularResponse.success && Array.isArray(popularResponse.data)) {
           setPopularServices(popularResponse.data.slice(0, 4));
         }
 
         // Fetch trending services
         const trendingResponse = await searchApi.getTrendingServices();
-        if (trendingResponse.success && trendingResponse.data) {
+        if (trendingResponse.success && Array.isArray(trendingResponse.data)) {
           setTrendingServices(trendingResponse.data.slice(0, 6));
         }
 
         // For new services, we'll use search with sorting
         const newResponse = await searchApi.searchServices({
-          sortBy: 'createdAt',
-          sortOrder: 'desc',
+          sortBy: 'newest',
           limit: 6
         });
-        if (newResponse.success && newResponse.data.services) {
+        if (newResponse.success && newResponse.data?.services) {
           setNewServices(newResponse.data.services);
         }
       } catch (error) {

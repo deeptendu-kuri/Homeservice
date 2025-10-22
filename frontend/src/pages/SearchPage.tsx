@@ -32,8 +32,11 @@ const SearchPage: React.FC = () => {
   // Helper function to get trust badges for a service
   const getTrustBadges = (service: Service) => {
     const badges = [];
-    if (service.rating?.average >= 4.5) badges.push({ icon: Award, text: 'Top Rated', color: 'bg-yellow-100 text-yellow-700' });
-    if (service.rating?.count >= 50) badges.push({ icon: TrendingUp, text: 'Popular', color: 'bg-pink-100 text-pink-700' });
+    const avgRating = typeof service.rating === 'object' ? service.rating?.average || 0 : service.rating || 0;
+    const ratingCount = typeof service.rating === 'object' ? service.rating?.count || 0 : 0;
+
+    if (avgRating >= 4.5) badges.push({ icon: Award, text: 'Top Rated', color: 'bg-yellow-100 text-yellow-700' });
+    if (ratingCount >= 50) badges.push({ icon: TrendingUp, text: 'Popular', color: 'bg-pink-100 text-pink-700' });
     if (service.provider?.isVerified) badges.push({ icon: CheckCircle, text: 'Verified', color: 'bg-blue-100 text-blue-700' });
     return badges;
   };

@@ -65,6 +65,22 @@ export interface Booking {
     notes?: string;
   }>;
 
+  // Status timestamps
+  confirmedAt?: string;
+  startedAt?: string;
+  completedAt?: string;
+  cancelledAt?: string;
+  cancellationReason?: string;
+
+  // Address field for backward compatibility
+  address?: {
+    street?: string;
+    city?: string;
+    state?: string;
+    zipCode?: string;
+    country?: string;
+  };
+
   // Location & Details
   location: BookingLocation;
   customerInfo: BookingCustomerInfo;
