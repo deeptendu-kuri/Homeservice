@@ -63,7 +63,7 @@ interface ServiceDetail {
     rating?: {
       average: number;
       count: number;
-    };
+    } | number;
   };
   isFeatured: boolean;
   isPopular: boolean;
@@ -421,7 +421,11 @@ const ServiceDetailPage: React.FC = () => {
                     {service.provider.rating && (
                       <div className="flex items-center gap-1 text-sm text-gray-600">
                         <Star className="w-3 h-3 text-yellow-400 fill-current" />
-                        <span>{service.provider.rating.average.toFixed(1)} ({service.provider.rating.count} reviews)</span>
+                        <span>
+                          {typeof service.provider.rating === 'number'
+                            ? service.provider.rating.toFixed(1)
+                            : `${service.provider.rating.average.toFixed(1)} (${service.provider.rating.count} reviews)`}
+                        </span>
                       </div>
                     )}
                   </div>

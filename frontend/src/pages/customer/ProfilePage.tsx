@@ -101,15 +101,18 @@ const ProfilePage: React.FC = () => {
       if (response.data.success) {
         // Update auth store with new user data
         const updatedUser = response.data.data.user;
-        useAuthStore.setState({
-          user: {
-            ...user,
-            id: user.id,
-            firstName: updatedUser.firstName,
-            lastName: updatedUser.lastName,
-            phone: updatedUser.phone
-          }
-        });
+        if (user) {
+          useAuthStore.setState({
+            user: {
+              ...user,
+              id: user.id,
+              email: user.email,
+              firstName: updatedUser.firstName,
+              lastName: updatedUser.lastName,
+              phone: updatedUser.phone
+            }
+          });
+        }
 
         setSaveMessage('Personal information updated successfully!');
         setIsEditingPersonal(false);
