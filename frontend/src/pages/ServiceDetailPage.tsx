@@ -49,7 +49,7 @@ interface ServiceDetail {
     count: number;
     distribution?: { [key: number]: number };
   };
-  provider: {
+  provider?: {
     _id: string;
     firstName: string;
     lastName: string;
@@ -398,58 +398,60 @@ const ServiceDetailPage: React.FC = () => {
               </div>
 
               {/* Provider Info */}
-              <div className="bg-white rounded-xl p-6 border">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">About the provider</h3>
+              {service.provider && (
+                <div className="bg-white rounded-xl p-6 border">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">About the provider</h3>
 
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-nilin-pink to-nilin-lavender rounded-full flex items-center justify-center">
-                    {service.provider.avatar ? (
-                      <img
-                        src={service.provider.avatar}
-                        alt={service.provider.businessInfo?.businessName}
-                        className="w-12 h-12 rounded-full object-cover"
-                      />
-                    ) : (
-                      <User className="w-6 h-6 text-gray-700" />
-                    )}
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-nilin-pink to-nilin-lavender rounded-full flex items-center justify-center">
+                      {service.provider.avatar ? (
+                        <img
+                          src={service.provider.avatar}
+                          alt={service.provider.businessInfo?.businessName}
+                          className="w-12 h-12 rounded-full object-cover"
+                        />
+                      ) : (
+                        <User className="w-6 h-6 text-gray-700" />
+                      )}
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-900">
+                        {service.provider.businessInfo?.businessName ||
+                         `${service.provider.firstName} ${service.provider.lastName}`}
+                      </h4>
+                      {service.provider.rating && (
+                        <div className="flex items-center gap-1 text-sm text-gray-600">
+                          <Star className="w-3 h-3 text-yellow-400 fill-current" />
+                          <span>
+                            {typeof service.provider.rating === 'number'
+                              ? service.provider.rating.toFixed(1)
+                              : `${service.provider.rating.average.toFixed(1)} (${service.provider.rating.count} reviews)`}
+                          </span>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-900">
-                      {service.provider.businessInfo?.businessName ||
-                       `${service.provider.firstName} ${service.provider.lastName}`}
-                    </h4>
-                    {service.provider.rating && (
-                      <div className="flex items-center gap-1 text-sm text-gray-600">
-                        <Star className="w-3 h-3 text-yellow-400 fill-current" />
-                        <span>
-                          {typeof service.provider.rating === 'number'
-                            ? service.provider.rating.toFixed(1)
-                            : `${service.provider.rating.average.toFixed(1)} (${service.provider.rating.count} reviews)`}
-                        </span>
+
+                  {service.provider.businessInfo?.description && (
+                    <p className="text-gray-700 text-sm mb-4 line-clamp-3">
+                      {service.provider.businessInfo.description}
+                    </p>
+                  )}
+
+                  <div className="space-y-2 text-sm">
+                    {service.provider.businessInfo?.businessType && (
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <Award className="w-4 h-4" />
+                        <span>{service.provider.businessInfo.businessType}</span>
                       </div>
                     )}
-                  </div>
-                </div>
-
-                {service.provider.businessInfo?.description && (
-                  <p className="text-gray-700 text-sm mb-4 line-clamp-3">
-                    {service.provider.businessInfo.description}
-                  </p>
-                )}
-
-                <div className="space-y-2 text-sm">
-                  {service.provider.businessInfo?.businessType && (
                     <div className="flex items-center gap-2 text-gray-600">
-                      <Award className="w-4 h-4" />
-                      <span>{service.provider.businessInfo.businessType}</span>
+                      <MapPin className="w-4 h-4" />
+                      <span>{service.location.address.city}, {service.location.address.state}</span>
                     </div>
-                  )}
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <MapPin className="w-4 h-4" />
-                    <span>{service.location.address.city}, {service.location.address.state}</span>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>

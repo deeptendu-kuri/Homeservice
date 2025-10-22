@@ -61,6 +61,12 @@ export interface Service {
     rating?: number;
     location?: string;
     isVerified?: boolean;
+    businessInfo?: {
+      businessName: string;
+      description: string;
+      website?: string;
+      businessType?: string;
+    };
   };
   distance?: number;
   fullLocation?: string;
