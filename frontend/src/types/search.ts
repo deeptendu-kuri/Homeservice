@@ -53,10 +53,14 @@ export interface Service {
   isFeatured: boolean;
   isPopular: boolean;
   provider?: {
+    _id: string;
     firstName: string;
     lastName: string;
+    name?: string;
     avatar?: string;
     rating?: number;
+    location?: string;
+    isVerified?: boolean;
   };
   distance?: number;
   fullLocation?: string;
