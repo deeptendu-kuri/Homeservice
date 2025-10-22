@@ -176,8 +176,8 @@ const serviceSchema = new Schema<IService>(
       },
       currency: {
         type: String,
-        default: 'USD',
-        enum: ['USD', 'EUR', 'GBP']
+        default: 'INR',
+        enum: ['INR', 'USD', 'EUR', 'GBP']
       },
       type: {
         type: String,

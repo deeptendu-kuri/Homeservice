@@ -279,7 +279,17 @@ export const refreshTokenSchema = Joi.object({
 // Profile update validation
 export const updateProfileSchema = Joi.object({
   firstName: nameSchema.optional(),
-  lastName: nameSchema.optional(),
+  lastName: Joi.string()
+    .min(1)
+    .max(50)
+    .pattern(new RegExp('^[a-zA-Z\\s-\']+$'))
+    .trim()
+    .optional()
+    .messages({
+      'string.min': 'Last name must be at least 1 character long',
+      'string.max': 'Last name cannot exceed 50 characters',
+      'string.pattern.base': 'Last name can only contain letters, spaces, hyphens, and apostrophes'
+    }),
   phone: phoneSchema.optional(),
   bio: Joi.string().max(500).optional(),
   dateOfBirth: Joi.date().max('now').min('1900-01-01').optional(),

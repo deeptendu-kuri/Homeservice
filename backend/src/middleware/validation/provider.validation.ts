@@ -1,6 +1,7 @@
 import Joi from 'joi';
 import { Request, Response, NextFunction } from 'express';
 import { ApiError } from '../../utils/ApiError';
+import { SERVICE_CATEGORIES } from '../../constants/categories';
 
 // Service creation validation schema
 const serviceCreationSchema = Joi.object({
@@ -15,11 +16,7 @@ const serviceCreationSchema = Joi.object({
     }),
   
   category: Joi.string()
-    .valid(
-      'Cleaning', 'Home Repair', 'Plumbing', 'Electrical', 'Painting',
-      'Landscaping', 'Pet Care', 'Tutoring', 'Fitness', 'Beauty',
-      'Moving', 'Assembly', 'Technology', 'Automotive', 'Other'
-    )
+    .valid(...SERVICE_CATEGORIES)
     .required()
     .messages({
       'any.only': 'Invalid service category',
@@ -51,7 +48,7 @@ const serviceCreationSchema = Joi.object({
         'number.max': 'Price cannot exceed $10,000',
         'any.required': 'Price amount is required'
       }),
-    currency: Joi.string().valid('USD').default('USD'),
+    currency: Joi.string().valid('INR', 'USD', 'EUR', 'GBP').default('INR'),
     type: Joi.string()
       .valid('fixed', 'hourly', 'custom')
       .required()

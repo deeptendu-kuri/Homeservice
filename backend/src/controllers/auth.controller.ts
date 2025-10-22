@@ -283,8 +283,8 @@ export const registerCustomer = asyncHandler(async (req: Request, res: Response)
       // Generate tokens for immediate login (optional - some apps require email verification first)
       const { accessToken, refreshToken } = generateTokens(user);
 
-      // Set refresh token as HTTP-only cookie
-      res.cookie('refreshToken', refreshToken, getCookieOptions(7 * 24 * 60 * 60 * 1000)); // 7 days
+      // Set refresh token as HTTP-only cookie (30 days for persistent login)
+      res.cookie('refreshToken', refreshToken, getCookieOptions(30 * 24 * 60 * 60 * 1000)); // 30 days
 
       res.status(201).json({
         success: true,
@@ -654,8 +654,8 @@ export const registerProvider = asyncHandler(async (req: Request, res: Response)
       // Generate tokens
       const { accessToken, refreshToken } = generateTokens(user);
 
-      // Set refresh token as HTTP-only cookie
-      res.cookie('refreshToken', refreshToken, getCookieOptions(7 * 24 * 60 * 60 * 1000));
+      // Set refresh token as HTTP-only cookie (30 days for persistent login)
+      res.cookie('refreshToken', refreshToken, getCookieOptions(30 * 24 * 60 * 60 * 1000)); // 30 days
 
       res.status(201).json({
         success: true,
@@ -835,9 +835,9 @@ export const registerAdmin = asyncHandler(async (req: Request, res: Response) =>
   }
 });
 
-// Login
+// Login - Always use 30 days for refresh token
 export const login = asyncHandler(async (req: Request, res: Response) => {
-  const { email, password, rememberMe } = req.body;
+  const { email, password } = req.body;
   const clientIP = req.ip || req.connection.remoteAddress || 'unknown';
 
   // Find user and include password for comparison
@@ -888,8 +888,9 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   // Generate tokens
   const { accessToken, refreshToken } = generateTokens(user);
 
-  // Set refresh token cookie with appropriate expiration
-  const refreshTokenMaxAge = rememberMe ? 30 * 24 * 60 * 60 * 1000 : 7 * 24 * 60 * 60 * 1000; // 30 days vs 7 days
+  // Set refresh token cookie - always 30 days for seamless experience
+  // User can manually logout if they want to end session
+  const refreshTokenMaxAge = 30 * 24 * 60 * 60 * 1000; // 30 days
   res.cookie('refreshToken', refreshToken, getCookieOptions(refreshTokenMaxAge));
 
   // Get role-specific data
@@ -1001,14 +1002,17 @@ export const refreshToken = asyncHandler(async (req: Request, res: Response) => 
     user.refreshTokens = user.refreshTokens.filter(token => token !== refreshToken);
     await user.save({ validateBeforeSave: false });
 
-    // Set new refresh token cookie
-    res.cookie('refreshToken', newRefreshToken, getCookieOptions(7 * 24 * 60 * 60 * 1000));
+    // Set new refresh token cookie (30 days for persistent login)
+    res.cookie('refreshToken', newRefreshToken, getCookieOptions(30 * 24 * 60 * 60 * 1000)); // 30 days
 
     res.json({
       success: true,
       message: 'Token refreshed successfully',
       data: {
-        accessToken,
+        tokens: {
+          accessToken,
+          refreshToken: newRefreshToken
+        },
         user: {
           id: user._id,
           firstName: user.firstName,
@@ -1202,9 +1206,9 @@ export const resetPassword = asyncHandler(async (req: Request, res: Response) =>
 
   // Generate new tokens
   const { accessToken, refreshToken } = generateTokens(user);
-  
-  // Set refresh token cookie
-  res.cookie('refreshToken', refreshToken, getCookieOptions(7 * 24 * 60 * 60 * 1000));
+
+  // Set refresh token cookie (30 days for persistent login)
+  res.cookie('refreshToken', refreshToken, getCookieOptions(30 * 24 * 60 * 60 * 1000)); // 30 days
 
   res.json({
     success: true,
@@ -1251,9 +1255,9 @@ export const changePassword = asyncHandler(async (req: Request, res: Response) =
 
   // Generate new tokens
   const { accessToken, refreshToken } = generateTokens(userWithPassword);
-  
-  // Set refresh token cookie
-  res.cookie('refreshToken', refreshToken, getCookieOptions(7 * 24 * 60 * 60 * 1000));
+
+  // Set refresh token cookie (30 days for persistent login)
+  res.cookie('refreshToken', refreshToken, getCookieOptions(30 * 24 * 60 * 60 * 1000)); // 30 days
 
   res.json({
     success: true,

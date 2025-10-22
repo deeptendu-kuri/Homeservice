@@ -19,8 +19,10 @@ import ResetPassword from './components/auth/ResetPassword';
 import EmailVerification from './components/auth/EmailVerification';
 import EmailVerificationRequired from './components/auth/EmailVerificationRequired';
 import CustomerDashboard from './components/dashboard/CustomerDashboard';
+import StatsView from './components/dashboard/StatsView';
 import ProviderDashboard from './components/dashboard/ProviderDashboard';
 import AdminDashboard from './components/dashboard/AdminDashboard';
+import HomePage from './pages/HomePage';
 import SearchPage from './pages/SearchPage';
 import ServiceDetailPage from './pages/ServiceDetailPage';
 import ServiceManagementPage from './pages/ServiceManagementPage';
@@ -32,6 +34,13 @@ import {
   ProviderAvailabilityPage,
   BookServicePage
 } from './pages/booking';
+// Customer pages
+import CustomerStatsPage from './pages/customer/CustomerStatsPage';
+import {
+  ProfilePage,
+  FavoritesPage,
+  RewardsPage
+} from './pages/customer';
 
 
 
@@ -189,7 +198,7 @@ function App() {
           path="/customer/dashboard"
           element={
             <CustomerRoute>
-              <CustomerDashboard />
+              <CustomerStatsPage />
             </CustomerRoute>
           }
         />
@@ -208,6 +217,33 @@ function App() {
           element={
             <CustomerRoute>
               <BookingDetailPage />
+            </CustomerRoute>
+          }
+        />
+
+        <Route
+          path="/customer/profile"
+          element={
+            <CustomerRoute>
+              <ProfilePage />
+            </CustomerRoute>
+          }
+        />
+
+        <Route
+          path="/customer/favorites"
+          element={
+            <CustomerRoute>
+              <FavoritesPage />
+            </CustomerRoute>
+          }
+        />
+
+        <Route
+          path="/customer/rewards"
+          element={
+            <CustomerRoute>
+              <RewardsPage />
             </CustomerRoute>
           }
         />
@@ -268,21 +304,10 @@ function App() {
           } 
         />
 
-        {/* Default Route - Redirect based on authentication */}
-        <Route 
-          path="/" 
-          element={
-            <ProtectedRoute 
-              requireAuth={false}
-              fallback={
-                <div className="flex items-center justify-center min-h-screen">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                </div>
-              }
-            >
-              <RedirectToDashboard />
-            </ProtectedRoute>
-          } 
+        {/* Default Route - Homepage */}
+        <Route
+          path="/"
+          element={<HomePage />}
         />
 
         {/* 404 Route */}

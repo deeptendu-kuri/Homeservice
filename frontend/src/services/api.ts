@@ -131,10 +131,10 @@ api.interceptors.response.use(
       } catch (refreshError) {
         console.error('Token refresh failed:', refreshError);
         clearAuth();
-        
-        // Redirect to login page
+
+        // Redirect to homepage
         if (typeof window !== 'undefined') {
-          window.location.href = '/login';
+          window.location.href = '/';
         }
       } finally {
         isRefreshing = false;

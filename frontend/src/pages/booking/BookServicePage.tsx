@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { ArrowLeft, AlertCircle } from 'lucide-react';
-import BookingForm from '../../components/booking/BookingForm';
+import { AlertCircle } from 'lucide-react';
+import NavigationHeader from '../../components/layout/NavigationHeader';
+import Footer from '../../components/layout/Footer';
+import BookingFormWizard from '../../components/booking/BookingFormWizard';
 import type { Service } from '../../types/search';
 
 const BookServicePage: React.FC = () => {
@@ -56,55 +58,67 @@ const BookServicePage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading service details...</p>
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <NavigationHeader />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading service details...</p>
+          </div>
         </div>
+        <Footer />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center max-w-md">
-          <div className="bg-red-50 rounded-full p-3 w-16 h-16 mx-auto mb-4">
-            <AlertCircle className="h-10 w-10 text-red-600" />
-          </div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Unable to Load Service</h2>
-          <p className="text-gray-600 mb-6">{error}</p>
-          <div className="space-x-4">
-            <button
-              onClick={() => navigate('/search')}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-            >
-              Browse Services
-            </button>
-            <button
-              onClick={() => window.location.reload()}
-              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
-            >
-              Try Again
-            </button>
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <NavigationHeader />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center max-w-md">
+            <div className="bg-red-50 rounded-full p-3 w-16 h-16 mx-auto mb-4">
+              <AlertCircle className="h-10 w-10 text-red-600" />
+            </div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Unable to Load Service</h2>
+            <p className="text-gray-600 mb-6">{error}</p>
+            <div className="space-x-4">
+              <button
+                onClick={() => navigate('/search')}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              >
+                Browse Services
+              </button>
+              <button
+                onClick={() => window.location.reload()}
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+              >
+                Try Again
+              </button>
+            </div>
           </div>
         </div>
+        <Footer />
       </div>
     );
   }
 
   if (!service) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-gray-600 mb-4">Service not found</p>
-          <button
-            onClick={() => navigate('/search')}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
-            Back to Search
-          </button>
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <NavigationHeader />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-gray-600 mb-4">Service not found</p>
+            <button
+              onClick={() => navigate('/search')}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              Back to Search
+            </button>
+          </div>
         </div>
+        <Footer />
       </div>
     );
   }
@@ -125,14 +139,12 @@ const BookServicePage: React.FC = () => {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <BookingForm
-        service={serviceWithDefaults}
-        providerId={serviceWithDefaults.providerId}
-        onSuccess={handleBookingSuccess}
-        onCancel={handleCancel}
-      />
-    </div>
+    <BookingFormWizard
+      service={serviceWithDefaults}
+      providerId={serviceWithDefaults.providerId}
+      onSuccess={handleBookingSuccess}
+      onCancel={handleCancel}
+    />
   );
 };
 

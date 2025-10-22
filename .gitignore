@@ -77,3 +77,22 @@ public/uploads/
 # Debug
 debug/
 .vscode/launch.json
+
+screenshot-1-public.js
+screenshot-2-customer.js
+screenshot-3-provider.js
+screenshot-4-admin.js
+screenshot-automation.js
+screenshot-full-automation.js
+screenshot-helpers.js
+screenshot-helpers.js
+screenshot-master.js
+
+
+ui-mockups
+screenshots
+SampleUIDesigns
+ui-redesign
+current_status_and_improvements.md
+ACTUAL_SCREENS_AND_FUNCTIONALITIES.md
+UI_REDESIGN_IMPLEMENTATION_ANALYSIS.md

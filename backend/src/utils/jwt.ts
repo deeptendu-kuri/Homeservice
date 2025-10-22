@@ -24,7 +24,7 @@ class JWTService {
     this.accessTokenSecret = process.env.JWT_ACCESS_SECRET || 'fallback_access_secret_change_in_production';
     this.refreshTokenSecret = process.env.JWT_REFRESH_SECRET || 'fallback_refresh_secret_change_in_production';
     this.accessTokenExpiry = process.env.JWT_ACCESS_EXPIRY || '15m';
-    this.refreshTokenExpiry = process.env.JWT_REFRESH_EXPIRY || '7d';
+    this.refreshTokenExpiry = process.env.JWT_REFRESH_EXPIRY || '30d'; // ✅ Changed from 7d to 30d
   }
 
   generateAccessToken(payload: TokenPayload): string {

@@ -24,23 +24,10 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, className = '' }) => {
     const breadcrumbs: BreadcrumbItem[] = [];
 
     // Always start with Home
-    if (isAuthenticated && user) {
-      const dashboardPath = user.role === 'admin' 
-        ? '/admin/dashboard' 
-        : user.role === 'provider' 
-          ? '/provider/dashboard' 
-          : '/customer/dashboard';
-      
-      breadcrumbs.push({
-        label: 'Dashboard',
-        href: dashboardPath
-      });
-    } else {
-      breadcrumbs.push({
-        label: 'Home',
-        href: '/search'
-      });
-    }
+    breadcrumbs.push({
+      label: 'Home',
+      href: '/'
+    });
 
     // Generate breadcrumbs based on current path
     let currentPath = '';
@@ -55,19 +42,24 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, className = '' }) => {
 
       switch (segment) {
         case 'admin':
-          if (pathSegments[index + 1] === 'dashboard') return; // Skip, already handled
-          label = 'Admin';
-          break;
         case 'provider':
-          if (pathSegments[index + 1] === 'dashboard') return; // Skip, already handled
-          label = 'Provider';
-          break;
         case 'customer':
-          if (pathSegments[index + 1] === 'dashboard') return; // Skip, already handled
-          label = 'Customer';
-          break;
+          return; // Always skip role segments
         case 'dashboard':
-          return; // Already handled above
+          label = 'Dashboard';
+          break;
+        case 'bookings':
+          label = 'Bookings';
+          break;
+        case 'profile':
+          label = 'Profile';
+          break;
+        case 'favorites':
+          label = 'Favorites';
+          break;
+        case 'rewards':
+          label = 'Rewards';
+          break;
         case 'search':
           label = 'Search Services';
           break;
@@ -114,11 +106,10 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, className = '' }) => {
 
   const breadcrumbItems = items || generateBreadcrumbs();
 
-  // Don't show breadcrumbs on login/register pages or if only one item
-  if (location.pathname.includes('/login') || 
+  // Don't show breadcrumbs on login/register pages or home page
+  if (location.pathname.includes('/login') ||
       location.pathname.includes('/register') ||
-      location.pathname === '/' ||
-      breadcrumbItems.length <= 1) {
+      location.pathname === '/') {
     return null;
   }
 

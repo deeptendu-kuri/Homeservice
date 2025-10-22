@@ -1,56 +1,23 @@
 import { Request, Response, NextFunction } from 'express';
 import Joi from 'joi';
+import { SERVICE_CATEGORIES } from '../../constants/categories';
 
 const searchQuerySchema = Joi.object({
   q: Joi.string().min(1).max(100).trim().allow('').optional(),
   category: Joi.string().allow('').optional().custom((value, helpers) => {
     if (!value || value === '') return value;
-    
-    // Map of lowercase/alternate names to proper category names
-    const categoryMap: Record<string, string> = {
-      'cleaning': 'Cleaning',
-      'beauty': 'Beauty & Personal Care',
-      'beauty & personal care': 'Beauty & Personal Care',
-      'health': 'Health & Wellness',
-      'health & wellness': 'Health & Wellness',
-      'home': 'Home Services',
-      'home services': 'Home Services',
-      'home-services': 'Home Services',
-      'education': 'Education',
-      'technology': 'Technology',
-      'tech': 'Technology',
-      'automotive': 'Automotive',
-      'auto': 'Automotive',
-      'pet care': 'Pet Care',
-      'pet-care': 'Pet Care',
-      'petcare': 'Pet Care',
-      'fitness': 'Fitness',
-      'events': 'Events',
-      'event': 'Events',
-      'event planning': 'Events',
-      'event-planning': 'Events'
-    };
 
-    const lowerValue = value.toLowerCase();
-    const mappedCategory = categoryMap[lowerValue];
-    
-    if (mappedCategory) {
-      return mappedCategory;
+    // Check if it's a valid category (case-insensitive)
+    const found = SERVICE_CATEGORIES.find(
+      cat => cat.toLowerCase() === value.toLowerCase()
+    );
+
+    if (found) {
+      return found; // Return properly cased category
     }
-    
-    // Check if it's already a valid category (exact match)
-    const validCategories = [
-      'Cleaning', 'Beauty & Personal Care', 'Health & Wellness',
-      'Home Services', 'Education', 'Technology', 'Automotive',
-      'Pet Care', 'Fitness', 'Events'
-    ];
-    
-    if (validCategories.includes(value)) {
-      return value;
-    }
-    
-    return helpers.error('any.invalid', { 
-      message: `"${value}" is not a valid category. Valid categories are: ${validCategories.join(', ')}`
+
+    return helpers.error('any.invalid', {
+      message: `"${value}" is not a valid category. Valid categories are: ${SERVICE_CATEGORIES.join(', ')}`
     });
   }),
   subcategory: Joi.string().max(50).trim().optional(),
@@ -107,34 +74,12 @@ const searchQuerySchema = Joi.object({
 
 const suggestionQuerySchema = Joi.object({
   q: Joi.string().min(1).max(50).trim().required(),
-  category: Joi.string().valid(
-    'Cleaning',
-    'Beauty & Personal Care',
-    'Health & Wellness',
-    'Home Services',
-    'Education',
-    'Technology',
-    'Automotive',
-    'Pet Care',
-    'Fitness',
-    'Events'
-  ),
+  category: Joi.string().valid(...SERVICE_CATEGORIES),
   limit: Joi.number().integer().min(1).max(10).default(5)
 });
 
 const categoryParamSchema = Joi.object({
-  category: Joi.string().valid(
-    'Cleaning',
-    'Beauty & Personal Care',
-    'Health & Wellness',
-    'Home Services',
-    'Education',
-    'Technology',
-    'Automotive',
-    'Pet Care',
-    'Fitness',
-    'Events'
-  ).required()
+  category: Joi.string().valid(...SERVICE_CATEGORIES).required()
 });
 
 export const validateSearchQuery = (req: Request, res: Response, next: NextFunction): void => {

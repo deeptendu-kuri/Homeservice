@@ -48,6 +48,20 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // NILIN Brand Colors
+        nilin: {
+          pink: '#FFE5F0',
+          lavender: '#E8E5FF',
+          cream: '#F5F3E8',
+          blue: '#E5F3FF',
+        },
+      },
+      backgroundImage: {
+        'gradient-nilin-primary': 'linear-gradient(135deg, #FFE5F0, #E8E5FF)',
+        'gradient-nilin-secondary': 'linear-gradient(135deg, #E8E5FF, #E5F3FF)',
+        'gradient-nilin-tertiary': 'linear-gradient(135deg, #F5F3E8, #E5F3FF)',
+        'gradient-nilin-pink-lavender': 'linear-gradient(135deg, #FFE5F0, #E8E5FF)',
+        'gradient-nilin-lavender-blue': 'linear-gradient(135deg, #E8E5FF, #E5F3FF)',
       },
       borderRadius: {
         lg: "var(--radius)",

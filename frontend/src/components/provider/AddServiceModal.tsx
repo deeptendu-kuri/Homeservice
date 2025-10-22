@@ -7,6 +7,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import authService from '../../services/AuthService';
+import { CATEGORY_LIST } from '../../constants/categories';
 
 interface AddServiceModalProps {
   isOpen: boolean;
@@ -29,24 +30,6 @@ interface ServiceFormData {
   tags: string[];
 }
 
-const SERVICE_CATEGORIES = [
-  { value: 'Cleaning', label: 'Cleaning', subcategories: ['Deep Cleaning', 'Regular Cleaning', 'Move-in/Move-out', 'Post-Construction'] },
-  { value: 'Home Repair', label: 'Home Repair', subcategories: ['General Repair', 'Assembly', 'Installation', 'Maintenance'] },
-  { value: 'Plumbing', label: 'Plumbing', subcategories: ['Repair', 'Installation', 'Emergency', 'Maintenance'] },
-  { value: 'Electrical', label: 'Electrical', subcategories: ['Wiring', 'Lighting', 'Repair', 'Installation'] },
-  { value: 'Painting', label: 'Painting', subcategories: ['Interior', 'Exterior', 'Commercial', 'Touch-up'] },
-  { value: 'Landscaping', label: 'Landscaping', subcategories: ['Lawn Care', 'Garden Design', 'Tree Service', 'Irrigation'] },
-  { value: 'Pet Care', label: 'Pet Care', subcategories: ['Dog Walking', 'Pet Sitting', 'Grooming', 'Training'] },
-  { value: 'Tutoring', label: 'Tutoring', subcategories: ['Math', 'Science', 'Languages', 'Test Prep'] },
-  { value: 'Fitness', label: 'Fitness', subcategories: ['Personal Training', 'Group Classes', 'Yoga', 'Nutrition'] },
-  { value: 'Beauty', label: 'Beauty', subcategories: ['Hair', 'Nails', 'Skincare', 'Makeup'] },
-  { value: 'Moving', label: 'Moving', subcategories: ['Packing', 'Loading', 'Transportation', 'Unpacking'] },
-  { value: 'Assembly', label: 'Assembly', subcategories: ['Furniture', 'Electronics', 'Appliances', 'Equipment'] },
-  { value: 'Technology', label: 'Technology', subcategories: ['Computer Repair', 'Setup', 'Training', 'Support'] },
-  { value: 'Automotive', label: 'Automotive', subcategories: ['Maintenance', 'Repair', 'Detailing', 'Mobile Service'] },
-  { value: 'Other', label: 'Other', subcategories: [] }
-];
-
 export const AddServiceModal: React.FC<AddServiceModalProps> = ({ isOpen, onClose, onServiceAdded }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -61,7 +44,7 @@ export const AddServiceModal: React.FC<AddServiceModalProps> = ({ isOpen, onClos
     duration: 60,
     price: {
       amount: 0,
-      currency: 'USD',
+      currency: 'INR',
       type: 'fixed'
     },
     tags: []
@@ -69,7 +52,7 @@ export const AddServiceModal: React.FC<AddServiceModalProps> = ({ isOpen, onClos
 
   if (!isOpen) return null;
 
-  const selectedCategory = SERVICE_CATEGORIES.find(cat => cat.value === formData.category);
+  const selectedCategory = CATEGORY_LIST.find(cat => cat.value === formData.category);
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -159,7 +142,7 @@ export const AddServiceModal: React.FC<AddServiceModalProps> = ({ isOpen, onClos
           description: '',
           shortDescription: '',
           duration: 60,
-          price: { amount: 0, currency: 'USD', type: 'fixed' },
+          price: { amount: 0, currency: 'INR', type: 'fixed' },
           tags: []
         });
         setErrors({});
@@ -215,7 +198,7 @@ export const AddServiceModal: React.FC<AddServiceModalProps> = ({ isOpen, onClos
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="">Select a category</option>
-                {SERVICE_CATEGORIES.map(category => (
+                {CATEGORY_LIST.map(category => (
                   <option key={category.value} value={category.value}>
                     {category.label}
                   </option>
@@ -310,6 +293,7 @@ export const AddServiceModal: React.FC<AddServiceModalProps> = ({ isOpen, onClos
                 onChange={(e) => handleInputChange('price.currency', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
+                <option value="INR">INR (₹)</option>
                 <option value="USD">USD ($)</option>
                 <option value="EUR">EUR (€)</option>
                 <option value="GBP">GBP (£)</option>

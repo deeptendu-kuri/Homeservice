@@ -208,13 +208,13 @@ export const PublicRoute: React.FC<{
   // Redirect authenticated users if required
   if (redirectAuthenticated && isAuthenticated && user) {
     const defaultRedirect = redirectTo || (
-      user.role === 'admin' 
-        ? '/admin/dashboard' 
-        : user.role === 'provider' 
-          ? '/provider/dashboard' 
-          : '/customer/dashboard'
+      user.role === 'admin'
+        ? '/admin/dashboard'
+        : user.role === 'provider'
+          ? '/provider/dashboard'
+          : '/'
     );
-    
+
     return <Navigate to={defaultRedirect} replace />;
   }
 

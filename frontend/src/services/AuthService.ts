@@ -80,6 +80,7 @@ class AuthService {
   private refreshPromise: Promise<void> | null = null;
   private isRefreshing = false;
   private isLoggingOut = false;
+  private tokenRefreshTimer: NodeJS.Timeout | null = null;
 
   constructor() {
     this.httpClient = axios.create({
@@ -92,6 +93,7 @@ class AuthService {
     });
 
     this.setupInterceptors();
+    this.startTokenRefreshTimer();
   }
 
   /**
@@ -287,9 +289,9 @@ class AuthService {
       const authStore = useAuthStore.getState();
       authStore.logout();
 
-      // Redirect to login page
-      if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
-        window.location.href = '/login?expired=true';
+      // Redirect to homepage
+      if (typeof window !== 'undefined' && window.location.pathname !== '/') {
+        window.location.href = '/';
       }
     } catch (error) {
       console.error('Failed to handle auth failure:', error);
@@ -301,6 +303,9 @@ class AuthService {
    */
   private clearLocalAuth(): void {
     try {
+      // Stop token refresh timer
+      this.stopTokenRefreshTimer();
+
       const authStore = useAuthStore.getState();
       authStore.clearAuth();
 
@@ -315,9 +320,9 @@ class AuthService {
       this.refreshPromise = null;
       this.isLoggingOut = false;
 
-      // Redirect to login page (without expired parameter for cleaner UX)
-      if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
-        window.location.href = '/login';
+      // Redirect to homepage after logout
+      if (typeof window !== 'undefined' && window.location.pathname !== '/') {
+        window.location.href = '/';
       }
     } catch (error) {
       console.error('Failed to clear local auth:', error);
@@ -339,6 +344,92 @@ class AuthService {
     const bufferTime = 60 * 1000; // 1 minute buffer
 
     return expirationTime > (currentTime + bufferTime);
+  }
+
+  /**
+   * Decode JWT token to get expiration time
+   */
+  private decodeToken(token: string): { exp: number } | null {
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      );
+      return JSON.parse(jsonPayload);
+    } catch (error) {
+      console.error('Failed to decode token:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Check if token needs refresh (within 24 hours of expiration)
+   */
+  private shouldRefreshToken(): boolean {
+    const tokens = this.getStoredTokens();
+    if (!tokens?.accessToken) {
+      return false;
+    }
+
+    const decoded = this.decodeToken(tokens.accessToken);
+    if (!decoded?.exp) {
+      return false;
+    }
+
+    const expirationTime = decoded.exp * 1000; // Convert to milliseconds
+    const currentTime = Date.now();
+    const oneDayInMs = 24 * 60 * 60 * 1000; // 24 hours
+
+    // Refresh if token expires within next 24 hours
+    return (expirationTime - currentTime) < oneDayInMs;
+  }
+
+  /**
+   * Start background timer to check and refresh tokens
+   */
+  private startTokenRefreshTimer(): void {
+    // Clear any existing timer
+    if (this.tokenRefreshTimer) {
+      clearInterval(this.tokenRefreshTimer);
+    }
+
+    // Check every hour if token needs refresh
+    this.tokenRefreshTimer = setInterval(async () => {
+      if (this.isAuthenticated() && this.shouldRefreshToken()) {
+        try {
+          console.log('Proactively refreshing token before expiration');
+          await this.refreshTokens();
+        } catch (error) {
+          console.error('Proactive token refresh failed:', error);
+        }
+      }
+    }, 60 * 60 * 1000); // Check every hour
+
+    // Also check immediately on startup
+    setTimeout(async () => {
+      if (this.isAuthenticated() && this.shouldRefreshToken()) {
+        try {
+          console.log('Checking token on startup - refreshing if needed');
+          await this.refreshTokens();
+        } catch (error) {
+          console.error('Startup token refresh failed:', error);
+        }
+      }
+    }, 1000); // Check 1 second after startup
+  }
+
+  /**
+   * Stop token refresh timer
+   */
+  private stopTokenRefreshTimer(): void {
+    if (this.tokenRefreshTimer) {
+      clearInterval(this.tokenRefreshTimer);
+      this.tokenRefreshTimer = null;
+    }
   }
 
   // ==========================================

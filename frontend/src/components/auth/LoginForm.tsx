@@ -66,13 +66,26 @@ const LoginFormComponent: React.FC = () => {
     if (user && !isLoading && isSubmitted) {
       // Small delay to show success message
       const timer = setTimeout(() => {
-        const defaultPath = user.role === 'admin' 
-          ? '/admin/dashboard' 
-          : user.role === 'provider' 
-            ? '/provider/dashboard' 
-            : '/customer/dashboard';
-        
-        navigate(redirectPath === '/' ? defaultPath : redirectPath, { replace: true });
+        // Determine where to redirect based on role and if there's a specific return path
+        let targetPath = '/';
+
+        if (user.role === 'admin') {
+          targetPath = '/admin/dashboard';
+        } else if (user.role === 'provider') {
+          targetPath = '/provider/dashboard';
+        } else if (user.role === 'customer') {
+          // For customers: go to homepage unless they tried to access a specific protected page
+          // Check if redirectPath is a protected customer route
+          if (redirectPath && redirectPath !== '/' && redirectPath.startsWith('/customer')) {
+            targetPath = redirectPath;
+          } else if (redirectPath && redirectPath !== '/' && redirectPath.startsWith('/book/')) {
+            targetPath = redirectPath;
+          } else {
+            targetPath = '/';
+          }
+        }
+
+        navigate(targetPath, { replace: true });
       }, 1000);
 
       return () => clearTimeout(timer);
@@ -120,13 +133,13 @@ const LoginFormComponent: React.FC = () => {
             Welcome back!
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Redirecting to your dashboard...
+            Redirecting...
           </p>
         </div>
         <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
           <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10 text-center">
             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-600 mx-auto"></div>
-            <p className="mt-4 text-sm text-gray-600">Loading your dashboard...</p>
+            <p className="mt-4 text-sm text-gray-600">Loading...</p>
           </div>
         </div>
       </div>
