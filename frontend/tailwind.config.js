@@ -50,10 +50,18 @@ export default {
         },
         // NILIN Brand Colors
         nilin: {
+          // Soft pastels (backgrounds)
           pink: '#FFE5F0',
           lavender: '#E8E5FF',
           cream: '#F5F3E8',
           blue: '#E5F3FF',
+          // Bold accents (CTAs, highlights)
+          primary: '#6366F1',
+          'primary-dark': '#4F46E5',
+          secondary: '#8B5CF6',
+          accent: '#EC4899',
+          success: '#10B981',
+          dark: '#1E1B4B',
         },
       },
       backgroundImage: {
@@ -62,6 +70,8 @@ export default {
         'gradient-nilin-tertiary': 'linear-gradient(135deg, #F5F3E8, #E5F3FF)',
         'gradient-nilin-pink-lavender': 'linear-gradient(135deg, #FFE5F0, #E8E5FF)',
         'gradient-nilin-lavender-blue': 'linear-gradient(135deg, #E8E5FF, #E5F3FF)',
+        'gradient-nilin-hero': 'linear-gradient(135deg, #FFE5F0 0%, #E8E5FF 50%, #E5F3FF 100%)',
+        'gradient-nilin-cta': 'linear-gradient(135deg, #1E1B4B 0%, #4F46E5 100%)',
       },
       borderRadius: {
         lg: "var(--radius)",
