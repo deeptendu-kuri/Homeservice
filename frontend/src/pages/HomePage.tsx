@@ -184,6 +184,20 @@ const HomePage: React.FC = () => {
     return cat.name || cat.label;
   };
 
+  const getCategoryKey = (cat: any): string => {
+    return cat._id || cat.value || cat.slug;
+  };
+
+  const getCategoryColor = (cat: any): string => {
+    return cat.color || '#6366f1';
+  };
+
+  const getCategorySubcategoryCount = (cat: any): number | undefined => {
+    if (cat.subcategoryCount !== undefined) return cat.subcategoryCount;
+    if (cat.subcategories?.length) return cat.subcategories.length;
+    return undefined;
+  };
+
   const handleServiceClick = (serviceId: string) => {
     navigate(`/services/${serviceId}`);
   };
@@ -337,25 +351,25 @@ const HomePage: React.FC = () => {
               const catLabel = getCategoryLabel(category);
               return (
                 <button
-                  key={category._id || category.value}
+                  key={getCategoryKey(category)}
                   onClick={() => handleCategoryClick(catId)}
                   className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-50 to-white border border-gray-100 p-4 text-left hover:shadow-lg transition-all active:scale-[0.98]"
                 >
                   <div
                     className="absolute top-0 right-0 w-20 h-20 rounded-full opacity-10 -mr-6 -mt-6"
-                    style={{ backgroundColor: category.color || '#6366f1' }}
+                    style={{ backgroundColor: getCategoryColor(category) }}
                   />
                   <div
                     className="w-12 h-12 mb-3 rounded-xl flex items-center justify-center text-2xl"
-                    style={{ backgroundColor: category.color ? `${category.color}15` : '#f3f4f6' }}
+                    style={{ backgroundColor: `${getCategoryColor(category)}15` }}
                   >
                     {CATEGORY_ICONS[catId] || CATEGORY_ICONS[catLabel] || '🔧'}
                   </div>
                   <h3 className="font-semibold text-gray-900 text-sm leading-tight mb-1">
                     {catLabel}
                   </h3>
-                  {category.subcategoryCount && (
-                    <p className="text-xs text-gray-400">{category.subcategoryCount} services</p>
+                  {getCategorySubcategoryCount(category) && (
+                    <p className="text-xs text-gray-400">{getCategorySubcategoryCount(category)} services</p>
                   )}
                   <ChevronRight
                     className="absolute bottom-4 right-4 w-4 h-4 text-gray-300"
@@ -373,7 +387,7 @@ const HomePage: React.FC = () => {
               const imageUrl = SERVICE_IMAGES[catId] || SERVICE_IMAGES[catLabel];
               return (
                 <button
-                  key={category._id || category.value}
+                  key={getCategoryKey(category)}
                   onClick={() => handleCategoryClick(catId)}
                   className="group relative overflow-hidden rounded-3xl bg-white border border-gray-100 hover:border-transparent hover:shadow-2xl transition-all duration-300 hover:-translate-y-1"
                 >
@@ -388,7 +402,7 @@ const HomePage: React.FC = () => {
                     ) : (
                       <div
                         className="w-full h-full flex items-center justify-center"
-                        style={{ backgroundColor: category.color ? `${category.color}20` : '#f3f4f6' }}
+                        style={{ backgroundColor: `${getCategoryColor(category)}20` }}
                       >
                         <span className="text-5xl">{CATEGORY_ICONS[catId] || CATEGORY_ICONS[catLabel] || '🔧'}</span>
                       </div>
@@ -398,7 +412,7 @@ const HomePage: React.FC = () => {
                     {/* Category Color Accent */}
                     <div
                       className="absolute bottom-0 left-0 right-0 h-1"
-                      style={{ backgroundColor: category.color || '#6366f1' }}
+                      style={{ backgroundColor: getCategoryColor(category) }}
                     />
                   </div>
                   {/* Content */}
@@ -408,17 +422,17 @@ const HomePage: React.FC = () => {
                         <h3 className="font-bold text-gray-900 text-lg mb-1 group-hover:text-nilin-primary transition-colors">
                           {catLabel}
                         </h3>
-                        {category.subcategoryCount && (
-                          <p className="text-sm text-gray-500">{category.subcategoryCount} subcategories</p>
+                        {getCategorySubcategoryCount(category) && (
+                          <p className="text-sm text-gray-500">{getCategorySubcategoryCount(category)} subcategories</p>
                         )}
                       </div>
                       <div
                         className="w-10 h-10 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform"
-                        style={{ backgroundColor: category.color ? `${category.color}15` : '#f3f4f6' }}
+                        style={{ backgroundColor: `${getCategoryColor(category)}15` }}
                       >
                         <ArrowRight
                           className="w-5 h-5 group-hover:translate-x-0.5 transition-transform"
-                          style={{ color: category.color || '#6366f1' }}
+                          style={{ color: getCategoryColor(category) }}
                         />
                       </div>
                     </div>
