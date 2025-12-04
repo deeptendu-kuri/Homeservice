@@ -25,6 +25,8 @@ import AdminDashboard from './components/dashboard/AdminDashboard';
 import HomePage from './pages/HomePage';
 import SearchPage from './pages/SearchPage';
 import ServiceDetailPage from './pages/ServiceDetailPage';
+import CategoryPage from './pages/CategoryPage';
+import ProviderDetailPage from './pages/ProviderDetailPage';
 import ServiceManagementPage from './pages/ServiceManagementPage';
 // Booking pages
 import {
@@ -155,6 +157,18 @@ function App() {
         <Route
           path="/services/:id"
           element={<ServiceDetailPage />}
+        />
+
+        {/* Category Detail Route */}
+        <Route
+          path="/category/:slug"
+          element={<CategoryPage />}
+        />
+
+        {/* Provider Detail Route */}
+        <Route
+          path="/provider/:id"
+          element={<ProviderDetailPage />}
         />
 
         {/* Book Service Route */}

@@ -16,10 +16,19 @@ import NavigationHeader from '../components/layout/NavigationHeader';
 import Footer from '../components/layout/Footer';
 import { searchApi } from '../services/searchApi';
 import type { Service } from '../types/service';
+import { useCategories } from '../hooks/useCategories';
 import { CATEGORY_LIST } from '../constants/categories';
 
-// Category icons (illustrated style for cleaner look)
+// Category icons for NILIN master categories
 const CATEGORY_ICONS: Record<string, string> = {
+  // NILIN master categories
+  'beauty-wellness': '💅',
+  'fitness-personal-health': '💪',
+  'mobile-medical-care': '🏥',
+  'education-personal-development': '📚',
+  'corporate-services': '🏢',
+  'home-maintenance': '🏠',
+  // Fallback for old category names
   'Cleaning': '🧹',
   'Beauty': '💅',
   'Fitness': '💪',
@@ -36,8 +45,16 @@ const CATEGORY_ICONS: Record<string, string> = {
   'Automotive': '🚗',
 };
 
-// Service images
+// Service images for NILIN categories
 const SERVICE_IMAGES: Record<string, string> = {
+  // NILIN master categories
+  'beauty-wellness': 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&h=300&fit=crop',
+  'fitness-personal-health': 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400&h=300&fit=crop',
+  'mobile-medical-care': 'https://images.unsplash.com/photo-1584982751601-97dcc096659c?w=400&h=300&fit=crop',
+  'education-personal-development': 'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=400&h=300&fit=crop',
+  'corporate-services': 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop',
+  'home-maintenance': 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=400&h=300&fit=crop',
+  // Fallback for old category names
   'Cleaning': 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=400&h=300&fit=crop',
   'Beauty': 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&h=300&fit=crop',
   'Fitness': 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400&h=300&fit=crop',
@@ -109,12 +126,17 @@ const HomePage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
+  // Fetch categories from API
+  const { categories: apiCategories, isLoading: categoriesLoading, error: categoriesError } = useCategories(true);
+
   // Refs for horizontal scroll
   const featuredScrollRef = useRef<HTMLDivElement>(null);
   const popularScrollRef = useRef<HTMLDivElement>(null);
 
-  // Show first 9 categories
-  const categories = CATEGORY_LIST.slice(0, 9);
+  // Use API categories if available, fallback to static list
+  const categories = apiCategories.length > 0
+    ? apiCategories.slice(0, 6) // NILIN has 6 master categories
+    : CATEGORY_LIST.slice(0, 9);
 
   useEffect(() => {
     fetchServices();
@@ -148,8 +170,18 @@ const HomePage: React.FC = () => {
     }
   };
 
-  const handleCategoryClick = (categoryValue: string) => {
-    navigate(`/search?category=${categoryValue}`);
+  const handleCategoryClick = (categorySlugOrValue: string) => {
+    // Navigate to category detail page for NILIN categories
+    navigate(`/category/${categorySlugOrValue}`);
+  };
+
+  // Helper to get category identifier (works with both API and static categories)
+  const getCategoryId = (cat: any): string => {
+    return cat.slug || cat.value;
+  };
+
+  const getCategoryLabel = (cat: any): string => {
+    return cat.name || cat.label;
   };
 
   const handleServiceClick = (serviceId: string) => {
@@ -285,72 +317,124 @@ const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* Categories Grid */}
-      <section className="bg-white py-6 md:py-16">
+      {/* Categories Grid - Clean Professional Layout */}
+      <section className="bg-white py-8 md:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="hidden md:block text-center mb-10">
-            <h2 className="text-3xl md:text-4xl font-black text-nilin-dark mb-4">Our Services</h2>
-            <p className="text-gray-600">Find the perfect professional for your needs</p>
+          {/* Section Header */}
+          <div className="text-center mb-8 md:mb-12">
+            <h2 className="text-2xl md:text-4xl font-black text-nilin-dark mb-2 md:mb-4">
+              Explore Services
+            </h2>
+            <p className="text-gray-500 text-sm md:text-base max-w-2xl mx-auto">
+              Choose from our curated categories of professional services
+            </p>
           </div>
 
-          {/* Mobile: 3-column clean grid */}
-          <div className="grid grid-cols-3 gap-3 md:hidden">
-            {categories.map((category) => (
-              <button
-                key={category.value}
-                onClick={() => handleCategoryClick(category.value)}
-                className="flex flex-col items-center p-3 bg-gray-50 rounded-2xl hover:bg-gray-100 transition-colors"
-              >
-                <div className="w-14 h-14 mb-2 rounded-xl bg-white shadow-sm flex items-center justify-center text-2xl">
-                  {CATEGORY_ICONS[category.value] || '🔧'}
-                </div>
-                <span className="text-xs font-medium text-gray-700 text-center leading-tight">
-                  {category.label}
-                </span>
-              </button>
-            ))}
-          </div>
-
-          {/* Desktop: 5-column grid with images */}
-          <div className="hidden md:grid grid-cols-5 gap-6">
-            {categories.map((category, index) => (
-              <button
-                key={category.value}
-                onClick={() => handleCategoryClick(category.value)}
-                className="group bg-white rounded-3xl p-6 text-center hover:shadow-xl transition-all border border-gray-100 hover:border-nilin-primary/20 hover:-translate-y-1"
-              >
-                <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-nilin-pink to-nilin-lavender flex items-center justify-center overflow-hidden">
-                  {SERVICE_IMAGES[category.value] ? (
-                    <img
-                      src={SERVICE_IMAGES[category.value]}
-                      alt={category.label}
-                      className="w-12 h-12 rounded-xl object-cover"
-                    />
-                  ) : (
-                    <span className="text-3xl">{CATEGORY_ICONS[category.value] || '🔧'}</span>
+          {/* Mobile: 2-column clean grid */}
+          <div className="grid grid-cols-2 gap-4 md:hidden">
+            {categories.map((category) => {
+              const catId = getCategoryId(category);
+              const catLabel = getCategoryLabel(category);
+              return (
+                <button
+                  key={category._id || category.value}
+                  onClick={() => handleCategoryClick(catId)}
+                  className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-50 to-white border border-gray-100 p-4 text-left hover:shadow-lg transition-all active:scale-[0.98]"
+                >
+                  <div
+                    className="absolute top-0 right-0 w-20 h-20 rounded-full opacity-10 -mr-6 -mt-6"
+                    style={{ backgroundColor: category.color || '#6366f1' }}
+                  />
+                  <div
+                    className="w-12 h-12 mb-3 rounded-xl flex items-center justify-center text-2xl"
+                    style={{ backgroundColor: category.color ? `${category.color}15` : '#f3f4f6' }}
+                  >
+                    {CATEGORY_ICONS[catId] || CATEGORY_ICONS[catLabel] || '🔧'}
+                  </div>
+                  <h3 className="font-semibold text-gray-900 text-sm leading-tight mb-1">
+                    {catLabel}
+                  </h3>
+                  {category.subcategoryCount && (
+                    <p className="text-xs text-gray-400">{category.subcategoryCount} services</p>
                   )}
-                </div>
-                <h3 className="font-bold text-nilin-dark">{category.label}</h3>
-              </button>
-            ))}
-            <button
-              onClick={() => navigate('/search')}
-              className="bg-nilin-primary rounded-3xl p-6 text-center hover:shadow-xl transition-all hover:-translate-y-1 hover:bg-nilin-primary-dark"
-            >
-              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-white/20 flex items-center justify-center">
-                <ArrowRight className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="font-bold text-white">View All</h3>
-            </button>
+                  <ChevronRight
+                    className="absolute bottom-4 right-4 w-4 h-4 text-gray-300"
+                  />
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Desktop: Clean 3x2 grid for 6 NILIN categories */}
+          <div className="hidden md:grid grid-cols-3 gap-6 max-w-5xl mx-auto">
+            {categories.map((category) => {
+              const catId = getCategoryId(category);
+              const catLabel = getCategoryLabel(category);
+              const imageUrl = SERVICE_IMAGES[catId] || SERVICE_IMAGES[catLabel];
+              return (
+                <button
+                  key={category._id || category.value}
+                  onClick={() => handleCategoryClick(catId)}
+                  className="group relative overflow-hidden rounded-3xl bg-white border border-gray-100 hover:border-transparent hover:shadow-2xl transition-all duration-300 hover:-translate-y-1"
+                >
+                  {/* Image Background */}
+                  <div className="relative h-40 overflow-hidden">
+                    {imageUrl ? (
+                      <img
+                        src={imageUrl}
+                        alt={catLabel}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      />
+                    ) : (
+                      <div
+                        className="w-full h-full flex items-center justify-center"
+                        style={{ backgroundColor: category.color ? `${category.color}20` : '#f3f4f6' }}
+                      >
+                        <span className="text-5xl">{CATEGORY_ICONS[catId] || CATEGORY_ICONS[catLabel] || '🔧'}</span>
+                      </div>
+                    )}
+                    {/* Gradient Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                    {/* Category Color Accent */}
+                    <div
+                      className="absolute bottom-0 left-0 right-0 h-1"
+                      style={{ backgroundColor: category.color || '#6366f1' }}
+                    />
+                  </div>
+                  {/* Content */}
+                  <div className="p-5">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h3 className="font-bold text-gray-900 text-lg mb-1 group-hover:text-nilin-primary transition-colors">
+                          {catLabel}
+                        </h3>
+                        {category.subcategoryCount && (
+                          <p className="text-sm text-gray-500">{category.subcategoryCount} subcategories</p>
+                        )}
+                      </div>
+                      <div
+                        className="w-10 h-10 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform"
+                        style={{ backgroundColor: category.color ? `${category.color}15` : '#f3f4f6' }}
+                      >
+                        <ArrowRight
+                          className="w-5 h-5 group-hover:translate-x-0.5 transition-transform"
+                          style={{ color: category.color || '#6366f1' }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
           </div>
 
           {/* Mobile: View All Link */}
           <button
             onClick={() => navigate('/search')}
-            className="md:hidden flex items-center justify-center gap-2 w-full mt-4 py-3 text-nilin-primary font-semibold text-sm"
+            className="md:hidden flex items-center justify-center gap-2 w-full mt-6 py-3 bg-gray-50 rounded-xl text-nilin-primary font-semibold text-sm hover:bg-gray-100 transition-colors"
           >
-            View all services
-            <ChevronRight className="w-4 h-4" />
+            Browse all services
+            <ArrowRight className="w-4 h-4" />
           </button>
         </div>
       </section>

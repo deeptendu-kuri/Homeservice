@@ -4,7 +4,9 @@ import authRoutes from './auth.routes';
 import searchRoutes from './search.routes';
 import adminRoutes from './admin.routes';
 import providerRoutes from './provider.routes';
+import providerPublicRoutes from './provider.public.routes';
 import bookingRoutes from './booking.routes';
+import categoryRoutes from './category.routes';
 
 const router = Router();
 
@@ -21,6 +23,8 @@ router.get('/', (_req, res) => {
       auth: '/api/auth',
       verify: '/api/verify',
       search: '/api/search',
+      categories: '/api/categories',
+      providers: '/api/providers',
       admin: '/api/admin',
       provider: '/api/provider',
       bookings: '/api/bookings',
@@ -39,10 +43,16 @@ router.use('/verify', verifyRoutes);
 // Search routes
 router.use('/search', searchRoutes);
 
+// Category routes
+router.use('/categories', categoryRoutes);
+
+// Public Provider routes (must be before protected provider routes)
+router.use('/providers', providerPublicRoutes);
+
 // Admin routes
 router.use('/admin', adminRoutes);
 
-// Provider routes
+// Provider routes (protected)
 router.use('/provider', providerRoutes);
 
 // Booking and Availability routes

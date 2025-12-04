@@ -1,13 +1,19 @@
 import { Request, Response, NextFunction } from 'express';
 import Joi from 'joi';
-import { SERVICE_CATEGORIES } from '../../constants/categories';
+import { SERVICE_CATEGORIES, CATEGORY_SLUG_MAP, normalizeCategoryName } from '../../constants/categories';
 
 const searchQuerySchema = Joi.object({
   q: Joi.string().min(1).max(100).trim().allow('').optional(),
   category: Joi.string().allow('').optional().custom((value, helpers) => {
     if (!value || value === '') return value;
 
-    // Check if it's a valid category (case-insensitive)
+    // First check if it's a slug and convert to category name
+    const fromSlug = CATEGORY_SLUG_MAP[value.toLowerCase()];
+    if (fromSlug) {
+      return fromSlug; // Return the proper category name
+    }
+
+    // Then check if it's a valid category name (case-insensitive)
     const found = SERVICE_CATEGORIES.find(
       cat => cat.toLowerCase() === value.toLowerCase()
     );
@@ -17,19 +23,19 @@ const searchQuerySchema = Joi.object({
     }
 
     return helpers.error('any.invalid', {
-      message: `"${value}" is not a valid category. Valid categories are: ${SERVICE_CATEGORIES.join(', ')}`
+      message: `"${value}" is not a valid category. Valid categories include: ${SERVICE_CATEGORIES.slice(0, 5).join(', ')}... (and more)`
     });
   }),
   subcategory: Joi.string().max(50).trim().optional(),
-  minPrice: Joi.number().min(0).max(10000).optional(),
-  maxPrice: Joi.number().min(0).max(10000).optional(),
+  minPrice: Joi.number().min(0).max(100000).optional(),
+  maxPrice: Joi.number().min(0).max(100000).optional(),
   minRating: Joi.number().min(0).max(5).optional(),
   lat: Joi.number().min(-90).max(90).optional(),
   lng: Joi.number().min(-180).max(180).optional(),
   radius: Joi.number().min(1).max(100).default(25),
   city: Joi.string().max(50).trim().allow('').optional(),
   state: Joi.string().max(50).trim().allow('').optional(),
-  zipCode: Joi.string().pattern(/^\d{5}(-\d{4})?$/).optional().messages({
+  zipCode: Joi.string().pattern(/^\d{5,6}(-\d{4})?$/).optional().messages({
     'string.pattern.base': 'Invalid zip code format'
   }),
   sortBy: Joi.string().valid(
@@ -48,23 +54,23 @@ const searchQuerySchema = Joi.object({
   availableToday: Joi.boolean().optional()
 }).custom((value, helpers) => {
   if (value.minPrice && value.maxPrice && value.minPrice > value.maxPrice) {
-    return helpers.error('custom.minMaxPrice', { 
-      message: 'minPrice cannot be greater than maxPrice' 
+    return helpers.error('custom.minMaxPrice', {
+      message: 'minPrice cannot be greater than maxPrice'
     });
   }
-  
+
   if ((value.lat && !value.lng) || (!value.lat && value.lng)) {
-    return helpers.error('custom.coordinates', { 
-      message: 'Both latitude and longitude are required for location search' 
+    return helpers.error('custom.coordinates', {
+      message: 'Both latitude and longitude are required for location search'
     });
   }
-  
+
   if (value.q && value.q.trim() && value.q.trim().length < 2) {
-    return helpers.error('custom.searchQuery', { 
-      message: 'Search query must be at least 2 characters long' 
+    return helpers.error('custom.searchQuery', {
+      message: 'Search query must be at least 2 characters long'
     });
   }
-  
+
   return value;
 }).messages({
   'custom.minMaxPrice': 'minPrice cannot be greater than maxPrice',
@@ -74,12 +80,28 @@ const searchQuerySchema = Joi.object({
 
 const suggestionQuerySchema = Joi.object({
   q: Joi.string().min(1).max(50).trim().required(),
-  category: Joi.string().valid(...SERVICE_CATEGORIES),
+  category: Joi.string().optional().custom((value, helpers) => {
+    if (!value) return value;
+    const normalized = normalizeCategoryName(value);
+    if (normalized) return normalized;
+    return helpers.error('any.invalid');
+  }),
   limit: Joi.number().integer().min(1).max(10).default(5)
 });
 
 const categoryParamSchema = Joi.object({
-  category: Joi.string().valid(...SERVICE_CATEGORIES).required()
+  category: Joi.string().required().custom((value, helpers) => {
+    // Accept both slugs and names
+    const fromSlug = CATEGORY_SLUG_MAP[value.toLowerCase()];
+    if (fromSlug) return fromSlug;
+
+    const found = SERVICE_CATEGORIES.find(
+      cat => cat.toLowerCase() === value.toLowerCase()
+    );
+    if (found) return found;
+
+    return helpers.error('any.invalid');
+  })
 });
 
 export const validateSearchQuery = (req: Request, res: Response, next: NextFunction): void => {
@@ -162,7 +184,7 @@ export const validateCategoryParam = (req: Request, res: Response, next: NextFun
 
 export const validateServiceId = (req: Request, res: Response, next: NextFunction): void => {
   const serviceIdSchema = Joi.string().pattern(/^[0-9a-fA-F]{24}$/).required();
-  
+
   const { error } = serviceIdSchema.validate(req.params.id);
 
   if (error) {
