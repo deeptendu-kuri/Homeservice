@@ -108,7 +108,7 @@ const CategoryPage: React.FC = () => {
   };
 
   // Get display config from metadata
-  const displayConfig = category.metadata?.displayConfig || {};
+  const displayConfig = (category.metadata?.displayConfig || {}) as any;
   const tagline = displayConfig.tagline || 'Premium services, handpicked by NILIN';
 
   return (

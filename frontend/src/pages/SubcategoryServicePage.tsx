@@ -163,7 +163,7 @@ const SubcategoryServicePage: React.FC = () => {
   }
 
   // Extract metadata
-  const metadata = subcategory.metadata || {};
+  const metadata = (subcategory.metadata || {}) as any;
   const heroTitle = metadata.heroTitle || `${subcategory.name} at Home`;
   const heroSubtitle = metadata.heroSubtitle || 'Professional, verified specialists at your location';
   const heroImage = metadata.heroImage;
@@ -182,7 +182,7 @@ const SubcategoryServicePage: React.FC = () => {
                 items={[
                   { label: 'Home', href: '/' },
                   { label: category.name, href: `/category/${categorySlug}` },
-                  { label: subcategory.metadata?.displayName || subcategory.name },
+                  { label: (subcategory.metadata as any)?.displayName || subcategory.name },
                 ]}
               />
               <button

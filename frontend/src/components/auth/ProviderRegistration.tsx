@@ -345,12 +345,15 @@ const ProviderRegistration: React.FC = () => {
         />;
       
       case 4:
-        return <ServicesStep 
-          register={register} 
-          formErrors={formErrors} 
+        return <ServicesStep
+          register={register}
+          formErrors={formErrors}
           services={watchedServices}
           addService={addService}
           removeService={removeService}
+          categoriesLoading={categoriesLoading}
+          categoryOptions={categoryOptions}
+          watchedServices={watchedServices}
         />;
       
       case 5:
@@ -889,7 +892,7 @@ const LocationInfoStep = ({ register, formErrors, watch }: any) => (
   </div>
 );
 
-const ServicesStep = ({ register, formErrors, services, addService, removeService }: any) => (
+const ServicesStep = ({ register, formErrors, services, addService, removeService, categoriesLoading, categoryOptions, watchedServices }: any) => (
   <div className="space-y-6">
     <div className="flex items-center justify-between">
       <h2 className="text-lg font-medium text-gray-900">Services Offered</h2>
@@ -944,7 +947,7 @@ const ServicesStep = ({ register, formErrors, services, addService, removeServic
                 disabled={categoriesLoading}
               >
                 <option value="">{categoriesLoading ? 'Loading categories...' : 'Select a category'}</option>
-                {categoryOptions.map(cat => (
+                {categoryOptions.map((cat: any) => (
                   <option key={cat.name} value={cat.name}>{cat.name}</option>
                 ))}
               </select>
@@ -966,8 +969,8 @@ const ServicesStep = ({ register, formErrors, services, addService, removeServic
                 <option value="">Select a subcategory (optional)</option>
                 {watchedServices?.[index]?.category &&
                   categoryOptions
-                    .find(cat => cat.name === watchedServices[index].category)
-                    ?.subcategories.map(sub => (
+                    .find((cat: any) => cat.name === watchedServices[index].category)
+                    ?.subcategories.map((sub: string) => (
                       <option key={sub} value={sub}>{sub}</option>
                     ))
                 }
