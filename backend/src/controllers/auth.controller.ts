@@ -4,6 +4,8 @@ import crypto from 'crypto';
 import User from '../models/user.model';
 import CustomerProfile from '../models/customerProfile.model';
 import ProviderProfile from '../models/providerProfile.model';
+import Service from '../models/service.model';
+import ServiceCategory from '../models/serviceCategory.model';
 import { ApiError } from '../utils/ApiError';
 import { asyncHandler } from '../utils/asyncHandler';
 import { sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail } from '../services/email.service';
@@ -429,7 +431,10 @@ export const registerProvider = asyncHandler(async (req: Request, res: Response)
       // Create provider profile
       const providerProfile = new ProviderProfile({
         userId: user._id,
-        
+
+        // Provider tier - all new providers start as standard
+        tier: 'standard',
+
         businessInfo: {
           businessName: businessInfo.businessName,
           businessType: businessInfo.businessType || 'individual',
@@ -631,6 +636,139 @@ export const registerProvider = asyncHandler(async (req: Request, res: Response)
       });
 
       await providerProfile.save();
+
+      // Create Service documents in the services collection (single source of truth)
+      // This ensures services appear in search results after admin approval
+      const createdServices: any[] = [];
+      if (services && services.length > 0) {
+        console.log(`📦 [registerProvider] Creating ${services.length} services in services collection`);
+
+        // Validate and normalize category/subcategory names against database (single source of truth)
+        const allCategories = await ServiceCategory.find({ isActive: true }).lean();
+        const categoryMap = new Map<string, { exactName: string; subcategoryMap: Map<string, string> }>();
+
+        for (const cat of allCategories) {
+          const subcatMap = new Map<string, string>();
+          for (const sub of ((cat as any).subcategories || [])) {
+            if (sub.isActive !== false) {
+              subcatMap.set(sub.name.toLowerCase(), sub.name);
+            }
+          }
+          categoryMap.set((cat as any).name.toLowerCase(), {
+            exactName: (cat as any).name,
+            subcategoryMap: subcatMap
+          });
+        }
+
+        // Validate and normalize each service's category/subcategory
+        for (const service of services) {
+          const catLower = service.category?.toLowerCase();
+          const catData = categoryMap.get(catLower);
+
+          if (!catData) {
+            const validCats = Array.from(categoryMap.values()).map(c => c.exactName);
+            throw new ApiError(400,
+              `Invalid category "${service.category}". Valid categories: ${validCats.join(', ')}`
+            );
+          }
+
+          // Normalize category name to exact DB value
+          service.category = catData.exactName;
+
+          // Validate and normalize subcategory if provided
+          if (service.subcategory) {
+            const subLower = service.subcategory.toLowerCase();
+            const exactSubcat = catData.subcategoryMap.get(subLower);
+
+            if (!exactSubcat) {
+              const validSubs = Array.from(catData.subcategoryMap.values());
+              throw new ApiError(400,
+                `Invalid subcategory "${service.subcategory}" for category "${catData.exactName}". Valid subcategories: ${validSubs.join(', ')}`
+              );
+            }
+
+            // Normalize subcategory name to exact DB value
+            service.subcategory = exactSubcat;
+          }
+        }
+
+        console.log(`✅ [registerProvider] All services validated against database categories`);
+
+        for (const service of services) {
+          try {
+            const newService = new Service({
+              providerId: user._id,
+              name: service.name,
+              category: service.category,
+              subcategory: service.subcategory || '',
+              description: service.description,
+              shortDescription: service.description?.substring(0, 100) || '',
+              duration: service.duration,
+              price: {
+                amount: service.price.amount,
+                currency: service.price.currency || 'INR',
+                type: service.price.type || 'fixed'
+              },
+              location: {
+                coordinates: {
+                  type: 'Point',
+                  coordinates: [
+                    locationInfo.primaryAddress?.coordinates?.lng || 0,
+                    locationInfo.primaryAddress?.coordinates?.lat || 0
+                  ]
+                },
+                address: {
+                  street: locationInfo.primaryAddress?.street || '',
+                  city: locationInfo.primaryAddress?.city || '',
+                  state: locationInfo.primaryAddress?.state || '',
+                  zipCode: locationInfo.primaryAddress?.zipCode || '',
+                  country: locationInfo.primaryAddress?.country || 'IN'
+                }
+              },
+              availability: {
+                schedule: {
+                  monday: { isAvailable: true, timeSlots: [] },
+                  tuesday: { isAvailable: true, timeSlots: [] },
+                  wednesday: { isAvailable: true, timeSlots: [] },
+                  thursday: { isAvailable: true, timeSlots: [] },
+                  friday: { isAvailable: true, timeSlots: [] },
+                  saturday: { isAvailable: true, timeSlots: [] },
+                  sunday: { isAvailable: false, timeSlots: [] }
+                },
+                instantBooking: false,
+                advanceBookingDays: 7
+              },
+              // IMPORTANT: Require admin approval (matching provider.controller.ts logic)
+              status: 'pending_review',
+              isActive: false,
+              tags: service.tags || [],
+              requirements: [],
+              includedItems: [],
+              rating: {
+                average: 0,
+                count: 0,
+                distribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
+              },
+              searchMetadata: {
+                searchCount: 0,
+                clickCount: 0,
+                bookingCount: 0,
+                popularityScore: 0,
+                searchKeywords: [service.name, service.category, service.subcategory].filter(Boolean)
+              }
+            });
+
+            const savedService = await newService.save();
+            createdServices.push(savedService);
+            console.log(`✅ [registerProvider] Created service: ${savedService.name} (ID: ${savedService._id})`);
+          } catch (serviceError) {
+            console.error(`❌ [registerProvider] Failed to create service ${service.name}:`, serviceError);
+            // Continue with other services even if one fails
+          }
+        }
+
+        console.log(`📦 [registerProvider] Successfully created ${createdServices.length}/${services.length} services`);
+      }
 
       // Award provider welcome bonus
       await user.addLoyaltyPoints(500, 'bonus', 'Welcome to our provider community!', undefined);

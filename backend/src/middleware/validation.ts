@@ -23,10 +23,8 @@ const createBookingSchema = Joi.object({
     }),
 
   scheduledDate: Joi.date()
-    .min('now')
     .required()
     .messages({
-      'date.min': 'Scheduled date cannot be in the past',
       'any.required': 'Scheduled date is required'
     }),
 
@@ -41,13 +39,14 @@ const createBookingSchema = Joi.object({
   location: Joi.object({
     type: Joi.string()
       .valid('customer_address', 'provider_location', 'online')
-      .required(),
+      .optional()
+      .default('customer_address'),
     address: Joi.object({
-      street: Joi.string().required(),
-      city: Joi.string().required(),
-      state: Joi.string().required(),
-      zipCode: Joi.string().required(),
-      country: Joi.string().default('US'),
+      street: Joi.string().allow('').optional(),
+      city: Joi.string().allow('').optional(),
+      state: Joi.string().allow('').optional(),
+      zipCode: Joi.string().allow('').optional(),
+      country: Joi.string().default('IN'),
       coordinates: Joi.object({
         type: Joi.string().valid('Point').default('Point'),
         coordinates: Joi.array()
@@ -56,21 +55,22 @@ const createBookingSchema = Joi.object({
           .optional()
       }).optional()
     }).optional(),
-    notes: Joi.string().max(500).optional()
-  }).required(),
+    notes: Joi.string().max(500).allow('').optional()
+  }).optional(),
 
   customerInfo: Joi.object({
     firstName: Joi.string().min(2).max(50).optional(),
     lastName: Joi.string().min(2).max(50).optional(),
     email: Joi.string().email().optional(),
     phone: Joi.string()
-      .pattern(/^\+?[\d\s\-\(\)]{10,}$/)
-      .required()
+      .pattern(/^\+?[\d\s\-\(\)]{7,}$/)
+      .allow('')
+      .optional()
       .messages({
-        'string.pattern.base': 'Invalid phone number format',
-        'any.required': 'Phone number is required'
+        'string.pattern.base': 'Invalid phone number format'
       }),
-    specialRequests: Joi.string().max(1000).optional()
+    specialRequests: Joi.string().max(1000).allow('').optional(),
+    accessInstructions: Joi.string().max(500).allow('').optional()
   }).optional(),
 
   addOns: Joi.array()
@@ -82,6 +82,8 @@ const createBookingSchema = Joi.object({
     )
     .optional(),
 
+  notes: Joi.string().max(1000).allow('').optional(),
+
   metadata: Joi.object({
     bookingSource: Joi.string()
       .valid('search', 'profile', 'recommendation', 'repeat')
@@ -90,7 +92,28 @@ const createBookingSchema = Joi.object({
       .valid('mobile', 'desktop', 'tablet')
       .default('desktop'),
     sessionId: Joi.string().optional()
-  }).optional()
+  }).optional(),
+
+  // New booking flow fields
+  locationType: Joi.string()
+    .valid('at_home', 'hotel')
+    .optional()
+    .default('at_home'),
+
+  selectedDuration: Joi.number()
+    .min(15)
+    .max(480)
+    .optional(),
+
+  professionalPreference: Joi.string()
+    .valid('male', 'female', 'no_preference')
+    .optional()
+    .default('no_preference'),
+
+  paymentMethod: Joi.string()
+    .valid('apple_pay', 'credit_card', 'cash')
+    .optional()
+    .default('credit_card')
 });
 
 const bookingMessageSchema = Joi.object({
@@ -272,12 +295,18 @@ const blockPeriodSchema = Joi.object({
 // Generic validation middleware factory
 const createValidationMiddleware = (schema: Joi.ObjectSchema) => {
   return (req: Request, res: Response, next: NextFunction) => {
+    // Debug logging for booking validation
+    if (req.path === '/api/bookings' || req.originalUrl?.includes('/bookings')) {
+      console.log('🔍 [BOOKING VALIDATION] Request body:', JSON.stringify(req.body, null, 2));
+    }
+
     const { error, value } = schema.validate(req.body, {
       abortEarly: false,
       stripUnknown: true
     });
 
     if (error) {
+      console.log('❌ [VALIDATION ERROR]', error.details);
       const errorMessages = error.details.map(detail => ({
         field: detail.path.join('.'),
         message: detail.message

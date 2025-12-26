@@ -2,7 +2,10 @@ import mongoose, { Document, Schema, Model } from 'mongoose';
 
 export interface IProviderProfile extends Document {
   userId: mongoose.Types.ObjectId;
-  
+
+  // Provider Tier Level (for display and sorting)
+  tier: 'elite' | 'premium' | 'standard';
+
   // Business Information
   businessInfo: {
     businessName: string;
@@ -487,7 +490,15 @@ const providerProfileSchema = new Schema<IProviderProfile>(
       unique: true,
       index: true
     },
-    
+
+    // Provider Tier Level - used for display badges and sorting
+    tier: {
+      type: String,
+      enum: ['elite', 'premium', 'standard'],
+      default: 'standard',
+      index: true
+    },
+
     businessInfo: {
       businessName: { 
         type: String, 

@@ -1,7 +1,56 @@
 import { Request, Response } from 'express';
 import Service from '../models/service.model';
+import ServiceCategory from '../models/serviceCategory.model';
 import { ApiError } from '../utils/ApiError';
 import { asyncHandler } from '../utils/asyncHandler';
+
+// Helper function to validate and normalize category/subcategory against database
+const validateAndNormalizeCategorySubcategory = async (category: string, subcategory?: string) => {
+  const allCategories = await ServiceCategory.find({ isActive: true }).lean();
+  const categoryMap = new Map<string, { exactName: string; subcategoryMap: Map<string, string> }>();
+
+  for (const cat of allCategories) {
+    const subcatMap = new Map<string, string>();
+    for (const sub of ((cat as any).subcategories || [])) {
+      if (sub.isActive !== false) {
+        subcatMap.set(sub.name.toLowerCase(), sub.name);
+      }
+    }
+    categoryMap.set((cat as any).name.toLowerCase(), {
+      exactName: (cat as any).name,
+      subcategoryMap: subcatMap
+    });
+  }
+
+  const catLower = category?.toLowerCase();
+  const catData = categoryMap.get(catLower);
+
+  if (!catData) {
+    const validCats = Array.from(categoryMap.values()).map(c => c.exactName);
+    throw new ApiError(400,
+      `Invalid category "${category}". Valid categories: ${validCats.join(', ')}`
+    );
+  }
+
+  let normalizedSubcategory = subcategory || '';
+  if (subcategory) {
+    const subLower = subcategory.toLowerCase();
+    const exactSubcat = catData.subcategoryMap.get(subLower);
+
+    if (!exactSubcat) {
+      const validSubs = Array.from(catData.subcategoryMap.values());
+      throw new ApiError(400,
+        `Invalid subcategory "${subcategory}" for category "${catData.exactName}". Valid subcategories: ${validSubs.join(', ')}`
+      );
+    }
+    normalizedSubcategory = exactSubcat;
+  }
+
+  return {
+    category: catData.exactName,
+    subcategory: normalizedSubcategory
+  };
+};
 
 // ===================================
 // INTERFACES & TYPES
@@ -156,6 +205,15 @@ export const createService = asyncHandler(async (req: Request, res: Response) =>
 
     console.log('🔍 [createService] Provider profile location:', JSON.stringify(providerProfile.locationInfo.primaryAddress, null, 2));
 
+    // Validate and normalize category/subcategory against database (single source of truth)
+    const { category, subcategory } = await validateAndNormalizeCategorySubcategory(
+      req.body.category,
+      req.body.subcategory
+    );
+    req.body.category = category;
+    req.body.subcategory = subcategory;
+    console.log('✅ [createService] Category/subcategory validated:', { category, subcategory });
+
     // ✅ FIX: Extract coordinates properly from provider profile and convert to array format
     let serviceCoordinates;
     if (providerProfile.locationInfo.primaryAddress.coordinates) {
@@ -279,7 +337,21 @@ export const updateService = asyncHandler(async (req: Request, res: Response) =>
     if (!existingService) {
       throw new ApiError(404, 'Service not found or access denied');
     }
-    
+
+    // Validate and normalize category/subcategory if being updated
+    if (req.body.category || req.body.subcategory) {
+      const categoryToValidate = req.body.category || existingService.category;
+      const subcategoryToValidate = req.body.subcategory || existingService.subcategory;
+
+      const { category, subcategory } = await validateAndNormalizeCategorySubcategory(
+        categoryToValidate,
+        subcategoryToValidate
+      );
+
+      if (req.body.category) req.body.category = category;
+      if (req.body.subcategory) req.body.subcategory = subcategory;
+    }
+
     // Add audit fields
     const updateData = {
       ...req.body,

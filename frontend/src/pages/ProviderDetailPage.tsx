@@ -29,14 +29,18 @@ const ServiceCard: React.FC<{
   service: ProviderService;
   providerId: string;
   onBook: () => void;
-}> = ({ service, onBook }) => (
-  <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg transition-all group">
-    <div className="relative h-36 overflow-hidden bg-gray-100">
+  onViewDetails: () => void;
+}> = ({ service, onBook, onViewDetails }) => (
+  <div
+    onClick={onViewDetails}
+    className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg transition-all group cursor-pointer"
+  >
+    <div className="relative h-40 overflow-hidden bg-gradient-to-br from-gray-100 to-gray-50">
       {service.images && service.images.length > 0 ? (
         <img
           src={service.images[0]}
           alt={service.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />
       ) : (
         <div className="w-full h-full flex items-center justify-center">
@@ -44,31 +48,42 @@ const ServiceCard: React.FC<{
         </div>
       )}
       {service.isPopular && (
-        <span className="absolute top-2 left-2 px-2 py-1 bg-orange-500 text-white text-xs font-semibold rounded-full">
+        <span className="absolute top-2 left-2 px-2.5 py-1 bg-gradient-to-r from-orange-500 to-amber-500 text-white text-xs font-semibold rounded-full shadow-sm">
           Popular
         </span>
       )}
       {service.isFeatured && !service.isPopular && (
-        <span className="absolute top-2 left-2 px-2 py-1 bg-nilin-primary text-white text-xs font-semibold rounded-full">
+        <span className="absolute top-2 left-2 px-2.5 py-1 bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-xs font-semibold rounded-full shadow-sm">
           Featured
         </span>
       )}
+      {/* View details hint on hover */}
+      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+        <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full text-sm font-medium text-gray-700 shadow-sm">
+          View Details
+        </span>
+      </div>
     </div>
     <div className="p-4">
-      <h4 className="font-semibold text-gray-900 mb-1">{service.name}</h4>
+      <h4 className="font-semibold text-gray-900 mb-1 group-hover:text-indigo-600 transition-colors">
+        {service.name}
+      </h4>
       <p className="text-sm text-gray-500 line-clamp-2 mb-3">
         {service.shortDescription || service.description}
       </p>
       <div className="flex items-center justify-between">
         <div>
           <span className="text-lg font-bold text-gray-900">
-            {service.price.currency === 'INR' ? '₹' : '$'}{service.price.amount}
+            AED {service.price.amount}
           </span>
           <span className="text-sm text-gray-400 ml-2">· {service.duration} mins</span>
         </div>
         <button
-          onClick={onBook}
-          className="px-4 py-2 bg-nilin-primary text-white text-sm font-medium rounded-lg hover:bg-nilin-primary-dark transition-colors"
+          onClick={(e) => {
+            e.stopPropagation(); // Prevent card click
+            onBook();
+          }}
+          className="px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 transition-colors shadow-sm hover:shadow-md"
         >
           Book
         </button>
@@ -482,6 +497,7 @@ const ProviderDetailPage: React.FC = () => {
                       service={service}
                       providerId={provider.id}
                       onBook={() => navigate(`/book/${service._id}`)}
+                      onViewDetails={() => navigate(`/services/${service._id}`)}
                     />
                   ))}
                 </div>

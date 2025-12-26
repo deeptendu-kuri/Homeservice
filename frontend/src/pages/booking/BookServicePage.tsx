@@ -25,11 +25,8 @@ const BookServicePage: React.FC = () => {
       setLoading(true);
       setError(null);
 
-      const response = await fetch(`http://localhost:5000/api/services/${serviceId}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-        }
-      });
+      // Use the correct search API endpoint to fetch service details
+      const response = await fetch(`http://localhost:5000/api/search/service/${serviceId}`);
 
       if (response.ok) {
         const data = await response.json();

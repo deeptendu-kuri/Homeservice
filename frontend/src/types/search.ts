@@ -30,6 +30,11 @@ export interface Service {
     type: 'fixed' | 'hourly' | 'custom';
   };
   duration: number;
+  durationOptions?: Array<{
+    duration: number;
+    price: number;
+    label: string;
+  }>;
   images: string[];
   tags: string[];
   location: {

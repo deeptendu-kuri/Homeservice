@@ -21,94 +21,37 @@ import {
   ProviderCTA,
 } from '../components/home';
 
-// Service images for categories with colors
-const SERVICE_DATA: Record<string, { image: string; gradient: string; badge: string }> = {
-  'beauty-wellness': {
-    image: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&h=300&fit=crop',
-    gradient: 'from-pink-500 to-rose-500',
-    badge: 'bg-pink-500',
-  },
-  'fitness-personal-health': {
-    image: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400&h=300&fit=crop',
-    gradient: 'from-emerald-500 to-green-500',
-    badge: 'bg-emerald-500',
-  },
-  'mobile-medical-care': {
-    image: 'https://images.unsplash.com/photo-1584982751601-97dcc096659c?w=400&h=300&fit=crop',
-    gradient: 'from-blue-500 to-cyan-500',
-    badge: 'bg-blue-500',
-  },
-  'education-personal-development': {
-    image: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=400&h=300&fit=crop',
-    gradient: 'from-orange-500 to-amber-500',
-    badge: 'bg-orange-500',
-  },
-  'corporate-services': {
-    image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop',
-    gradient: 'from-violet-500 to-purple-500',
-    badge: 'bg-violet-500',
-  },
-  'home-maintenance': {
-    image: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=400&h=300&fit=crop',
-    gradient: 'from-amber-500 to-yellow-500',
-    badge: 'bg-amber-500',
-  },
-  'Cleaning': {
-    image: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=400&h=300&fit=crop',
-    gradient: 'from-cyan-500 to-teal-500',
-    badge: 'bg-cyan-500',
-  },
-  'Beauty': {
-    image: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&h=300&fit=crop',
-    gradient: 'from-pink-500 to-rose-500',
-    badge: 'bg-pink-500',
-  },
-  'Fitness': {
-    image: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400&h=300&fit=crop',
-    gradient: 'from-emerald-500 to-green-500',
-    badge: 'bg-emerald-500',
-  },
-  'Home Repair': {
-    image: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=400&h=300&fit=crop',
-    gradient: 'from-amber-500 to-yellow-500',
-    badge: 'bg-amber-500',
-  },
-  'Electrical': {
-    image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop',
-    gradient: 'from-yellow-500 to-orange-500',
-    badge: 'bg-yellow-500',
-  },
-  'Plumbing': {
-    image: 'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=400&h=300&fit=crop',
-    gradient: 'from-blue-500 to-indigo-500',
-    badge: 'bg-blue-500',
-  },
-  'Tutoring': {
-    image: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=400&h=300&fit=crop',
-    gradient: 'from-orange-500 to-amber-500',
-    badge: 'bg-orange-500',
-  },
-  'Pet Care': {
-    image: 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400&h=300&fit=crop',
-    gradient: 'from-rose-500 to-pink-500',
-    badge: 'bg-rose-500',
-  },
-  'Painting': {
-    image: 'https://images.unsplash.com/photo-1562259929-b4e1fd3aef09?w=400&h=300&fit=crop',
-    gradient: 'from-purple-500 to-violet-500',
-    badge: 'bg-purple-500',
-  },
-  'Technology': {
-    image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&h=300&fit=crop',
-    gradient: 'from-slate-500 to-gray-500',
-    badge: 'bg-slate-500',
-  },
+// Simple category image lookup - now uses database images
+const getCategoryImage = (category: string): string => {
+  const CATEGORY_IMAGES: Record<string, string> = {
+    'beauty-wellness': 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400',
+    'fitness-personal-health': 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400',
+    'mobile-medical-care': 'https://images.unsplash.com/photo-1584982751601-97dcc096659c?w=400',
+    'education-personal-development': 'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=400',
+    'corporate-services': 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=400',
+    'home-maintenance': 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=400',
+    'Cleaning': 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=400',
+    'Beauty': 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400',
+    'Fitness': 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400',
+    'Home Repair': 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=400',
+  };
+  return CATEGORY_IMAGES[category] || 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=400';
 };
 
-const DEFAULT_SERVICE_DATA = {
-  image: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=400&h=300&fit=crop',
-  gradient: 'from-nilin-primary to-nilin-secondary',
-  badge: 'bg-nilin-primary',
+// Get styling for category
+const getCategoryStyle = (category: string): { gradient: string; badge: string } => {
+  const styles: Record<string, { gradient: string; badge: string }> = {
+    'beauty-wellness': { gradient: 'from-pink-500 to-rose-500', badge: 'bg-pink-500' },
+    'fitness-personal-health': { gradient: 'from-emerald-500 to-green-500', badge: 'bg-emerald-500' },
+    'mobile-medical-care': { gradient: 'from-blue-500 to-cyan-500', badge: 'bg-blue-500' },
+    'education-personal-development': { gradient: 'from-orange-500 to-amber-500', badge: 'bg-orange-500' },
+    'corporate-services': { gradient: 'from-violet-500 to-purple-500', badge: 'bg-violet-500' },
+    'home-maintenance': { gradient: 'from-amber-500 to-yellow-500', badge: 'bg-amber-500' },
+    'Cleaning': { gradient: 'from-cyan-500 to-teal-500', badge: 'bg-cyan-500' },
+    'Beauty': { gradient: 'from-pink-500 to-rose-500', badge: 'bg-pink-500' },
+    'Fitness': { gradient: 'from-emerald-500 to-green-500', badge: 'bg-emerald-500' },
+  };
+  return styles[category] || { gradient: 'from-indigo-500 to-purple-500', badge: 'bg-indigo-500' };
 };
 
 const HomePage: React.FC = () => {
@@ -161,22 +104,9 @@ const HomePage: React.FC = () => {
     }
   };
 
-  const getServiceData = (category: string) => {
-    return SERVICE_DATA[category] || DEFAULT_SERVICE_DATA;
-  };
-
-  // Placeholder services when none from API
-  const placeholderServices = [
-    { _id: '1', name: 'Deep Home Cleaning', category: 'Cleaning', price: { amount: 499 }, rating: { average: 4.9, count: 813 } },
-    { _id: '2', name: 'Hair Styling & Spa', category: 'Beauty', price: { amount: 299 }, rating: { average: 4.8, count: 1200 } },
-    { _id: '3', name: 'Personal Training', category: 'Fitness', price: { amount: 599 }, rating: { average: 4.7, count: 450 } },
-    { _id: '4', name: 'AC Service & Repair', category: 'Home Repair', price: { amount: 399 }, rating: { average: 4.9, count: 2100 } },
-    { _id: '5', name: 'Plumbing Repair', category: 'Plumbing', price: { amount: 349 }, rating: { average: 4.8, count: 890 } },
-    { _id: '6', name: 'Math Tutoring', category: 'Tutoring', price: { amount: 449 }, rating: { average: 4.9, count: 340 } },
-  ];
-
-  const displayFeatured = featuredServices.length > 0 ? featuredServices : placeholderServices;
-  const displayPopular = popularServices.length > 0 ? popularServices : placeholderServices;
+  // Display services - use real data only (no placeholders)
+  const displayFeatured = featuredServices;
+  const displayPopular = popularServices;
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
@@ -225,8 +155,8 @@ const HomePage: React.FC = () => {
                 <div key={i} className="flex-shrink-0 w-44 md:w-60 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl h-56 md:h-72 animate-pulse" />
               ))
             ) : (
-              displayPopular.map((service, index) => {
-                const serviceData = getServiceData(service.category);
+              displayPopular.length > 0 ? displayPopular.map((service, index) => {
+                const categoryStyle = getCategoryStyle(service.category);
                 return (
                   <div
                     key={service._id}
@@ -235,13 +165,13 @@ const HomePage: React.FC = () => {
                   >
                     <div className="relative h-28 md:h-36">
                       <img
-                        src={serviceData.image}
+                        src={getCategoryImage(service.category)}
                         alt={service.name}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
-                      <div className={`absolute inset-0 bg-gradient-to-t ${serviceData.gradient} opacity-20`} />
+                      <div className={`absolute inset-0 bg-gradient-to-t ${categoryStyle.gradient} opacity-20`} />
                       {index === 0 && (
-                        <span className={`absolute top-2 left-2 px-2.5 py-1 ${serviceData.badge} text-white text-[10px] md:text-xs font-bold rounded-lg shadow-md`}>
+                        <span className={`absolute top-2 left-2 px-2.5 py-1 ${categoryStyle.badge} text-white text-[10px] md:text-xs font-bold rounded-lg shadow-md`}>
                           New launch
                         </span>
                       )}
@@ -267,18 +197,22 @@ const HomePage: React.FC = () => {
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="font-bold text-gray-900 text-sm md:text-base">
-                          ₹{service.price?.amount || 499}
+                          AED {service.price?.amount || 499}
                         </span>
                         {index % 2 === 0 && (
                           <span className="text-xs text-gray-400 line-through">
-                            ₹{Math.round((service.price?.amount || 499) * 1.2)}
+                            AED {Math.round((service.price?.amount || 499) * 1.2)}
                           </span>
                         )}
                       </div>
                     </div>
                   </div>
                 );
-              })
+              }) : (
+                <div className="flex-shrink-0 w-full text-center py-8 text-gray-500">
+                  No services available yet. Check back soon!
+                </div>
+              )
             )}
           </div>
         </div>
@@ -311,8 +245,8 @@ const HomePage: React.FC = () => {
                 <div key={i} className="flex-shrink-0 w-44 md:w-60 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl h-56 md:h-72 animate-pulse" />
               ))
             ) : (
-              displayFeatured.map((service) => {
-                const serviceData = getServiceData(service.category);
+              displayFeatured.length > 0 ? displayFeatured.map((service) => {
+                const categoryStyle = getCategoryStyle(service.category);
                 return (
                   <div
                     key={service._id}
@@ -321,11 +255,11 @@ const HomePage: React.FC = () => {
                   >
                     <div className="relative h-28 md:h-36">
                       <img
-                        src={serviceData.image}
+                        src={getCategoryImage(service.category)}
                         alt={service.name}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
-                      <div className={`absolute inset-0 bg-gradient-to-t ${serviceData.gradient} opacity-20`} />
+                      <div className={`absolute inset-0 bg-gradient-to-t ${categoryStyle.gradient} opacity-20`} />
                       {service.rating?.average >= 4.8 && (
                         <span className="absolute top-2 left-2 px-2.5 py-1 bg-gradient-to-r from-yellow-400 to-amber-500 text-white text-[10px] md:text-xs font-bold rounded-lg shadow-md flex items-center gap-1">
                           <Star className="w-3 h-3 fill-white" />
@@ -353,12 +287,16 @@ const HomePage: React.FC = () => {
                         </span>
                       </div>
                       <span className="font-bold text-gray-900 text-sm md:text-base">
-                        ₹{service.price?.amount || 399}
+                        AED {service.price?.amount || 399}
                       </span>
                     </div>
                   </div>
                 );
-              })
+              }) : (
+                <div className="flex-shrink-0 w-full text-center py-8 text-gray-500">
+                  No services available yet. Check back soon!
+                </div>
+              )
             )}
           </div>
         </div>

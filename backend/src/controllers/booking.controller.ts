@@ -25,7 +25,12 @@ const createBooking = asyncHandler(async (req: Request, res: Response): Promise<
     customerInfo,
     addOns = [],
     specialRequests,
-    metadata = {}
+    metadata = {},
+    // New booking flow fields
+    locationType = 'at_home',
+    selectedDuration,
+    professionalPreference = 'no_preference',
+    paymentMethod = 'credit_card'
   } = req.body;
 
   // Validate customer authorization
@@ -182,8 +187,25 @@ const createBooking = asyncHandler(async (req: Request, res: Response): Promise<
     });
   }
 
+  // Determine duration and price based on selectedDuration or default
+  let bookingDuration = service.duration;
+  let basePrice = service.price.amount;
+
+  // If selectedDuration is provided and service has durationOptions, use that
+  if (selectedDuration && service.durationOptions && service.durationOptions.length > 0) {
+    const selectedOption = service.durationOptions.find(
+      (opt: any) => opt.duration === selectedDuration
+    );
+    if (selectedOption) {
+      bookingDuration = selectedOption.duration;
+      basePrice = selectedOption.price;
+    }
+  } else if (selectedDuration) {
+    // If selectedDuration is provided but no durationOptions, just use selectedDuration
+    bookingDuration = selectedDuration;
+  }
+
   // Calculate pricing
-  const basePrice = service.price.amount;
   let addOnTotal = 0;
 
   if (addOns && addOns.length > 0) {
@@ -201,7 +223,7 @@ const createBooking = asyncHandler(async (req: Request, res: Response): Promise<
   const [hours, minutes] = scheduledTime.split(':').map(Number);
   const serviceStart = new Date(requestedDate);
   serviceStart.setHours(hours, minutes, 0, 0);
-  const estimatedEndTime = new Date(serviceStart.getTime() + (service.duration * 60 * 1000));
+  const estimatedEndTime = new Date(serviceStart.getTime() + (bookingDuration * 60 * 1000));
 
   // Set cancellation policy (24 hours before service)
   const cancellationDeadline = new Date(serviceStart.getTime() - (24 * 60 * 60 * 1000));
@@ -235,8 +257,13 @@ const createBooking = asyncHandler(async (req: Request, res: Response): Promise<
     serviceId,
     scheduledDate: requestedDate,
     scheduledTime,
-    duration: service.duration,
+    duration: bookingDuration,
     estimatedEndTime,
+    // New booking flow fields
+    locationType,
+    selectedDuration: bookingDuration,
+    professionalPreference,
+    paymentMethod,
     location: processedLocation,
     pricing: {
       basePrice,
@@ -248,11 +275,12 @@ const createBooking = asyncHandler(async (req: Request, res: Response): Promise<
       currency
     },
     customerInfo: {
-      firstName: customerInfo.firstName || req.user.firstName,
-      lastName: customerInfo.lastName || req.user.lastName,
-      email: customerInfo.email || req.user.email,
-      phone: customerInfo.phone,
-      specialRequests
+      firstName: customerInfo?.firstName || req.user.firstName || '',
+      lastName: customerInfo?.lastName || req.user.lastName || '',
+      email: customerInfo?.email || req.user.email || '',
+      phone: customerInfo?.phone || req.user.phone || '',
+      specialRequests: customerInfo?.specialRequests || specialRequests || '',
+      accessInstructions: customerInfo?.accessInstructions || ''
     },
     cancellationPolicy: {
       allowedUntil: cancellationDeadline,

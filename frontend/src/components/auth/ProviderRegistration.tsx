@@ -1,9 +1,10 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
+import { useCategories } from '../../hooks/useCategories';
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -131,15 +132,17 @@ const STEPS = [
   { id: 6, name: 'Review', icon: FileText },
 ];
 
-const SERVICE_CATEGORIES = [
-  'Beauty & Personal Care',
-  'Health & Wellness', 
-  'Fitness & Training',
-  'Home Services',
-  'Education & Tutoring',
-];
-
 const ProviderRegistration: React.FC = () => {
+  // Fetch categories from API (single source of truth)
+  const { categories, isLoading: categoriesLoading } = useCategories();
+
+  // Transform categories for dropdowns
+  const categoryOptions = useMemo(() => {
+    return categories.map(cat => ({
+      name: cat.name,
+      subcategories: cat.subcategories?.map(sub => sub.name) || []
+    }));
+  }, [categories]);
   const [currentStep, setCurrentStep] = useState(1);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -938,15 +941,37 @@ const ServicesStep = ({ register, formErrors, services, addService, removeServic
               <select
                 {...register(`services.${index}.category`)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                disabled={categoriesLoading}
               >
-                <option value="">Select a category</option>
-                {SERVICE_CATEGORIES.map(category => (
-                  <option key={category} value={category}>{category}</option>
+                <option value="">{categoriesLoading ? 'Loading categories...' : 'Select a category'}</option>
+                {categoryOptions.map(cat => (
+                  <option key={cat.name} value={cat.name}>{cat.name}</option>
                 ))}
               </select>
               {formErrors.services?.[index]?.category && (
                 <p className="mt-1 text-sm text-red-600">{formErrors.services[index].category.message}</p>
               )}
+            </div>
+
+            {/* Subcategory dropdown - filtered by selected category */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Subcategory
+              </label>
+              <select
+                {...register(`services.${index}.subcategory`)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                disabled={!watchedServices?.[index]?.category}
+              >
+                <option value="">Select a subcategory (optional)</option>
+                {watchedServices?.[index]?.category &&
+                  categoryOptions
+                    .find(cat => cat.name === watchedServices[index].category)
+                    ?.subcategories.map(sub => (
+                      <option key={sub} value={sub}>{sub}</option>
+                    ))
+                }
+              </select>
             </div>
           </div>
 

@@ -5,13 +5,13 @@ import authService from './AuthService';
 // ==========================================
 
 export interface BookingLocation {
-  type: 'customer_address' | 'provider_location' | 'online';
+  type?: 'customer_address' | 'provider_location' | 'online';
   address?: {
-    street: string;
-    city: string;
-    state: string;
-    zipCode: string;
-    country: string;
+    street?: string;
+    city?: string;
+    state?: string;
+    zipCode?: string;
+    country?: string;
     coordinates?: {
       lat: number;
       lng: number;
@@ -21,7 +21,10 @@ export interface BookingLocation {
 }
 
 export interface BookingCustomerInfo {
-  phone: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
   specialRequests?: string;
   accessInstructions?: string;
 }
@@ -37,10 +40,16 @@ export interface CreateBookingData {
   providerId: string;
   scheduledDate: string; // YYYY-MM-DD format
   scheduledTime: string; // HH:MM format
-  location: BookingLocation;
-  customerInfo: BookingCustomerInfo;
+  location?: BookingLocation;
+  customerInfo?: BookingCustomerInfo;
   addOns?: BookingAddOn[];
   notes?: string;
+
+  // New booking flow fields
+  locationType?: 'at_home' | 'hotel';
+  selectedDuration?: number;
+  professionalPreference?: 'male' | 'female' | 'no_preference';
+  paymentMethod?: 'apple_pay' | 'credit_card' | 'cash';
 }
 
 export interface Booking {
@@ -151,6 +160,11 @@ export interface Booking {
   // Payment
   paymentStatus: 'pending' | 'paid' | 'refunded' | 'failed';
   paymentMethod?: string;
+
+  // New booking flow fields
+  locationType?: 'at_home' | 'hotel';
+  selectedDuration?: number;
+  professionalPreference?: 'male' | 'female' | 'no_preference';
 
   // Reviews & Ratings
   customerRating?: {

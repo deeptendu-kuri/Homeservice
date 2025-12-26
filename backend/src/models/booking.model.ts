@@ -14,6 +14,12 @@ export interface IBooking extends Document {
   duration: number; // in minutes
   estimatedEndTime: Date;
 
+  // New Booking Flow Fields
+  locationType: 'at_home' | 'hotel';
+  selectedDuration: number; // User-selected duration from service options
+  professionalPreference: 'male' | 'female' | 'no_preference';
+  paymentMethod: 'apple_pay' | 'credit_card' | 'cash';
+
   // Location Information
   location: {
     type: 'customer_address' | 'provider_location' | 'online';
@@ -61,11 +67,12 @@ export interface IBooking extends Document {
 
   // Customer Information (snapshot at time of booking)
   customerInfo: {
-    firstName: string;
-    lastName: string;
-    email: string;
-    phone: string;
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    phone?: string;
     specialRequests?: string;
+    accessInstructions?: string;
   };
 
   // Provider Response
@@ -211,6 +218,31 @@ const bookingSchema = new Schema<IBooking>(
       required: [true, 'Estimated end time is required']
     },
 
+    // New Booking Flow Fields
+    locationType: {
+      type: String,
+      enum: ['at_home', 'hotel'],
+      default: 'at_home'
+    },
+
+    selectedDuration: {
+      type: Number,
+      min: [15, 'Duration must be at least 15 minutes'],
+      max: [480, 'Duration cannot exceed 8 hours']
+    },
+
+    professionalPreference: {
+      type: String,
+      enum: ['male', 'female', 'no_preference'],
+      default: 'no_preference'
+    },
+
+    paymentMethod: {
+      type: String,
+      enum: ['apple_pay', 'credit_card', 'cash'],
+      default: 'credit_card'
+    },
+
     // Location Information
     location: {
       type: {
@@ -333,13 +365,13 @@ const bookingSchema = new Schema<IBooking>(
 
     // Customer Information Snapshot
     customerInfo: {
-      firstName: { type: String, required: [true, 'Customer first name is required'] },
-      lastName: { type: String, required: [true, 'Customer last name is required'] },
+      firstName: { type: String },
+      lastName: { type: String },
       email: {
         type: String,
-        required: [true, 'Customer email is required'],
         validate: {
           validator: function(email: string) {
+            if (!email) return true; // Allow empty
             return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
           },
           message: 'Invalid email format'
@@ -347,15 +379,16 @@ const bookingSchema = new Schema<IBooking>(
       },
       phone: {
         type: String,
-        required: [true, 'Customer phone is required'],
         validate: {
           validator: function(phone: string) {
-            return /^\+?[\d\s\-\(\)]{10,}$/.test(phone);
+            if (!phone) return true; // Allow empty
+            return /^\+?[\d\s\-\(\)]{7,}$/.test(phone);
           },
           message: 'Invalid phone format'
         }
       },
-      specialRequests: String
+      specialRequests: String,
+      accessInstructions: String
     },
 
     // Provider Response

@@ -566,6 +566,9 @@ export const updateServiceStatus = asyncHandler(async (req: Request, res: Respon
   // Update service status
   service.status = status;
 
+  // Sync isActive with status (required for search visibility)
+  service.isActive = status === 'active';
+
   // Add admin notes if provided (as metadata for now)
   if (notes) {
     if (!(service as any).adminNotes) {

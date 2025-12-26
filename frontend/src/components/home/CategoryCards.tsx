@@ -1,66 +1,78 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
+import { useCategories } from '../../hooks/useCategories';
 
-// Category card data matching the design with consistent NILIN pastel colors
-const CATEGORY_CARDS = [
-  {
-    id: 'get-doctor',
-    slug: 'mobile-medical-care',
-    icon: '👨‍⚕️',
-    title: 'Get Doctor',
-    description: 'Nurses, Doctors, Lab Tests',
+// Static "Browse All" card - kept in frontend as per plan
+const BROWSE_ALL_CARD = {
+  id: 'browse-all',
+  slug: 'all',
+  icon: '🔍',
+  title: 'Browse All',
+  description: 'View all services',
+  bgGradient: 'from-white to-gray-50',
+  iconBg: 'bg-gradient-to-br from-indigo-100 to-purple-100',
+  accentColor: 'bg-gradient-to-r from-indigo-600 to-purple-600',
+  hoverBorder: 'hover:border-indigo-500/40',
+  isViewAll: true,
+};
+
+// Gradient and color mappings for categories
+const CATEGORY_STYLES: Record<string, { bgGradient: string; iconBg: string; accentColor: string; hoverBorder: string }> = {
+  'mobile-medical-care': {
     bgGradient: 'from-nilin-blue/60 to-nilin-blue',
     iconBg: 'bg-gradient-to-br from-nilin-blue to-blue-200',
     accentColor: 'bg-nilin-primary',
     hoverBorder: 'hover:border-nilin-primary/50',
   },
-  {
-    id: 'beauty-at-home',
-    slug: 'beauty-wellness',
-    icon: '💅',
-    title: 'Beauty at Home',
-    description: 'Hair, Nails, Makeup, Massage',
+  'beauty-wellness': {
     bgGradient: 'from-nilin-pink/60 to-nilin-pink',
     iconBg: 'bg-gradient-to-br from-nilin-pink to-pink-200',
     accentColor: 'bg-nilin-accent',
     hoverBorder: 'hover:border-nilin-accent/50',
   },
-  {
-    id: 'fitness-trainer',
-    slug: 'fitness-personal-health',
-    icon: '💪',
-    title: 'Fitness Trainer',
-    description: 'Personal coaching at home.',
+  'fitness-personal-health': {
     bgGradient: 'from-nilin-cream/60 to-nilin-cream',
     iconBg: 'bg-gradient-to-br from-nilin-cream to-amber-200',
     accentColor: 'bg-nilin-secondary',
     hoverBorder: 'hover:border-nilin-secondary/50',
   },
-  {
-    id: 'for-businesses',
-    slug: 'corporate-services',
-    icon: '🏢',
-    title: 'For Businesses',
-    description: 'Corporate care & on-site services',
+  'corporate-services': {
     bgGradient: 'from-nilin-lavender/60 to-nilin-lavender',
     iconBg: 'bg-gradient-to-br from-nilin-lavender to-purple-200',
     accentColor: 'bg-nilin-primary',
     hoverBorder: 'hover:border-nilin-primary/50',
   },
-  {
-    id: 'browse-all',
-    slug: 'all',
-    icon: '🔍',
-    title: 'Browse All',
-    description: 'View all services',
-    bgGradient: 'from-white to-gray-50',
-    iconBg: 'bg-gradient-to-br from-nilin-primary/30 to-nilin-secondary/30',
-    accentColor: 'bg-gradient-to-r from-nilin-primary to-nilin-secondary',
-    hoverBorder: 'hover:border-nilin-primary/40',
-    isViewAll: true,
+  'education-personal-development': {
+    bgGradient: 'from-purple-100/60 to-purple-100',
+    iconBg: 'bg-gradient-to-br from-purple-100 to-purple-200',
+    accentColor: 'bg-purple-500',
+    hoverBorder: 'hover:border-purple-500/50',
   },
-];
+  'home-maintenance': {
+    bgGradient: 'from-blue-100/60 to-blue-100',
+    iconBg: 'bg-gradient-to-br from-blue-100 to-blue-200',
+    accentColor: 'bg-blue-500',
+    hoverBorder: 'hover:border-blue-500/50',
+  },
+};
+
+const DEFAULT_STYLE = {
+  bgGradient: 'from-gray-100/60 to-gray-100',
+  iconBg: 'bg-gradient-to-br from-gray-100 to-gray-200',
+  accentColor: 'bg-gray-500',
+  hoverBorder: 'hover:border-gray-500/50',
+};
+
+// Category display titles mapping
+const CATEGORY_DISPLAY_TITLES: Record<string, string> = {
+  'mobile-medical-care': 'Get Doctor',
+  'beauty-wellness': 'Beauty at Home',
+  'fitness-personal-health': 'Fitness Trainer',
+  'corporate-services': 'For Businesses',
+  'education-personal-development': 'Education',
+  'home-maintenance': 'Home Services',
+};
 
 interface CategoryCardProps {
   icon: string;
@@ -83,7 +95,6 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
   accentColor,
   hoverBorder,
   onClick,
-  isViewAll
 }) => (
   <button
     onClick={onClick}
@@ -97,13 +108,13 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
       <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl ${iconBg} flex items-center justify-center text-2xl sm:text-3xl shadow-sm group-hover:scale-110 group-hover:shadow-md transition-all duration-300`}>
         {icon}
       </div>
-      <div className={`w-8 h-8 rounded-full bg-white/60 flex items-center justify-center group-hover:bg-white transition-colors`}>
-        <ChevronRight className="w-4 h-4 text-gray-500 group-hover:text-nilin-primary group-hover:translate-x-0.5 transition-all" />
+      <div className="w-8 h-8 rounded-full bg-white/60 flex items-center justify-center group-hover:bg-white transition-colors">
+        <ChevronRight className="w-4 h-4 text-gray-500 group-hover:text-indigo-600 group-hover:translate-x-0.5 transition-all" />
       </div>
     </div>
 
     {/* Title */}
-    <h3 className="relative font-bold text-gray-900 text-sm sm:text-base mb-1 group-hover:text-nilin-dark transition-colors">
+    <h3 className="relative font-bold text-gray-900 text-sm sm:text-base mb-1 group-hover:text-gray-800 transition-colors">
       {title}
     </h3>
 
@@ -117,8 +128,21 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
   </button>
 );
 
+// Loading skeleton
+const CategoryCardSkeleton: React.FC = () => (
+  <div className="w-full p-4 sm:p-5 rounded-2xl bg-gray-100 animate-pulse">
+    <div className="flex items-start justify-between mb-3">
+      <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gray-200" />
+      <div className="w-8 h-8 rounded-full bg-gray-200" />
+    </div>
+    <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
+    <div className="h-3 bg-gray-200 rounded w-full" />
+  </div>
+);
+
 const CategoryCards: React.FC = () => {
   const navigate = useNavigate();
+  const { categories, isLoading } = useCategories();
 
   const handleCategoryClick = (slug: string, isViewAll?: boolean) => {
     if (isViewAll) {
@@ -127,6 +151,26 @@ const CategoryCards: React.FC = () => {
       navigate(`/category/${slug}`);
     }
   };
+
+  // Get card config from category data
+  const getCardConfig = (category: any) => {
+    const styles = CATEGORY_STYLES[category.slug] || DEFAULT_STYLE;
+    const displayConfig = category.metadata?.displayConfig || {};
+
+    return {
+      id: category._id || category.slug,
+      slug: category.slug,
+      icon: displayConfig.iconEmoji || '📦',
+      title: CATEGORY_DISPLAY_TITLES[category.slug] || category.name,
+      description: category.description?.slice(0, 40) || 'Professional services',
+      ...styles,
+    };
+  };
+
+  // Filter to featured categories and limit to 4
+  const featuredCategories = categories
+    .filter((cat: any) => cat.isFeatured)
+    .slice(0, 4);
 
   return (
     <section className="py-10 md:py-16 bg-gradient-to-b from-white via-gray-50/50 to-white">
@@ -141,20 +185,47 @@ const CategoryCards: React.FC = () => {
 
         {/* Category Grid - 5 cards: 2 cols mobile, 5 cols desktop */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3 sm:gap-4 lg:gap-5">
-          {CATEGORY_CARDS.map((category) => (
-            <CategoryCard
-              key={category.id}
-              icon={category.icon}
-              title={category.title}
-              description={category.description}
-              bgGradient={category.bgGradient}
-              iconBg={category.iconBg}
-              accentColor={category.accentColor}
-              hoverBorder={category.hoverBorder}
-              isViewAll={category.isViewAll}
-              onClick={() => handleCategoryClick(category.slug, category.isViewAll)}
-            />
-          ))}
+          {isLoading ? (
+            // Loading skeletons
+            <>
+              {[1, 2, 3, 4, 5].map((i) => (
+                <CategoryCardSkeleton key={i} />
+              ))}
+            </>
+          ) : (
+            <>
+              {/* Dynamic category cards from API */}
+              {featuredCategories.map((category: any) => {
+                const config = getCardConfig(category);
+                return (
+                  <CategoryCard
+                    key={config.id}
+                    icon={config.icon}
+                    title={config.title}
+                    description={config.description}
+                    bgGradient={config.bgGradient}
+                    iconBg={config.iconBg}
+                    accentColor={config.accentColor}
+                    hoverBorder={config.hoverBorder}
+                    onClick={() => handleCategoryClick(config.slug)}
+                  />
+                );
+              })}
+
+              {/* Static "Browse All" card */}
+              <CategoryCard
+                icon={BROWSE_ALL_CARD.icon}
+                title={BROWSE_ALL_CARD.title}
+                description={BROWSE_ALL_CARD.description}
+                bgGradient={BROWSE_ALL_CARD.bgGradient}
+                iconBg={BROWSE_ALL_CARD.iconBg}
+                accentColor={BROWSE_ALL_CARD.accentColor}
+                hoverBorder={BROWSE_ALL_CARD.hoverBorder}
+                isViewAll={BROWSE_ALL_CARD.isViewAll}
+                onClick={() => handleCategoryClick(BROWSE_ALL_CARD.slug, BROWSE_ALL_CARD.isViewAll)}
+              />
+            </>
+          )}
         </div>
       </div>
     </section>

@@ -26,6 +26,11 @@ export interface IService extends Document {
   
   // Service Details
   duration: number; // in minutes
+  durationOptions?: Array<{
+    duration: number;
+    price: number;
+    label: string;
+  }>; // Alternative duration options for booking
   images: string[];
   tags: string[]; // For enhanced search
   requirements?: string[];
@@ -207,6 +212,29 @@ const serviceSchema = new Schema<IService>(
       min: [15, 'Duration must be at least 15 minutes'],
       max: [480, 'Duration cannot exceed 8 hours']
     },
+
+    // Alternative duration options for booking flow
+    durationOptions: {
+      type: [{
+        duration: {
+          type: Number,
+          required: true,
+          min: [15, 'Duration must be at least 15 minutes'],
+          max: [480, 'Duration cannot exceed 8 hours']
+        },
+        price: {
+          type: Number,
+          required: true,
+          min: [0, 'Price cannot be negative']
+        },
+        label: {
+          type: String,
+          required: true
+        }
+      }],
+      default: [] // Empty array means only base duration is available
+    },
+
     images: [String],
     tags: [{
       type: String,

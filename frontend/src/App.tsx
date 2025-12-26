@@ -26,6 +26,7 @@ import HomePage from './pages/HomePage';
 import SearchPage from './pages/SearchPage';
 import ServiceDetailPage from './pages/ServiceDetailPage';
 import CategoryPage from './pages/CategoryPage';
+import SubcategoryServicePage from './pages/SubcategoryServicePage';
 import ProviderDetailPage from './pages/ProviderDetailPage';
 import ServiceManagementPage from './pages/ServiceManagementPage';
 // Booking pages
@@ -163,6 +164,12 @@ function App() {
         <Route
           path="/category/:slug"
           element={<CategoryPage />}
+        />
+
+        {/* Subcategory Service Route (Master Service Template) */}
+        <Route
+          path="/service/:categorySlug/:subcategorySlug"
+          element={<SubcategoryServicePage />}
         />
 
         {/* Provider Detail Route */}

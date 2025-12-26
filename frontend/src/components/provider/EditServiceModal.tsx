@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   X,
   Plus,
@@ -8,7 +8,7 @@ import {
   Loader2
 } from 'lucide-react';
 import authService from '../../services/AuthService';
-import { CATEGORY_LIST } from '../../constants/categories';
+import { useCategories } from '../../hooks/useCategories';
 
 interface EditServiceModalProps {
   isOpen: boolean;
@@ -44,6 +44,18 @@ export const EditServiceModal: React.FC<EditServiceModalProps> = ({
   const [isLoadingService, setIsLoadingService] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [currentTag, setCurrentTag] = useState('');
+
+  // Fetch categories from API (single source of truth)
+  const { categories, isLoading: categoriesLoading } = useCategories();
+
+  // Transform categories for dropdown
+  const categoryOptions = useMemo(() => {
+    return categories.map(cat => ({
+      value: cat.name,
+      label: cat.name,
+      subcategories: cat.subcategories?.map((sub: any) => sub.name) || []
+    }));
+  }, [categories]);
 
   const [formData, setFormData] = useState<ServiceFormData>({
     name: '',
@@ -122,7 +134,7 @@ export const EditServiceModal: React.FC<EditServiceModalProps> = ({
 
   if (!isOpen) return null;
 
-  const selectedCategory = CATEGORY_LIST.find(cat => cat.value === formData.category);
+  const selectedCategory = categoryOptions.find(cat => cat.value === formData.category);
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -284,10 +296,11 @@ export const EditServiceModal: React.FC<EditServiceModalProps> = ({
                   handleInputChange('category', e.target.value);
                   handleInputChange('subcategory', '');
                 }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                disabled={categoriesLoading}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
               >
-                <option value="">Select a category</option>
-                {CATEGORY_LIST.map(category => (
+                <option value="">{categoriesLoading ? 'Loading categories...' : 'Select a category'}</option>
+                {categoryOptions.map(category => (
                   <option key={category.value} value={category.value}>
                     {category.label}
                   </option>
