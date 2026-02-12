@@ -480,7 +480,7 @@ const ServiceManagement: React.FC = () => {
                       </span>
                       <span className="flex items-center">
                         <DollarSign className="w-4 h-4 mr-1" />
-                        ${service.price.amount} {service.price.type}
+                        {service.price.currency || 'AED'} {service.price.amount} {service.price.type}
                       </span>
                       <span className="flex items-center">
                         <Clock className="w-4 h-4 mr-1" />

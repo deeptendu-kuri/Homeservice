@@ -108,10 +108,6 @@ const ServiceDetailPage: React.FC = () => {
   };
 
   const handleBookNow = () => {
-    if (!isAuthenticated) {
-      navigate('/login', { state: { returnTo: `/services/${id}` } });
-      return;
-    }
     navigate(`/book/${id}`, { state: { service } });
   };
 
@@ -377,7 +373,7 @@ const ServiceDetailPage: React.FC = () => {
               <div className="bg-white rounded-xl p-6 border sticky top-24 mb-6">
                 <div className="text-center mb-6">
                   <div className="text-4xl font-bold text-gray-900 mb-1">
-                    ${service.price.amount}
+                    {service.price.currency || 'AED'} {service.price.amount}
                   </div>
                   <div className="text-gray-600 text-sm">per {service.price.type}</div>
                 </div>

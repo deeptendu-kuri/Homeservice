@@ -208,8 +208,8 @@ const notificationSchema = new Schema<IBookingNotification>(
       totalAmount: Number,
       currency: {
         type: String,
-        enum: ['USD', 'INR', 'EUR', 'GBP'],
-        default: 'USD'
+        enum: ['USD', 'INR', 'EUR', 'GBP', 'AED'],
+        default: 'AED'
       },
       customData: Schema.Types.Mixed
     },
@@ -568,7 +568,7 @@ notificationSchema.methods.getEffectiveContent = function(): { title: string; me
     '{{providerName}}': this.metadata.providerName || '',
     '{{customerName}}': this.metadata.customerName || '',
     '{{amount}}': this.metadata.totalAmount ?
-      `${this.metadata.currency || 'USD'} ${this.metadata.totalAmount}` : '',
+      `${this.metadata.currency || 'AED'} ${this.metadata.totalAmount}` : '',
     '{{scheduledDate}}': this.metadata.scheduledDate ?
       this.metadata.scheduledDate.toLocaleDateString() : ''
   };

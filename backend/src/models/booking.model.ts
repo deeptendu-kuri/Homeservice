@@ -4,9 +4,17 @@ export interface IBooking extends Document {
   // Core Booking Information
   _id: mongoose.Types.ObjectId;
   bookingNumber: string; // Unique booking reference (e.g., "RZ-20240117-001")
-  customerId: mongoose.Types.ObjectId; // Reference to User (customer)
+  customerId?: mongoose.Types.ObjectId; // Reference to User (customer) - optional for guest bookings
   providerId: mongoose.Types.ObjectId; // Reference to User (provider)
   serviceId: mongoose.Types.ObjectId; // Reference to Service
+
+  // Guest Booking Fields
+  isGuestBooking: boolean;
+  guestInfo?: {
+    name: string;
+    email: string;
+    phone: string;
+  };
 
   // Booking Details
   scheduledDate: Date;
@@ -170,8 +178,20 @@ const bookingSchema = new Schema<IBooking>(
     customerId: {
       type: Schema.Types.ObjectId,
       ref: 'User',
-      required: [true, 'Customer ID is required'],
-      index: true
+      index: true,
+      default: null
+    },
+
+    // Guest Booking Fields
+    isGuestBooking: {
+      type: Boolean,
+      default: false
+    },
+
+    guestInfo: {
+      name: { type: String },
+      email: { type: String },
+      phone: { type: String }
     },
 
     providerId: {

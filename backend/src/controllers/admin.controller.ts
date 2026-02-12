@@ -89,6 +89,9 @@ export const approveProvider = asyncHandler(async (req: Request, res: Response) 
     provider.verificationStatus.adminNotes = notes || 'Provider approved by admin';
   }
 
+  // Set verified badge so it shows on provider cards
+  provider.instagramStyleProfile.isVerified = true;
+
   await provider.save();
 
   // Update user account status
@@ -241,6 +244,9 @@ export const rejectProvider = asyncHandler(async (req: Request, res: Response) =
   if (provider.verificationStatus.adminNotes !== undefined) {
     provider.verificationStatus.adminNotes = notes || '';
   }
+
+  // Remove verified badge
+  provider.instagramStyleProfile.isVerified = false;
 
   await provider.save();
 

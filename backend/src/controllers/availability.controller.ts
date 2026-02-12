@@ -501,6 +501,11 @@ export const getProviderAvailableSlots = asyncHandler(async (req: Request, res: 
   const availableSlots: string[] = [];
   const slotDuration = parseInt(duration as string);
 
+  // Filter past slots for today
+  const now = new Date();
+  const isToday = requestDate.toISOString().split('T')[0] === now.toISOString().split('T')[0];
+  const nowMs = now.getTime();
+
   for (const timeSlot of daySchedule.timeSlots) {
     if (!timeSlot.startTime || !timeSlot.endTime) {
       continue;
@@ -525,6 +530,12 @@ export const getProviderAvailableSlots = asyncHandler(async (req: Request, res: 
       while (currentTime.getTime() + slotDuration * 60 * 1000 <= slotEndTime.getTime()) {
         const slotStart = new Date(currentTime);
         const slotEnd = new Date(currentTime.getTime() + slotDuration * 60 * 1000);
+
+        // Skip past slots for today
+        if (isToday && slotStart.getTime() <= nowMs) {
+          currentTime.setTime(currentTime.getTime() + slotDuration * 60 * 1000);
+          continue;
+        }
 
         const hasConflict = existingBookings.some(booking => {
           const bookingStart = new Date(booking.scheduledDate);

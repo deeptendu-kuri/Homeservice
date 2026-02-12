@@ -5,6 +5,8 @@ import { z } from 'zod';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 import { Eye, EyeOff, User, Mail, Phone, Calendar, MapPin } from 'lucide-react';
+import NavigationHeader from '../layout/NavigationHeader';
+import Footer from '../layout/Footer';
 
 // Validation schema
 const customerRegistrationSchema = z.object({
@@ -166,12 +168,13 @@ const CustomerRegistration: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-[#FFE5F0] via-[#E8E5FF] to-[#E5F3FF]">
+      <NavigationHeader />
+      <div className="flex-1 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="flex justify-center">
-          <div className="rounded-full bg-blue-100 p-3">
-            <User className="h-8 w-8 text-blue-600" />
-          </div>
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">NILIN</h1>
+          <p className="text-sm text-gray-500 mt-1">Beauty & Wellness at your doorstep</p>
         </div>
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
           Create your customer account
@@ -182,7 +185,7 @@ const CustomerRegistration: React.FC = () => {
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+        <div className="bg-white/90 backdrop-blur-sm py-8 px-4 shadow-lg sm:rounded-lg sm:px-10">
           <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
             {/* Name Fields */}
             <div className="grid grid-cols-2 gap-4">
@@ -194,7 +197,7 @@ const CustomerRegistration: React.FC = () => {
                   <input
                     {...register('firstName')}
                     type="text"
-                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-[#E8E5FF] focus:border-[#E8E5FF]"
                     placeholder="John"
                   />
                   {formErrors.firstName && (
@@ -211,7 +214,7 @@ const CustomerRegistration: React.FC = () => {
                   <input
                     {...register('lastName')}
                     type="text"
-                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-[#E8E5FF] focus:border-[#E8E5FF]"
                     placeholder="Doe"
                   />
                   {formErrors.lastName && (
@@ -233,7 +236,7 @@ const CustomerRegistration: React.FC = () => {
                 <input
                   {...register('email')}
                   type="email"
-                  className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-[#E8E5FF] focus:border-[#E8E5FF]"
                   placeholder="john@example.com"
                 />
                 {formErrors.email && (
@@ -251,7 +254,7 @@ const CustomerRegistration: React.FC = () => {
                 <input
                   {...register('password')}
                   type={showPassword ? 'text' : 'password'}
-                  className="appearance-none block w-full px-3 py-2 pr-10 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="appearance-none block w-full px-3 py-2 pr-10 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-[#E8E5FF] focus:border-[#E8E5FF]"
                   placeholder="••••••••"
                 />
                 <button
@@ -280,7 +283,7 @@ const CustomerRegistration: React.FC = () => {
                 <input
                   {...register('confirmPassword')}
                   type={showConfirmPassword ? 'text' : 'password'}
-                  className="appearance-none block w-full px-3 py-2 pr-10 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="appearance-none block w-full px-3 py-2 pr-10 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-[#E8E5FF] focus:border-[#E8E5FF]"
                   placeholder="••••••••"
                 />
                 <button
@@ -305,7 +308,7 @@ const CustomerRegistration: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowOptionalFields(!showOptionalFields)}
-                className="text-sm text-blue-600 hover:text-blue-500 font-medium"
+                className="text-sm text-gray-700 hover:text-gray-900 font-medium"
               >
                 {showOptionalFields ? '← Hide optional fields' : 'Add optional information →'}
               </button>
@@ -326,7 +329,7 @@ const CustomerRegistration: React.FC = () => {
                     <input
                       {...register('phone')}
                       type="tel"
-                      className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-[#E8E5FF] focus:border-[#E8E5FF]"
                       placeholder="+1 (555) 123-4567"
                     />
                     {formErrors.phone && (
@@ -348,7 +351,7 @@ const CustomerRegistration: React.FC = () => {
                       <input
                         {...register('dateOfBirth')}
                         type="date"
-                        className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-[#E8E5FF] focus:border-[#E8E5FF]"
                       />
                       {formErrors.dateOfBirth && (
                         <p className="mt-1 text-sm text-red-600">{formErrors.dateOfBirth.message}</p>
@@ -363,7 +366,7 @@ const CustomerRegistration: React.FC = () => {
                     <div className="mt-1">
                       <select
                         {...register('gender')}
-                        className="block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        className="block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-[#E8E5FF] focus:border-[#E8E5FF]"
                       >
                         <option value="">Select gender</option>
                         <option value="male">Male</option>
@@ -384,7 +387,7 @@ const CustomerRegistration: React.FC = () => {
                     <input
                       {...register('referralCode')}
                       type="text"
-                      className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-[#E8E5FF] focus:border-[#E8E5FF]"
                       placeholder="Enter referral code (optional)"
                     />
                   </div>
@@ -399,13 +402,13 @@ const CustomerRegistration: React.FC = () => {
                   <input
                     {...register('agreeToTerms')}
                     type="checkbox"
-                    className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded"
+                    className="focus:ring-[#E8E5FF] h-4 w-4 text-gray-900 border-gray-300 rounded"
                   />
                 </div>
                 <div className="ml-3 text-sm">
                   <label htmlFor="agreeToTerms" className="font-medium text-gray-700">
                     I agree to the{' '}
-                    <Link to="/terms" className="text-blue-600 hover:text-blue-500">
+                    <Link to="/terms" className="text-gray-700 hover:text-gray-900">
                       Terms and Conditions
                     </Link>
                   </label>
@@ -420,13 +423,13 @@ const CustomerRegistration: React.FC = () => {
                   <input
                     {...register('agreeToPrivacy')}
                     type="checkbox"
-                    className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded"
+                    className="focus:ring-[#E8E5FF] h-4 w-4 text-gray-900 border-gray-300 rounded"
                   />
                 </div>
                 <div className="ml-3 text-sm">
                   <label htmlFor="agreeToPrivacy" className="font-medium text-gray-700">
                     I agree to the{' '}
-                    <Link to="/privacy" className="text-blue-600 hover:text-blue-500">
+                    <Link to="/privacy" className="text-gray-700 hover:text-gray-900">
                       Privacy Policy
                     </Link>
                   </label>
@@ -442,7 +445,7 @@ const CustomerRegistration: React.FC = () => {
               <button
                 type="submit"
                 disabled={isSubmitting || isLoading}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#E8E5FF] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSubmitting || isLoading ? (
                   <div className="flex items-center">
@@ -490,7 +493,7 @@ const CustomerRegistration: React.FC = () => {
             <div className="mt-6">
               <Link
                 to="/login"
-                className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#E8E5FF]"
               >
                 Sign in instead
               </Link>
@@ -498,6 +501,8 @@ const CustomerRegistration: React.FC = () => {
           </div>
         </div>
       </div>
+      </div>
+      <Footer />
     </div>
   );
 };

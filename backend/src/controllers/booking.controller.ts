@@ -1,11 +1,12 @@
 import { Request, Response } from 'express';
 import mongoose from 'mongoose';
 import Booking from '../models/booking.model';
-import Availability from '../models/availability.model';
 import BookingNotification from '../models/bookingNotification.model';
 import User from '../models/user.model';
 import Service from '../models/service.model';
+import ProviderProfile from '../models/providerProfile.model';
 import { asyncHandler } from '../utils/asyncHandler';
+import { validateProviderSlotAvailability } from '../utils/availabilityHelper';
 // validateBookingInput is used in routes, not in controller
 
 // ===================================
@@ -59,133 +60,27 @@ const createBooking = asyncHandler(async (req: Request, res: Response): Promise<
     });
   }
 
-  // Check provider availability and create with proper default time slots
-  let availability = await Availability.findOne({ providerId });
-  if (!availability) {
-    // Create default availability for provider with proper time slots
-    availability = new Availability({
-      providerId,
-      weeklySchedule: {
-        monday: { isAvailable: true, timeSlots: [{ start: '09:00', end: '17:00', isActive: true }] },
-        tuesday: { isAvailable: true, timeSlots: [{ start: '09:00', end: '17:00', isActive: true }] },
-        wednesday: { isAvailable: true, timeSlots: [{ start: '09:00', end: '17:00', isActive: true }] },
-        thursday: { isAvailable: true, timeSlots: [{ start: '09:00', end: '17:00', isActive: true }] },
-        friday: { isAvailable: true, timeSlots: [{ start: '09:00', end: '17:00', isActive: true }] },
-        saturday: { isAvailable: false, timeSlots: [] },
-        sunday: { isAvailable: false, timeSlots: [] }
-      },
-      timezone: 'Asia/Kolkata'
+  // Validate provider availability using ProviderProfile (single source of truth)
+  const availabilityCheck = await validateProviderSlotAvailability({
+    providerId,
+    scheduledDate,
+    scheduledTime,
+    serviceDurationMinutes: service.duration
+  });
+
+  if (!availabilityCheck.isValid) {
+    const statusCode = availabilityCheck.errorCode === 'CONFLICT' ? 409 : 400;
+    return res.status(statusCode).json({
+      success: false,
+      message: availabilityCheck.errorMessage,
+      data: {
+        requestedTime: scheduledTime,
+        availableSlots: availabilityCheck.availableSlots || []
+      }
     });
-    await availability.save();
-    console.log('✅ Created default availability for provider:', providerId, 'with time slots');
   }
 
   const requestedDate = new Date(scheduledDate);
-
-  // Check basic availability (working hours)
-  const checkAvailability = await Availability.findOne({ providerId });
-
-  if (!checkAvailability) {
-    return res.status(400).json({
-      success: false,
-      message: 'Provider availability not configured'
-    });
-  }
-
-  // Check if provider is available on this day
-  const dayOfWeek = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][requestedDate.getDay()];
-  const daySchedule = checkAvailability.weeklySchedule[dayOfWeek as keyof typeof checkAvailability.weeklySchedule];
-
-  if (!daySchedule?.isAvailable || !daySchedule.timeSlots || daySchedule.timeSlots.length === 0) {
-    return res.status(400).json({
-      success: false,
-      message: 'Provider is not available on this day',
-      data: {
-        requestedTime: scheduledTime,
-        availableSlots: []
-      }
-    });
-  }
-
-  // Check if requested time falls within any time slot
-  const [requestedHour, requestedMinute] = scheduledTime.split(':').map(Number);
-  const requestedMinutes = requestedHour * 60 + requestedMinute;
-  const serviceDurationMinutes = service.duration;
-  const requestedEndMinutes = requestedMinutes + serviceDurationMinutes;
-
-  const isWithinTimeSlot = daySchedule.timeSlots.some(slot => {
-    if (!slot.isActive) return false;
-
-    const [startHour, startMinute] = slot.start.split(':').map(Number);
-    const [endHour, endMinute] = slot.end.split(':').map(Number);
-    const slotStartMinutes = startHour * 60 + startMinute;
-    const slotEndMinutes = endHour * 60 + endMinute;
-
-    return requestedMinutes >= slotStartMinutes && requestedEndMinutes <= slotEndMinutes;
-  });
-
-  if (!isWithinTimeSlot) {
-    // Generate available slots for error response
-    const availableSlots: string[] = [];
-    daySchedule.timeSlots.forEach(slot => {
-      if (slot.isActive) {
-        const [startHour, startMinute] = slot.start.split(':').map(Number);
-        const [endHour, endMinute] = slot.end.split(':').map(Number);
-        const slotStartMinutes = startHour * 60 + startMinute;
-        const slotEndMinutes = endHour * 60 + endMinute;
-
-        // Generate 30-minute slots within the time slot
-        for (let minutes = slotStartMinutes; minutes + serviceDurationMinutes <= slotEndMinutes; minutes += 30) {
-          const hours = Math.floor(minutes / 60);
-          const mins = minutes % 60;
-          availableSlots.push(`${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`);
-        }
-      }
-    });
-
-    return res.status(400).json({
-      success: false,
-      message: 'Provider is not available at the requested time',
-      data: {
-        requestedTime: scheduledTime,
-        availableSlots: availableSlots.length > 0 ? availableSlots : ['No slots available on this date']
-      }
-    });
-  }
-
-  // Check for conflicting bookings with proper time overlap
-  const existingBookings = await Booking.find({
-    providerId,
-    scheduledDate: requestedDate,
-    status: { $in: ['pending', 'confirmed', 'in_progress'] }
-  });
-
-  // Helper function to convert time to minutes
-  const timeToMinutes = (time: string) => {
-    const [hours, minutes] = time.split(':').map(Number);
-    return hours * 60 + minutes;
-  };
-
-  const requestedStart = timeToMinutes(scheduledTime);
-  const requestedEnd = requestedStart + service.duration;
-
-  const conflictingBooking = existingBookings.find(booking => {
-    const bookingStart = timeToMinutes(booking.scheduledTime);
-    const bookingEnd = bookingStart + booking.duration;
-
-    // Check for time overlap
-    return (requestedStart < bookingEnd && requestedEnd > bookingStart);
-  });
-
-  if (conflictingBooking) {
-    return res.status(409).json({
-      success: false,
-      message: 'Time slot is already booked',
-      data: {
-        conflictingBooking: conflictingBooking.bookingNumber
-      }
-    });
-  }
 
   // Determine duration and price based on selectedDuration or default
   let bookingDuration = service.duration;
@@ -241,7 +136,7 @@ const createBooking = asyncHandler(async (req: Request, res: Response): Promise<
       city: location.address.city,
       state: location.address.state,
       zipCode: location.address.zipCode,
-      country: location.address.country || 'US'
+      country: location.address.country || 'AE'
       // Coordinates can be added later when needed
     };
   }
@@ -308,9 +203,31 @@ const createBooking = asyncHandler(async (req: Request, res: Response): Promise<
     { path: 'service', select: 'name category price duration images' }
   ]);
 
+  // Send booking request email to customer
+  try {
+    const { sendBookingRequestEmail } = await import('../services/email.service');
+    const customerUser = await User.findById((req.user as any)._id);
+    if (customerUser?.email) {
+      await sendBookingRequestEmail(customerUser.email, customerUser.firstName || 'Customer', {
+        bookingNumber,
+        serviceName: service.name,
+        providerName: provider.firstName || 'Provider',
+        scheduledDate: new Date(scheduledDate).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }),
+        scheduledTime,
+        duration: bookingDuration,
+        location: processedLocation.address?.street || (locationType === 'at_home' ? 'At Home' : 'Hotel'),
+        currency,
+        totalAmount: totalAmount.toFixed(2)
+      });
+      console.log('📧 Booking request email sent to customer');
+    }
+  } catch (emailError) {
+    console.error('📧 Failed to send booking email (non-blocking):', emailError);
+  }
+
   return res.status(201).json({
     success: true,
-    message: 'Booking request submitted, awaiting provider confirmation', // TEMPORARY: Default message for testing
+    message: 'Booking request submitted, awaiting provider confirmation',
     data: { booking }
   });
 });
@@ -399,7 +316,7 @@ const getBookingDetails = asyncHandler(async (req: Request, res: Response): Prom
   const user = req.user as any;
   const userId = user._id || user.id;
   const isAuthorized =
-    userId.toString() === booking.customerId.toString() ||
+    (booking.customerId && userId.toString() === booking.customerId.toString()) ||
     userId.toString() === booking.providerId.toString() ||
     user?.role === 'admin';
 
@@ -434,7 +351,7 @@ const cancelBooking = asyncHandler(async (req: Request, res: Response): Promise<
   // Authorization check
   const user = req.user as any;
   const userId = user._id || user.id;
-  if (userId.toString() !== booking.customerId.toString()) {
+  if (!booking.customerId || userId.toString() !== booking.customerId.toString()) {
     return res.status(403).json({
       success: false,
       message: 'Only the customer who made the booking can cancel it'
@@ -613,6 +530,49 @@ const acceptBooking = asyncHandler(async (req: Request, res: Response): Promise<
   // Send confirmation notification
   await createBookingNotifications(booking, 'booking_confirmed');
 
+  // Send booking confirmation email to customer
+  try {
+    const { sendBookingConfirmationEmail } = await import('../services/email.service');
+    const service = await Service.findById(booking.serviceId);
+    const provider = await User.findById(booking.providerId);
+
+    if (booking.isGuestBooking && booking.guestInfo?.email) {
+      // Guest booking
+      await sendBookingConfirmationEmail(booking.guestInfo.email, booking.guestInfo.name || 'Guest', {
+        bookingNumber: booking.bookingNumber,
+        serviceName: service?.name || 'Service',
+        providerName: provider?.firstName || 'Provider',
+        providerEmail: provider?.email || '',
+        scheduledDate: new Date(booking.scheduledDate).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }),
+        scheduledTime: booking.scheduledTime,
+        duration: booking.duration,
+        location: booking.location?.address?.street || 'At location',
+        currency: booking.pricing?.currency || 'AED',
+        totalAmount: (booking.pricing?.totalAmount || 0).toFixed(2)
+      });
+    } else {
+      // Authenticated booking
+      const customer = await User.findById(booking.customerId);
+      if (customer?.email) {
+        await sendBookingConfirmationEmail(customer.email, customer.firstName || 'Customer', {
+          bookingNumber: booking.bookingNumber,
+          serviceName: service?.name || 'Service',
+          providerName: provider?.firstName || 'Provider',
+          providerEmail: provider?.email || '',
+          scheduledDate: new Date(booking.scheduledDate).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }),
+          scheduledTime: booking.scheduledTime,
+          duration: booking.duration,
+          location: booking.location?.address?.street || 'At location',
+          currency: booking.pricing?.currency || 'AED',
+          totalAmount: (booking.pricing?.totalAmount || 0).toFixed(2)
+        });
+      }
+    }
+    console.log('📧 Booking confirmation email sent');
+  } catch (emailError) {
+    console.error('📧 Failed to send confirmation email (non-blocking):', emailError);
+  }
+
   return res.json({
     success: true,
     message: 'Booking accepted successfully',
@@ -786,6 +746,49 @@ const completeBooking = asyncHandler(async (req: Request, res: Response): Promis
 
   await booking.save();
 
+  // Update provider analytics
+  try {
+    const providerBookings = await Booking.find({ providerId: booking.providerId });
+    const totalBookings = providerBookings.length;
+    const completedBookings = providerBookings.filter(b => b.status === 'completed').length;
+    const cancelledBookings = providerBookings.filter(b => b.status === 'cancelled').length;
+    const completionRate = totalBookings > 0 ? Math.round((completedBookings / totalBookings) * 100) : 0;
+
+    // Calculate repeat customers
+    const customerIds = providerBookings
+      .filter(b => b.customerId)
+      .map(b => b.customerId?.toString());
+    const uniqueCustomers = new Set(customerIds).size;
+    const repeatCustomers = customerIds.length - uniqueCustomers;
+    const repeatCustomerRate = uniqueCustomers > 0 ? Math.round((repeatCustomers / uniqueCustomers) * 100) : 0;
+
+    // Average booking value
+    const completedWithPrice = providerBookings.filter(b => b.status === 'completed' && b.pricing?.totalAmount);
+    const averageBookingValue = completedWithPrice.length > 0
+      ? completedWithPrice.reduce((sum, b) => sum + (b.pricing?.totalAmount || 0), 0) / completedWithPrice.length
+      : 0;
+
+    await ProviderProfile.findOneAndUpdate(
+      { userId: booking.providerId },
+      {
+        $set: {
+          'analytics.bookingStats.totalBookings': totalBookings,
+          'analytics.bookingStats.completedBookings': completedBookings,
+          'analytics.bookingStats.cancelledBookings': cancelledBookings,
+          'analytics.bookingStats.repeatCustomerRate': repeatCustomerRate,
+          'analytics.bookingStats.averageBookingValue': Math.round(averageBookingValue),
+          'analytics.performanceMetrics.completionRate': completionRate,
+          'analytics.customerMetrics.totalCustomers': uniqueCustomers,
+          'analytics.customerMetrics.repeatCustomers': repeatCustomers,
+          'analytics.customerMetrics.customerRetentionRate': repeatCustomerRate,
+        }
+      }
+    );
+    console.log(`📊 Updated provider analytics for ${booking.providerId}: ${completedBookings}/${totalBookings} completed (${completionRate}%)`);
+  } catch (analyticsError) {
+    console.warn('Failed to update provider analytics:', analyticsError);
+  }
+
   // Send completion notification
   await createBookingNotifications(booking, 'booking_completed');
 
@@ -825,7 +828,7 @@ const addBookingMessage = asyncHandler(async (req: Request, res: Response): Prom
   // Authorization check
   const user = req.user as any;
   const isAuthorized =
-    (user._id as string) === booking.customerId.toString() ||
+    (booking.customerId && (user._id as string) === booking.customerId.toString()) ||
     (user._id as string) === booking.providerId.toString();
 
   if (!isAuthorized) {
@@ -839,7 +842,7 @@ const addBookingMessage = asyncHandler(async (req: Request, res: Response): Prom
   await booking.addMessage(new mongoose.Types.ObjectId(user._id as string), message.trim());
 
   // Send notification to the other party
-  const recipientId = (user._id as string) === booking.customerId.toString() ?
+  const recipientId = (booking.customerId && (user._id as string) === booking.customerId.toString()) ?
     booking.providerId : booking.customerId;
 
   await createMessageNotification(booking, recipientId);
@@ -991,6 +994,288 @@ function getNotificationMessage(type: string, recipient: string): string {
   return messages[type]?.[recipient] || 'Your booking has been updated.';
 }
 
+// ===================================
+// GUEST BOOKING OPERATIONS
+// ===================================
+
+// @desc    Create guest booking (no auth required)
+// @route   POST /api/bookings/guest
+// @access  Public
+const createGuestBooking = asyncHandler(async (req: Request, res: Response): Promise<any> => {
+  const {
+    serviceId,
+    providerId,
+    scheduledDate,
+    scheduledTime,
+    location,
+    guestInfo,
+    addOns = [],
+    specialRequests,
+    locationType = 'at_home',
+    selectedDuration,
+    professionalPreference = 'no_preference',
+    paymentMethod = 'credit_card'
+  } = req.body;
+
+  // Validate guest info
+  if (!guestInfo?.name || !guestInfo?.email || !guestInfo?.phone) {
+    return res.status(400).json({
+      success: false,
+      message: 'Guest name, email, and phone are required'
+    });
+  }
+
+  // Validate email format
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(guestInfo.email)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Please provide a valid email address'
+    });
+  }
+
+  // Validate service exists and is active
+  const service = await Service.findById(serviceId);
+  if (!service || !service.isActive) {
+    return res.status(404).json({
+      success: false,
+      message: 'Service not found or inactive'
+    });
+  }
+
+  // Validate provider
+  const provider = await User.findById(providerId);
+  if (!provider || provider.role !== 'provider') {
+    return res.status(404).json({
+      success: false,
+      message: 'Provider not found'
+    });
+  }
+
+  // Validate provider availability using ProviderProfile (single source of truth)
+  const guestAvailabilityCheck = await validateProviderSlotAvailability({
+    providerId,
+    scheduledDate,
+    scheduledTime,
+    serviceDurationMinutes: service.duration
+  });
+
+  if (!guestAvailabilityCheck.isValid) {
+    const statusCode = guestAvailabilityCheck.errorCode === 'CONFLICT' ? 409 : 400;
+    return res.status(statusCode).json({
+      success: false,
+      message: guestAvailabilityCheck.errorMessage,
+      data: {
+        requestedTime: scheduledTime,
+        availableSlots: guestAvailabilityCheck.availableSlots || []
+      }
+    });
+  }
+
+  const requestedDate = new Date(scheduledDate);
+
+  // Calculate pricing
+  let bookingDuration = service.duration;
+  let basePrice = service.price.amount;
+
+  if (selectedDuration && service.durationOptions && service.durationOptions.length > 0) {
+    const selectedOption = service.durationOptions.find((opt: any) => opt.duration === selectedDuration);
+    if (selectedOption) {
+      bookingDuration = selectedOption.duration;
+      basePrice = selectedOption.price;
+    }
+  } else if (selectedDuration) {
+    bookingDuration = selectedDuration;
+  }
+
+  let addOnTotal = 0;
+  if (addOns && addOns.length > 0) {
+    addOnTotal = addOns.reduce((total: number, addOn: any) => total + addOn.price, 0);
+  }
+
+  const subtotal = basePrice + addOnTotal;
+  const tax = subtotal * 0.05; // 5% VAT for UAE
+  const totalAmount = subtotal + tax;
+  const currency = service.price.currency || 'AED';
+
+  // Calculate times
+  const [hours, minutes] = scheduledTime.split(':').map(Number);
+  const serviceStart = new Date(requestedDate);
+  serviceStart.setHours(hours, minutes, 0, 0);
+  const estimatedEndTime = new Date(serviceStart.getTime() + (bookingDuration * 60 * 1000));
+  const cancellationDeadline = new Date(serviceStart.getTime() - (24 * 60 * 60 * 1000));
+
+  // Process location
+  const processedLocation: any = {
+    type: location?.type || 'customer_address',
+    notes: location?.notes
+  };
+
+  if (location?.type === 'customer_address' && location?.address) {
+    processedLocation.address = {
+      street: location.address.street,
+      city: location.address.city,
+      state: location.address.state,
+      zipCode: location.address.zipCode,
+      country: location.address.country || 'AE'
+    };
+  }
+
+  // Generate booking number
+  const bookingNumber = `RZ-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${String(new Date().getDate()).padStart(2, '0')}-${String(Math.floor(Math.random() * 9999) + 1).padStart(4, '0')}`;
+
+  // Create guest booking
+  const booking = new Booking({
+    bookingNumber,
+    customerId: null,
+    isGuestBooking: true,
+    guestInfo: {
+      name: guestInfo.name,
+      email: guestInfo.email,
+      phone: guestInfo.phone
+    },
+    providerId,
+    serviceId,
+    scheduledDate: requestedDate,
+    scheduledTime,
+    duration: bookingDuration,
+    estimatedEndTime,
+    locationType,
+    selectedDuration: bookingDuration,
+    professionalPreference,
+    paymentMethod,
+    location: processedLocation,
+    pricing: {
+      basePrice,
+      addOns: addOns || [],
+      discounts: [],
+      subtotal,
+      tax,
+      totalAmount,
+      currency
+    },
+    customerInfo: {
+      firstName: guestInfo.name.split(' ')[0] || guestInfo.name,
+      lastName: guestInfo.name.split(' ').slice(1).join(' ') || '',
+      email: guestInfo.email,
+      phone: guestInfo.phone,
+      specialRequests: specialRequests || ''
+    },
+    cancellationPolicy: {
+      allowedUntil: cancellationDeadline,
+      refundPercentage: 100,
+      cancellationFee: 0
+    },
+    metadata: {
+      bookingSource: 'search',
+      deviceType: 'desktop',
+      userAgent: req.get('User-Agent')
+    },
+    status: 'pending'
+  });
+
+  await booking.save();
+
+  // Send email notification to guest
+  try {
+    const { sendBookingRequestEmail } = await import('../services/email.service');
+    await sendBookingRequestEmail(guestInfo.email, guestInfo.name, {
+      bookingNumber: booking.bookingNumber,
+      serviceName: service.name,
+      providerName: provider.firstName + ' ' + provider.lastName,
+      scheduledDate: requestedDate.toLocaleDateString('en-AE'),
+      scheduledTime,
+      duration: bookingDuration,
+      location: processedLocation.address?.city || 'Dubai',
+      currency,
+      totalAmount: totalAmount.toFixed(2),
+      trackingUrl: `${process.env.FRONTEND_URL || 'http://localhost:3001'}/track/${booking.bookingNumber}`
+    });
+  } catch (emailError) {
+    console.error('Failed to send guest booking email:', emailError);
+    // Don't fail the booking if email fails
+  }
+
+  // Send notification to provider
+  await createBookingNotifications(booking, 'booking_request');
+
+  return res.status(201).json({
+    success: true,
+    message: 'Guest booking submitted successfully',
+    data: {
+      booking: {
+        bookingNumber: booking.bookingNumber,
+        status: booking.status,
+        scheduledDate: booking.scheduledDate,
+        scheduledTime: booking.scheduledTime,
+        duration: booking.duration,
+        pricing: booking.pricing,
+        guestInfo: {
+          name: guestInfo.name,
+          email: guestInfo.email
+        }
+      },
+      trackingUrl: `/track/${booking.bookingNumber}`
+    }
+  });
+});
+
+// @desc    Track booking by booking number (public)
+// @route   GET /api/bookings/track/:bookingNumber
+// @access  Public
+const trackBooking = asyncHandler(async (req: Request, res: Response): Promise<any> => {
+  const { bookingNumber } = req.params;
+
+  if (!bookingNumber) {
+    return res.status(400).json({
+      success: false,
+      message: 'Booking number is required'
+    });
+  }
+
+  const booking = await Booking.findOne({ bookingNumber })
+    .populate('providerId', 'firstName lastName')
+    .populate('serviceId', 'name category subcategory price duration images');
+
+  if (!booking) {
+    return res.status(404).json({
+      success: false,
+      message: 'Booking not found. Please check your booking number.'
+    });
+  }
+
+  // Return limited public info for tracking
+  return res.json({
+    success: true,
+    data: {
+      bookingNumber: booking.bookingNumber,
+      status: booking.status,
+      statusHistory: booking.statusHistory.map(s => ({
+        status: s.status,
+        timestamp: s.timestamp,
+        reason: s.reason
+      })),
+      service: booking.serviceId ? {
+        name: (booking.serviceId as any).name,
+        category: (booking.serviceId as any).category,
+        subcategory: (booking.serviceId as any).subcategory
+      } : null,
+      provider: booking.providerId ? {
+        name: `${(booking.providerId as any).firstName} ${(booking.providerId as any).lastName}`
+      } : null,
+      scheduledDate: booking.scheduledDate,
+      scheduledTime: booking.scheduledTime,
+      duration: booking.duration,
+      pricing: {
+        totalAmount: booking.pricing.totalAmount,
+        currency: booking.pricing.currency
+      },
+      isGuestBooking: booking.isGuestBooking,
+      createdAt: booking.createdAt
+    }
+  });
+});
+
 export {
   createBooking,
   getCustomerBookings,
@@ -1001,5 +1286,7 @@ export {
   rejectBooking,
   startBooking,
   completeBooking,
-  addBookingMessage
+  addBookingMessage,
+  createGuestBooking,
+  trackBooking
 };

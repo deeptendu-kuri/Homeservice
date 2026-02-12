@@ -4,12 +4,15 @@ import { AlertCircle } from 'lucide-react';
 import NavigationHeader from '../../components/layout/NavigationHeader';
 import Footer from '../../components/layout/Footer';
 import BookingFormWizard from '../../components/booking/BookingFormWizard';
+import { useAuthStore } from '../../stores/authStore';
 import type { Service } from '../../types/search';
 
 const BookServicePage: React.FC = () => {
   const { serviceId } = useParams<{ serviceId: string }>();
   const navigate = useNavigate();
   const location = useLocation();
+  const { isAuthenticated } = useAuthStore();
+  const isGuest = !isAuthenticated;
   const [service, setService] = useState<Service | null>(location.state?.service || null);
   const [loading, setLoading] = useState(!service);
   const [error, setError] = useState<string | null>(null);
@@ -43,10 +46,16 @@ const BookServicePage: React.FC = () => {
     }
   };
 
-  const handleBookingSuccess = (bookingId: string) => {
-    navigate(`/customer/bookings/${bookingId}`, {
-      state: { message: 'Booking created successfully!' }
-    });
+  const handleBookingSuccess = (bookingId: string, bookingNumber?: string) => {
+    if (isGuest && bookingNumber) {
+      navigate(`/track/${bookingNumber}`, {
+        state: { message: 'Booking created successfully! Check your email for details.' }
+      });
+    } else {
+      navigate(`/customer/bookings/${bookingId}`, {
+        state: { message: 'Booking created successfully!' }
+      });
+    }
   };
 
   const handleCancel = () => {
@@ -141,6 +150,7 @@ const BookServicePage: React.FC = () => {
       providerId={serviceWithDefaults.providerId}
       onSuccess={handleBookingSuccess}
       onCancel={handleCancel}
+      guestMode={isGuest}
     />
   );
 };

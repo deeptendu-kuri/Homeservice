@@ -5,20 +5,22 @@ import { z } from 'zod';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 import { useCategories } from '../../hooks/useCategories';
-import { 
-  ChevronLeft, 
-  ChevronRight, 
-  User, 
-  Building, 
-  MapPin, 
-  Briefcase, 
-  Upload, 
+import {
+  ChevronLeft,
+  ChevronRight,
+  User,
+  Building,
+  MapPin,
+  Briefcase,
+  Upload,
   FileText,
   Eye,
   EyeOff,
   CheckCircle,
   AlertCircle
 } from 'lucide-react';
+import NavigationHeader from '../layout/NavigationHeader';
+import Footer from '../layout/Footer';
 
 // Validation schema for provider registration
 const providerRegistrationSchema = z.object({
@@ -73,7 +75,7 @@ const providerRegistrationSchema = z.object({
     
     establishedDate: z.string().optional(),
     
-    serviceRadius: z.number().min(1, 'Service radius must be at least 1 mile').max(100, 'Service radius cannot exceed 100 miles').default(25),
+    serviceRadius: z.number().min(1, 'Service radius must be at least 1 km').max(100, 'Service radius cannot exceed 100 km').default(25),
   }),
 
   // Location Information
@@ -301,7 +303,8 @@ const ProviderRegistration: React.FC = () => {
       navigate('/provider/dashboard');
     } catch (error) {
       console.error('❌ Provider registration failed:', error);
-      
+      const errorMessage = error instanceof Error ? error.message : 'Registration failed';
+
       if (errors && errors.length > 0) {
         console.log('🔍 Auth store errors:', errors);
         errors.forEach(err => {
@@ -312,10 +315,13 @@ const ProviderRegistration: React.FC = () => {
             });
           }
         });
-      } else {
-        // Generic error handling if no specific errors
-        console.error('🔍 Generic error occurred:', error);
       }
+
+      // Always set a root-level error so the banner shows
+      setError('root' as any, {
+        type: 'server',
+        message: errorMessage,
+      });
     }
   };
 
@@ -378,14 +384,15 @@ const ProviderRegistration: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-[#FFE5F0] via-[#E8E5FF] to-[#E5F3FF]">
+      <NavigationHeader />
+      <div className="flex-1 py-12">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="flex justify-center mb-4">
-            <div className="rounded-full bg-blue-100 p-3">
-              <Building className="h-8 w-8 text-blue-600" />
-            </div>
+          <div className="text-center mb-4">
+            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">NILIN</h1>
+            <p className="text-sm text-gray-500 mt-1">Beauty & Wellness at your doorstep</p>
           </div>
           <h1 className="text-3xl font-extrabold text-gray-900">
             Become a Service Provider
@@ -408,7 +415,7 @@ const ProviderRegistration: React.FC = () => {
                   <div
                     className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${
                       isActive
-                        ? 'border-blue-600 bg-blue-600 text-white'
+                        ? 'border-gray-900 bg-gray-900 text-white'
                         : isCompleted
                         ? 'border-green-600 bg-green-600 text-white'
                         : 'border-gray-300 bg-white text-gray-500'
@@ -423,7 +430,7 @@ const ProviderRegistration: React.FC = () => {
                   <div className="ml-2 hidden sm:block">
                     <div
                       className={`text-sm font-medium ${
-                        isActive ? 'text-blue-600' : isCompleted ? 'text-green-600' : 'text-gray-500'
+                        isActive ? 'text-gray-700' : isCompleted ? 'text-green-600' : 'text-gray-500'
                       }`}
                     >
                       {step.name}
@@ -446,6 +453,11 @@ const ProviderRegistration: React.FC = () => {
         <div className="bg-white shadow-sm rounded-lg">
           <form onSubmit={handleSubmit(onSubmit)}>
             <div className="px-6 py-8">
+              {(formErrors as any).root && (
+                <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-sm font-medium text-red-800">{(formErrors as any).root.message}</p>
+                </div>
+              )}
               {renderStep()}
             </div>
 
@@ -455,7 +467,7 @@ const ProviderRegistration: React.FC = () => {
                 type="button"
                 onClick={prevStep}
                 disabled={currentStep === 1}
-                className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#E8E5FF] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <ChevronLeft className="w-4 h-4 mr-1" />
                 Previous
@@ -465,7 +477,7 @@ const ProviderRegistration: React.FC = () => {
                 <button
                   type="button"
                   onClick={nextStep}
-                  className="flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="flex items-center px-4 py-2 text-sm font-medium text-white bg-gray-900 border border-transparent rounded-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-[#E8E5FF]"
                 >
                   Next
                   <ChevronRight className="w-4 h-4 ml-1" />
@@ -525,11 +537,13 @@ const ProviderRegistration: React.FC = () => {
         {/* Sign In Link */}
         <div className="mt-6 text-center">
           <span className="text-gray-500">Already have an account? </span>
-          <Link to="/login" className="text-blue-600 hover:text-blue-500 font-medium">
+          <Link to="/login" className="text-gray-700 hover:text-gray-900 font-medium">
             Sign in here
           </Link>
         </div>
       </div>
+      </div>
+      <Footer />
     </div>
   );
 };
@@ -548,7 +562,7 @@ const PersonalInfoStep = ({ register, formErrors, showPassword, setShowPassword,
           <input
             {...register('firstName')}
             type="text"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#E8E5FF] focus:border-[#E8E5FF]"
             placeholder="John"
           />
           {formErrors.firstName && (
@@ -563,7 +577,7 @@ const PersonalInfoStep = ({ register, formErrors, showPassword, setShowPassword,
           <input
             {...register('lastName')}
             type="text"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#E8E5FF] focus:border-[#E8E5FF]"
             placeholder="Doe"
           />
           {formErrors.lastName && (
@@ -579,7 +593,7 @@ const PersonalInfoStep = ({ register, formErrors, showPassword, setShowPassword,
         <input
           {...register('email')}
           type="email"
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#E8E5FF] focus:border-[#E8E5FF]"
           placeholder="john@example.com"
         />
         {formErrors.email && (
@@ -596,7 +610,7 @@ const PersonalInfoStep = ({ register, formErrors, showPassword, setShowPassword,
             <input
               {...register('password')}
               type={showPassword ? 'text' : 'password'}
-              className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-[#E8E5FF] focus:border-[#E8E5FF]"
               placeholder="••••••••"
             />
             <button
@@ -624,7 +638,7 @@ const PersonalInfoStep = ({ register, formErrors, showPassword, setShowPassword,
             <input
               {...register('confirmPassword')}
               type={showConfirmPassword ? 'text' : 'password'}
-              className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-[#E8E5FF] focus:border-[#E8E5FF]"
               placeholder="••••••••"
             />
             <button
@@ -653,8 +667,8 @@ const PersonalInfoStep = ({ register, formErrors, showPassword, setShowPassword,
           <input
             {...register('phone')}
             type="tel"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            placeholder="+1 (555) 123-4567"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#E8E5FF] focus:border-[#E8E5FF]"
+            placeholder="+971 50 123 4567"
           />
           {formErrors.phone && (
             <p className="mt-1 text-sm text-red-600">{formErrors.phone.message}</p>
@@ -668,7 +682,7 @@ const PersonalInfoStep = ({ register, formErrors, showPassword, setShowPassword,
           <input
             {...register('dateOfBirth')}
             type="date"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#E8E5FF] focus:border-[#E8E5FF]"
           />
           {formErrors.dateOfBirth && (
             <p className="mt-1 text-sm text-red-600">{formErrors.dateOfBirth.message}</p>
@@ -690,7 +704,7 @@ const BusinessInfoStep = ({ register, formErrors }: any) => (
       <input
         {...register('businessInfo.businessName')}
         type="text"
-        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#E8E5FF] focus:border-[#E8E5FF]"
         placeholder="Your Business Name"
       />
       {formErrors.businessInfo?.businessName && (
@@ -704,7 +718,7 @@ const BusinessInfoStep = ({ register, formErrors }: any) => (
       </label>
       <select
         {...register('businessInfo.businessType')}
-        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#E8E5FF] focus:border-[#E8E5FF]"
       >
         <option value="individual">Individual</option>
         <option value="small_business">Small Business</option>
@@ -720,7 +734,7 @@ const BusinessInfoStep = ({ register, formErrors }: any) => (
       <textarea
         {...register('businessInfo.description')}
         rows={4}
-        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#E8E5FF] focus:border-[#E8E5FF]"
         placeholder="Describe your business and what makes it unique (minimum 50 characters)"
       />
       {formErrors.businessInfo?.description && (
@@ -735,7 +749,7 @@ const BusinessInfoStep = ({ register, formErrors }: any) => (
       <input
         {...register('businessInfo.tagline')}
         type="text"
-        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#E8E5FF] focus:border-[#E8E5FF]"
         placeholder="A catchy tagline for your business"
       />
     </div>
@@ -748,21 +762,21 @@ const BusinessInfoStep = ({ register, formErrors }: any) => (
         <input
           {...register('businessInfo.website')}
           type="url"
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#E8E5FF] focus:border-[#E8E5FF]"
           placeholder="https://yourwebsite.com"
         />
       </div>
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          Service Radius (miles) *
+          Service Radius (km) *
         </label>
         <input
           {...register('businessInfo.serviceRadius', { valueAsNumber: true })}
           type="number"
           min="1"
           max="100"
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#E8E5FF] focus:border-[#E8E5FF]"
           placeholder="25"
         />
       </div>
@@ -785,8 +799,8 @@ const LocationInfoStep = ({ register, formErrors, watch }: any) => (
           <input
             {...register('locationInfo.primaryAddress.street')}
             type="text"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            placeholder="123 Main Street"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#E8E5FF] focus:border-[#E8E5FF]"
+            placeholder="Al Wasl Road, Jumeirah"
           />
           {formErrors.locationInfo?.primaryAddress?.street && (
             <p className="mt-1 text-sm text-red-600">{formErrors.locationInfo.primaryAddress.street.message}</p>
@@ -801,8 +815,8 @@ const LocationInfoStep = ({ register, formErrors, watch }: any) => (
             <input
               {...register('locationInfo.primaryAddress.city')}
               type="text"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              placeholder="New York"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#E8E5FF] focus:border-[#E8E5FF]"
+              placeholder="Dubai"
             />
             {formErrors.locationInfo?.primaryAddress?.city && (
               <p className="mt-1 text-sm text-red-600">{formErrors.locationInfo.primaryAddress.city.message}</p>
@@ -811,13 +825,13 @@ const LocationInfoStep = ({ register, formErrors, watch }: any) => (
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              State *
+              Emirate *
             </label>
             <input
               {...register('locationInfo.primaryAddress.state')}
               type="text"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              placeholder="NY"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#E8E5FF] focus:border-[#E8E5FF]"
+              placeholder="Dubai"
             />
             {formErrors.locationInfo?.primaryAddress?.state && (
               <p className="mt-1 text-sm text-red-600">{formErrors.locationInfo.primaryAddress.state.message}</p>
@@ -828,13 +842,13 @@ const LocationInfoStep = ({ register, formErrors, watch }: any) => (
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              ZIP Code *
+              P.O. Box / ZIP *
             </label>
             <input
               {...register('locationInfo.primaryAddress.zipCode')}
               type="text"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              placeholder="10001"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#E8E5FF] focus:border-[#E8E5FF]"
+              placeholder="00000"
             />
             {formErrors.locationInfo?.primaryAddress?.zipCode && (
               <p className="mt-1 text-sm text-red-600">{formErrors.locationInfo.primaryAddress.zipCode.message}</p>
@@ -847,9 +861,9 @@ const LocationInfoStep = ({ register, formErrors, watch }: any) => (
             </label>
             <select
               {...register('locationInfo.primaryAddress.country')}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#E8E5FF] focus:border-[#E8E5FF]"
             >
-              <option value="US">United States</option>
+              <option value="AE">United Arab Emirates</option>
             </select>
           </div>
         </div>
@@ -864,7 +878,7 @@ const LocationInfoStep = ({ register, formErrors, watch }: any) => (
           <input
             {...register('locationInfo.mobileService')}
             type="checkbox"
-            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+            className="h-4 w-4 text-gray-700 focus:ring-blue-500 border-gray-300 rounded"
           />
           <div className="ml-3">
             <label className="text-sm font-medium text-gray-700">
@@ -878,7 +892,7 @@ const LocationInfoStep = ({ register, formErrors, watch }: any) => (
           <input
             {...register('locationInfo.hasFixedLocation')}
             type="checkbox"
-            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+            className="h-4 w-4 text-gray-700 focus:ring-blue-500 border-gray-300 rounded"
           />
           <div className="ml-3">
             <label className="text-sm font-medium text-gray-700">
@@ -899,7 +913,7 @@ const ServicesStep = ({ register, formErrors, services, addService, removeServic
       <button
         type="button"
         onClick={addService}
-        className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-700 bg-[#E8E5FF]/40 hover:bg-[#E8E5FF]/60 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
       >
         Add Service
       </button>
@@ -929,7 +943,7 @@ const ServicesStep = ({ register, formErrors, services, addService, removeServic
               <input
                 {...register(`services.${index}.name`)}
                 type="text"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#E8E5FF] focus:border-[#E8E5FF]"
                 placeholder="e.g., Deep Cleaning Service"
               />
               {formErrors.services?.[index]?.name && (
@@ -943,7 +957,7 @@ const ServicesStep = ({ register, formErrors, services, addService, removeServic
               </label>
               <select
                 {...register(`services.${index}.category`)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#E8E5FF] focus:border-[#E8E5FF]"
                 disabled={categoriesLoading}
               >
                 <option value="">{categoriesLoading ? 'Loading categories...' : 'Select a category'}</option>
@@ -963,7 +977,7 @@ const ServicesStep = ({ register, formErrors, services, addService, removeServic
               </label>
               <select
                 {...register(`services.${index}.subcategory`)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#E8E5FF] focus:border-[#E8E5FF]"
                 disabled={!watchedServices?.[index]?.category}
               >
                 <option value="">Select a subcategory (optional)</option>
@@ -985,7 +999,7 @@ const ServicesStep = ({ register, formErrors, services, addService, removeServic
             <textarea
               {...register(`services.${index}.description`)}
               rows={2}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#E8E5FF] focus:border-[#E8E5FF]"
               placeholder="Describe what this service includes"
             />
             {formErrors.services?.[index]?.description && (
@@ -1003,7 +1017,7 @@ const ServicesStep = ({ register, formErrors, services, addService, removeServic
                 type="number"
                 min="15"
                 max="480"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#E8E5FF] focus:border-[#E8E5FF]"
                 placeholder="60"
               />
               {formErrors.services?.[index]?.duration && (
@@ -1013,14 +1027,14 @@ const ServicesStep = ({ register, formErrors, services, addService, removeServic
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Price ($) *
+                Price (AED) *
               </label>
               <input
                 {...register(`services.${index}.price.amount`, { valueAsNumber: true })}
                 type="number"
                 min="0"
                 step="0.01"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#E8E5FF] focus:border-[#E8E5FF]"
                 placeholder="50.00"
               />
               {formErrors.services?.[index]?.price?.amount && (
@@ -1034,7 +1048,7 @@ const ServicesStep = ({ register, formErrors, services, addService, removeServic
               </label>
               <select
                 {...register(`services.${index}.price.type`)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#E8E5FF] focus:border-[#E8E5FF]"
               >
                 <option value="fixed">Fixed Price</option>
                 <option value="hourly">Per Hour</option>
@@ -1252,7 +1266,7 @@ const ReviewStep = ({ data, files, register, formErrors }: any) => (
               <p className="text-sm text-gray-600">{service.description}</p>
               <div className="flex justify-between mt-2 text-sm">
                 <span className="text-gray-700">{service.duration} minutes</span>
-                <span className="font-medium">${service.price?.amount}</span>
+                <span className="font-medium">AED {service.price?.amount}</span>
               </div>
             </div>
           ))}
@@ -1284,7 +1298,7 @@ const ReviewStep = ({ data, files, register, formErrors }: any) => (
           <input
             {...register('agreeToTerms')}
             type="checkbox"
-            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
+            className="h-4 w-4 text-gray-700 focus:ring-blue-500 border-gray-300 rounded mt-1"
           />
           <div className="ml-3">
             <label className="text-sm font-medium text-gray-700">
@@ -1303,7 +1317,7 @@ const ReviewStep = ({ data, files, register, formErrors }: any) => (
           <input
             {...register('agreeToPrivacy')}
             type="checkbox"
-            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
+            className="h-4 w-4 text-gray-700 focus:ring-blue-500 border-gray-300 rounded mt-1"
           />
           <div className="ml-3">
             <label className="text-sm font-medium text-gray-700">
@@ -1322,7 +1336,7 @@ const ReviewStep = ({ data, files, register, formErrors }: any) => (
           <input
             {...register('agreeToBackground')}
             type="checkbox"
-            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
+            className="h-4 w-4 text-gray-700 focus:ring-blue-500 border-gray-300 rounded mt-1"
           />
           <div className="ml-3">
             <label className="text-sm font-medium text-gray-700">

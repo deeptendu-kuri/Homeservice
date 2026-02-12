@@ -165,7 +165,7 @@ export const providerRegistrationSchema = Joi.object({
         city: Joi.string().required(),
         state: Joi.string().required(),
         zipCode: Joi.string().required(),
-        country: Joi.string().default('US'),
+        country: Joi.string().empty('').default('AE'),
         coordinates: Joi.object({
           lat: Joi.number().min(-90).max(90).required(),
           lng: Joi.number().min(-180).max(180).required()
@@ -188,7 +188,7 @@ export const providerRegistrationSchema = Joi.object({
         duration: Joi.number().min(15).max(480).required(),
         price: Joi.object({
           amount: Joi.number().min(0).required(),
-          currency: Joi.string().default('USD'),
+          currency: Joi.string().default('AED'),
           type: Joi.string().valid('fixed', 'hourly', 'custom').default('fixed')
         }).required(),
         tags: Joi.array().items(Joi.string()).optional()

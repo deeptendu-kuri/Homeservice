@@ -778,7 +778,15 @@ class AuthService {
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
-        throw new Error(error.response.data?.message || `Upload to ${url} failed`);
+        const data = error.response.data;
+        const message = data?.message || `Upload to ${url} failed`;
+        // Include detailed validation errors if available
+        const detailedErrors = data?.errors;
+        if (detailedErrors && Array.isArray(detailedErrors)) {
+          const details = detailedErrors.map((e: any) => `${e.field}: ${e.message}`).join('; ');
+          throw new Error(`${message} — ${details}`);
+        }
+        throw new Error(message);
       }
       throw error;
     }

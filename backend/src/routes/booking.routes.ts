@@ -9,7 +9,9 @@ import {
   rejectBooking,
   startBooking,
   completeBooking,
-  addBookingMessage
+  addBookingMessage,
+  createGuestBooking,
+  trackBooking
 } from '../controllers/booking.controller';
 
 import {
@@ -32,6 +34,12 @@ import {
 } from '../middleware/validation';
 
 const router = Router();
+
+// ===================================
+// PUBLIC BOOKING ROUTES (no auth required)
+// ===================================
+router.post('/bookings/guest', createGuestBooking);
+router.get('/bookings/track/:bookingNumber', trackBooking);
 
 // ===================================
 // BOOKING ROUTES

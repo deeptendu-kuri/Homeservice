@@ -169,7 +169,7 @@ const ServiceRow: React.FC<{
           <div>
             <h6 className="text-sm font-medium text-gray-900">{service.name || 'Untitled Service'}</h6>
             <p className="text-xs text-gray-500">
-              {service.category || 'Unknown'} • ${service.price?.amount || 0} • ⭐ {service.rating?.average || 0}
+              {service.category || 'Unknown'} • AED {service.price?.amount || 0} • ⭐ {service.rating?.average || 0}
             </p>
           </div>
         </div>
@@ -317,7 +317,7 @@ const PendingServiceCard: React.FC<{
           <div>
             <h4 className="text-sm font-medium text-gray-900">{service.name || 'Untitled Service'}</h4>
             <p className="text-xs text-gray-500">
-              {service.category || 'Unknown'} • ${service.price?.amount || 0} •
+              {service.category || 'Unknown'} • AED {service.price?.amount || 0} •
               Provider: {service.providerId?.businessInfo?.businessName || service.providerId?.email || 'Unknown'}
             </p>
           </div>
@@ -799,7 +799,7 @@ const AdminDashboard: React.FC = () => {
               <div className="ml-5 w-0 flex-1">
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 truncate">Monthly Revenue</dt>
-                  <dd className="text-lg font-medium text-gray-900">${stats.totalRevenue.toLocaleString()}</dd>
+                  <dd className="text-lg font-medium text-gray-900">AED {stats.totalRevenue.toLocaleString()}</dd>
                 </dl>
               </div>
             </div>

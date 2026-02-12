@@ -515,8 +515,8 @@ export const registerProvider = asyncHandler(async (req: Request, res: Response)
           primaryAddress: {
             ...locationInfo.primaryAddress,
             coordinates: locationInfo.primaryAddress?.coordinates || {
-              lat: 40.7128, // Default NYC coordinates for testing
-              lng: -74.0060
+              lat: 25.2048, // Default Dubai coordinates
+              lng: 55.2708
             }
           },
           serviceAreas: [],

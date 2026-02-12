@@ -4,7 +4,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
-import { Eye, EyeOff, Mail, Lock, User, AlertCircle, CheckCircle } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, AlertCircle, CheckCircle } from 'lucide-react';
+import NavigationHeader from '../layout/NavigationHeader';
+import Footer from '../layout/Footer';
 
 // Validation schema
 const loginSchema = z.object({
@@ -122,37 +124,42 @@ const LoginFormComponent: React.FC = () => {
   // Show success message if login was successful
   if (user && isSubmitted && !isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-        <div className="sm:mx-auto sm:w-full sm:max-w-md">
-          <div className="flex justify-center">
-            <div className="rounded-full bg-green-100 p-3">
-              <CheckCircle className="h-8 w-8 text-green-600" />
+      <div className="min-h-screen flex flex-col bg-gradient-to-br from-[#FFE5F0] via-[#E8E5FF] to-[#E5F3FF]">
+        <NavigationHeader />
+        <div className="flex-1 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+          <div className="sm:mx-auto sm:w-full sm:max-w-md">
+            <div className="flex justify-center">
+              <div className="rounded-full bg-green-100 p-3">
+                <CheckCircle className="h-8 w-8 text-green-600" />
+              </div>
+            </div>
+            <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+              Welcome back!
+            </h2>
+            <p className="mt-2 text-center text-sm text-gray-600">
+              Redirecting...
+            </p>
+          </div>
+          <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+            <div className="bg-white/90 backdrop-blur-sm py-8 px-4 shadow-lg sm:rounded-lg sm:px-10 text-center">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-600 mx-auto"></div>
+              <p className="mt-4 text-sm text-gray-600">Loading...</p>
             </div>
           </div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Welcome back!
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Redirecting...
-          </p>
         </div>
-        <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-          <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10 text-center">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-600 mx-auto"></div>
-            <p className="mt-4 text-sm text-gray-600">Loading...</p>
-          </div>
-        </div>
+        <Footer />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-[#FFE5F0] via-[#E8E5FF] to-[#E5F3FF]">
+      <NavigationHeader />
+      <div className="flex-1 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="flex justify-center">
-          <div className="rounded-full bg-blue-100 p-3">
-            <User className="h-8 w-8 text-blue-600" />
-          </div>
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">NILIN</h1>
+          <p className="text-sm text-gray-500 mt-1">Beauty & Wellness at your doorstep</p>
         </div>
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
           Sign in to your account
@@ -163,16 +170,16 @@ const LoginFormComponent: React.FC = () => {
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+        <div className="bg-white/90 backdrop-blur-sm py-8 px-4 shadow-lg sm:rounded-lg sm:px-10">
           {/* State Messages */}
           {stateMessage && (
-            <div className="mb-6 rounded-md bg-blue-50 p-4">
+            <div className="mb-6 rounded-md bg-[#E8E5FF]/30 p-4">
               <div className="flex">
                 <div className="flex-shrink-0">
-                  <AlertCircle className="h-5 w-5 text-blue-400" />
+                  <AlertCircle className="h-5 w-5 text-[#E8E5FF]" />
                 </div>
                 <div className="ml-3">
-                  <p className="text-sm text-blue-700">{stateMessage}</p>
+                  <p className="text-sm text-gray-700">{stateMessage}</p>
                 </div>
               </div>
             </div>
@@ -193,7 +200,7 @@ const LoginFormComponent: React.FC = () => {
                   {...register('email')}
                   type="email"
                   autoComplete="email"
-                  className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-[#E8E5FF] focus:border-[#E8E5FF] sm:text-sm"
                   placeholder="Enter your email"
                 />
                 {formErrors.email && (
@@ -220,7 +227,7 @@ const LoginFormComponent: React.FC = () => {
                   {...register('password')}
                   type={showPassword ? 'text' : 'password'}
                   autoComplete="current-password"
-                  className="appearance-none block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className="appearance-none block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-[#E8E5FF] focus:border-[#E8E5FF] sm:text-sm"
                   placeholder="Enter your password"
                 />
                 <button
@@ -246,7 +253,7 @@ const LoginFormComponent: React.FC = () => {
                 <input
                   {...register('rememberMe')}
                   type="checkbox"
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-gray-900 focus:ring-[#E8E5FF] border-gray-300 rounded"
                 />
                 <label htmlFor="rememberMe" className="ml-2 block text-sm text-gray-900">
                   Remember me
@@ -256,7 +263,7 @@ const LoginFormComponent: React.FC = () => {
               <div className="text-sm">
                 <Link
                   to="/forgot-password"
-                  className="font-medium text-blue-600 hover:text-blue-500"
+                  className="font-medium text-gray-700 hover:text-gray-900"
                 >
                   Forgot your password?
                 </Link>
@@ -268,7 +275,7 @@ const LoginFormComponent: React.FC = () => {
               <button
                 type="submit"
                 disabled={isSubmitting || isLoading}
-                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-gray-900 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#E8E5FF] disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
               >
                 {isSubmitting || isLoading ? (
                   <div className="flex items-center">
@@ -326,7 +333,7 @@ const LoginFormComponent: React.FC = () => {
 
               <Link
                 to="/register/provider"
-                className="w-full inline-flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm bg-green-600 text-sm font-medium text-white hover:bg-green-700 transition-colors duration-200"
+                className="w-full inline-flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm bg-gray-900 text-sm font-medium text-white hover:bg-gray-800 transition-colors duration-200"
               >
                 Become a Provider
               </Link>
@@ -337,27 +344,19 @@ const LoginFormComponent: React.FC = () => {
           <div className="mt-6 text-center">
             <p className="text-xs text-gray-500">
               By signing in, you agree to our{' '}
-              <Link to="/terms" className="text-blue-600 hover:text-blue-500">
+              <Link to="/terms" className="text-gray-700 hover:text-gray-900">
                 Terms of Service
               </Link>{' '}
               and{' '}
-              <Link to="/privacy" className="text-blue-600 hover:text-blue-500">
+              <Link to="/privacy" className="text-gray-700 hover:text-gray-900">
                 Privacy Policy
               </Link>
             </p>
           </div>
         </div>
       </div>
-
-      {/* Development Footer */}
-      <div className="mt-8 text-center">
-        <Link
-          to="/status"
-          className="text-xs text-gray-400 hover:text-gray-500"
-        >
-          System Status & Development Info
-        </Link>
       </div>
+      <Footer />
     </div>
   );
 };

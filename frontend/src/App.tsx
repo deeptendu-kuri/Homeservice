@@ -1,6 +1,15 @@
 import React, { useEffect } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from './stores/authStore';
+
+// Scroll to top on route change
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+}
 import { 
   ProtectedRoute, 
   CustomerRoute, 
@@ -37,6 +46,7 @@ import {
   ProviderAvailabilityPage,
   BookServicePage
 } from './pages/booking';
+import TrackBookingPage from './pages/booking/TrackBookingPage';
 // Customer pages
 import CustomerStatsPage from './pages/customer/CustomerStatsPage';
 import {
@@ -85,6 +95,7 @@ function App() {
 
   return (
     <div className="App">
+      <ScrollToTop />
       <Routes>
         {/* Public Routes */}
         <Route 
@@ -178,14 +189,20 @@ function App() {
           element={<ProviderDetailPage />}
         />
 
-        {/* Book Service Route */}
+        {/* Book Service Route (public - supports guest checkout) */}
         <Route
           path="/book/:serviceId"
-          element={
-            <ProtectedRoute>
-              <BookServicePage />
-            </ProtectedRoute>
-          }
+          element={<BookServicePage />}
+        />
+
+        {/* Order Tracking Routes (public) */}
+        <Route
+          path="/track"
+          element={<TrackBookingPage />}
+        />
+        <Route
+          path="/track/:bookingNumber"
+          element={<TrackBookingPage />}
         />
 
         {/* Status/Development Routes */}

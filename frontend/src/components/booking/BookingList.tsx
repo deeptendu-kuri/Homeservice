@@ -111,7 +111,15 @@ const BookingList: React.FC<BookingListProps> = ({ userType, className }) => {
   };
 
   const formatDate = (date: string, time: string) => {
-    const bookingDate = new Date(`${date}T${time}`);
+    // Extract just the date part if it's an ISO string
+    const datePart = date?.includes('T') ? date.split('T')[0] : date;
+    const bookingDate = new Date(`${datePart}T${time || '00:00'}`);
+    if (isNaN(bookingDate.getTime())) {
+      // Fallback: try parsing date alone
+      const fallback = new Date(date);
+      if (isNaN(fallback.getTime())) return 'Date TBD';
+      return `${fallback.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} at ${time || 'TBD'}`;
+    }
     return bookingDate.toLocaleDateString('en-US', {
       weekday: 'short',
       month: 'short',
@@ -403,11 +411,16 @@ const BookingList: React.FC<BookingListProps> = ({ userType, className }) => {
                               </p>
                             )}
 
-                            {userType === 'provider' && booking.customer && (
-                              <p className="text-sm text-gray-600 mb-2">
-                                for {booking.customer.firstName} {booking.customer.lastName}
-                              </p>
-                            )}
+                            {userType === 'provider' && (() => {
+                              const first = booking.customer?.firstName || booking.customerInfo?.firstName || (booking as any).guestInfo?.name?.split(' ')[0];
+                              const last = booking.customer?.lastName || booking.customerInfo?.lastName || (booking as any).guestInfo?.name?.split(' ').slice(1).join(' ');
+                              const name = (first || last) ? `${first || ''} ${last || ''}`.trim() : ((booking as any).isGuestBooking ? 'Guest' : 'Customer');
+                              return (
+                                <p className="text-sm text-gray-600 mb-2">
+                                  for {name}
+                                </p>
+                              );
+                            })()}
 
                             <div className="space-y-1">
                               <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -417,14 +430,16 @@ const BookingList: React.FC<BookingListProps> = ({ userType, className }) => {
 
                               <div className="flex items-center gap-2 text-sm text-gray-600">
                                 <Clock className="h-4 w-4" />
-                                {booking.estimatedDuration} minutes
+                                {(booking as any).duration || booking.estimatedDuration || (booking as any).selectedDuration || booking.service?.duration || '—'} minutes
                               </div>
 
                               <div className="flex items-center gap-2 text-sm text-gray-600">
                                 <MapPin className="h-4 w-4" />
-                                {booking.location.type === 'customer_address' && 'Customer Address'}
-                                {booking.location.type === 'provider_location' && 'Provider Location'}
-                                {booking.location.type === 'online' && 'Online/Virtual'}
+                                {booking.location.type === 'online' ? 'Online/Virtual' : (
+                                  booking.location.address?.street || booking.location.address?.city
+                                    ? [booking.location.address.street, booking.location.address.city].filter(Boolean).join(', ')
+                                    : booking.location.type === 'provider_location' ? 'Provider Location' : 'At Home'
+                                )}
                               </div>
 
                               {booking.customerInfo.phone && (

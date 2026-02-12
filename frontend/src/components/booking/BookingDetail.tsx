@@ -396,7 +396,7 @@ const BookingDetail: React.FC<BookingDetailProps> = ({ userType, className }) =>
                   <div className="flex items-center gap-3">
                     <Clock className="h-5 w-5 text-gray-400" />
                     <div>
-                      <p className="font-medium text-gray-900">{currentBooking.estimatedDuration} minutes</p>
+                      <p className="font-medium text-gray-900">{(currentBooking as any).duration || currentBooking.estimatedDuration || (currentBooking as any).selectedDuration || currentBooking.service?.duration || '—'} minutes</p>
                       <p className="text-sm text-gray-600">Estimated duration</p>
                     </div>
                   </div>

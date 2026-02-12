@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, MapPin, User, LogOut, BarChart3, Menu, X, Calendar, Heart, ChevronDown, ShoppingCart } from 'lucide-react';
+import { Search, MapPin, User, LogOut, BarChart3, Menu, X, Calendar, Heart, ChevronDown, ShoppingCart, Package } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 
 interface NavigationHeaderProps {
@@ -115,6 +115,15 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({
                 <MapPin className="h-4 w-4" />
                 <span>{currentLocation}</span>
               </button>
+
+              {/* Track Order - visible to all */}
+              <Link
+                to="/track"
+                className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-600 hover:text-nilin-dark transition-colors"
+              >
+                <Package className="h-4 w-4" />
+                <span>Track Order</span>
+              </Link>
 
               {user ? (
                 <div className="relative">
@@ -301,6 +310,14 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({
                   >
                     <Search className="h-5 w-5 text-gray-400" />
                     Browse Services
+                  </Link>
+                  <Link
+                    to="/track"
+                    className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-xl transition-colors"
+                    onClick={closeMobileMenu}
+                  >
+                    <Package className="h-5 w-5 text-gray-400" />
+                    Track Order
                   </Link>
 
                   {user ? (

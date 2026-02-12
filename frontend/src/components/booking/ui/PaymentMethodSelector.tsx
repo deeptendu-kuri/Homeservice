@@ -1,5 +1,5 @@
 import React from 'react';
-import { CreditCard, Smartphone, Check } from 'lucide-react';
+import { CreditCard, Smartphone, Check, Banknote } from 'lucide-react';
 
 type PaymentMethod = 'apple_pay' | 'credit_card' | 'cash';
 
@@ -28,6 +28,12 @@ const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
       label: 'Credit / Debit Card',
       icon: <CreditCard className="w-6 h-6 text-gray-600" />,
       description: 'Visa, Mastercard, etc.'
+    },
+    {
+      value: 'cash',
+      label: 'Cash on Delivery',
+      icon: <Banknote className="w-6 h-6 text-gray-600" />,
+      description: 'Pay when service is completed'
     }
   ];
 

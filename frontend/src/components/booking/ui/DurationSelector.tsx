@@ -23,7 +23,7 @@ const DurationSelector: React.FC<DurationSelectorProps> = ({
     if (currency === 'AED') {
       return `AED ${price.toLocaleString('en-AE')}`;
     }
-    return `$${price.toLocaleString('en-US')}`;
+    return `${currency} ${price.toLocaleString('en-US')}`;
   };
 
   // If no options provided, don't render

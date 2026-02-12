@@ -152,10 +152,16 @@ const ProviderDashboard: React.FC = () => {
         });
 
         if (response.success && response.data.bookings) {
-          const transformedBookings = response.data.bookings.map((booking: any) => ({
+          const transformedBookings = response.data.bookings.map((booking: any) => {
+            // Resolve customer name: try populated customer, then customerInfo snapshot, then guestInfo
+            const firstName = booking.customer?.firstName || booking.customerInfo?.firstName || booking.guestInfo?.name?.split(' ')[0];
+            const lastName = booking.customer?.lastName || booking.customerInfo?.lastName || booking.guestInfo?.name?.split(' ').slice(1).join(' ');
+            const customerName = (firstName || lastName) ? `${firstName || ''} ${lastName || ''}`.trim() : (booking.isGuestBooking ? 'Guest' : 'Customer');
+
+            return {
             _id: booking._id,
             bookingNumber: booking.bookingNumber,
-            customerName: `${booking.customer?.firstName} ${booking.customer?.lastName}` || 'Customer',
+            customerName,
             serviceName: booking.service?.name || 'Service',
             scheduledDate: booking.scheduledDate,
             scheduledTime: booking.scheduledTime,
@@ -164,7 +170,8 @@ const ProviderDashboard: React.FC = () => {
             customer: booking.customer,
             service: booking.service,
             pricing: booking.pricing
-          }));
+          };
+          });
           setBookingRequests(transformedBookings);
         }
       } catch (error) {
@@ -352,7 +359,7 @@ const ProviderDashboard: React.FC = () => {
                 <div className="flex items-center space-x-6 text-sm">
                   <div className="flex items-center">
                     <DollarSign className="h-4 w-4 mr-1" />
-                    <span>${providerProfile?.earnings?.availableBalance || 0} available</span>
+                    <span>AED {providerProfile?.earnings?.availableBalance || 0} available</span>
                   </div>
                   <div className="flex items-center">
                     <Star className="h-4 w-4 mr-1" />
@@ -710,15 +717,15 @@ const ProviderDashboard: React.FC = () => {
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">Total Earned</span>
-                <span className="text-sm font-medium text-gray-900">${providerProfile?.earnings?.totalEarned || 0}</span>
+                <span className="text-sm font-medium text-gray-900">AED {providerProfile?.earnings?.totalEarned || 0}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">Available</span>
-                <span className="text-sm font-medium text-green-600">${providerProfile?.earnings?.availableBalance || 0}</span>
+                <span className="text-sm font-medium text-green-600">AED {providerProfile?.earnings?.availableBalance || 0}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">Pending</span>
-                <span className="text-sm font-medium text-yellow-600">${providerProfile?.earnings?.pendingBalance || 0}</span>
+                <span className="text-sm font-medium text-yellow-600">AED {providerProfile?.earnings?.pendingBalance || 0}</span>
               </div>
             </div>
           </div>

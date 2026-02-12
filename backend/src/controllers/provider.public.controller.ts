@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import ProviderProfile from '../models/providerProfile.model';
 import Service from '../models/service.model';
 import User from '../models/user.model';
+import Booking from '../models/booking.model';
 import ServiceCategory from '../models/serviceCategory.model';
 import { ApiError } from '../utils/ApiError';
 import { asyncHandler } from '../utils/asyncHandler';
@@ -62,7 +63,7 @@ export const getProviderById = asyncHandler(async (req: Request, res: Response):
       coverPhoto: providerProfile.instagramStyleProfile?.coverPhoto || '',
 
       // Verification
-      isVerified: providerProfile.instagramStyleProfile?.isVerified || false,
+      isVerified: providerProfile.instagramStyleProfile?.isVerified || providerProfile.verificationStatus?.overall === 'approved',
       verificationBadges: providerProfile.instagramStyleProfile?.verificationBadges?.map((badge: any) => ({
         type: badge.type,
         verifiedAt: badge.verifiedAt,
@@ -163,13 +164,29 @@ export const getProviderById = asyncHandler(async (req: Request, res: Response):
       // Business hours
       businessHours: providerProfile.businessInfo?.businessHours || {},
 
-      // Performance metrics (public subset)
-      stats: {
-        completionRate: providerProfile.analytics?.performanceMetrics?.completionRate || 0,
-        responseTime: providerProfile.analytics?.performanceMetrics?.responseTime || 0,
-        totalBookings: providerProfile.analytics?.bookingStats?.completedBookings || 0,
-        repeatCustomerRate: providerProfile.analytics?.bookingStats?.repeatCustomerRate || 0,
-      },
+      // Performance metrics (computed from actual bookings)
+      stats: await (async () => {
+        try {
+          const bookings = await Booking.find({ providerId: id }).select('status customerId pricing').lean();
+          const total = bookings.length;
+          const completed = bookings.filter(b => b.status === 'completed').length;
+          const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+          const customerIds = bookings.filter(b => b.customerId).map(b => b.customerId?.toString());
+          const uniqueCustomers = new Set(customerIds).size;
+          const repeatCustomers = customerIds.length - uniqueCustomers;
+          const repeatCustomerRate = uniqueCustomers > 0 ? Math.round((repeatCustomers / uniqueCustomers) * 100) : 0;
+
+          return {
+            completionRate,
+            responseTime: providerProfile.analytics?.performanceMetrics?.responseTime || 0,
+            totalBookings: total,
+            repeatCustomerRate,
+          };
+        } catch {
+          return { completionRate: 0, responseTime: 0, totalBookings: 0, repeatCustomerRate: 0 };
+        }
+      })(),
 
       // Active promotions
       promotions: (providerProfile.marketing?.promotions || [])
@@ -323,7 +340,7 @@ export const getProvidersByCategory = asyncHandler(async (req: Request, res: Res
         businessName: provider.businessInfo?.businessName || `${user?.firstName || ''} ${user?.lastName || ''}`,
         tagline: provider.businessInfo?.tagline || '',
         profilePhoto: provider.instagramStyleProfile?.profilePhoto || '',
-        isVerified: provider.instagramStyleProfile?.isVerified || false,
+        isVerified: provider.instagramStyleProfile?.isVerified || provider.verificationStatus?.overall === 'approved',
         location: provider.locationInfo?.primaryAddress ? {
           city: provider.locationInfo.primaryAddress.city,
           state: provider.locationInfo.primaryAddress.state,
@@ -501,7 +518,7 @@ export const getProvidersBySubcategory = asyncHandler(async (req: Request, res: 
         businessName: provider.businessInfo?.businessName || `${user?.firstName || ''} ${user?.lastName || ''}`,
         tagline: provider.businessInfo?.tagline || '',
         profilePhoto: provider.instagramStyleProfile?.profilePhoto || '',
-        isVerified: provider.instagramStyleProfile?.isVerified || false,
+        isVerified: provider.instagramStyleProfile?.isVerified || provider.verificationStatus?.overall === 'approved',
         location: provider.locationInfo?.primaryAddress ? {
           city: provider.locationInfo.primaryAddress.city,
           state: provider.locationInfo.primaryAddress.state,
@@ -615,7 +632,7 @@ export const getFeaturedProviders = asyncHandler(async (req: Request, res: Respo
         tagline: provider.businessInfo?.tagline || '',
         profilePhoto: provider.instagramStyleProfile?.profilePhoto || '',
         coverPhoto: provider.instagramStyleProfile?.coverPhoto || '',
-        isVerified: provider.instagramStyleProfile?.isVerified || false,
+        isVerified: provider.instagramStyleProfile?.isVerified || provider.verificationStatus?.overall === 'approved',
         location: provider.locationInfo?.primaryAddress ? {
           city: provider.locationInfo.primaryAddress.city,
           state: provider.locationInfo.primaryAddress.state,

@@ -31,8 +31,9 @@ import TrustBadge from './ui/TrustBadge';
 interface BookingFormWizardProps {
   service: Service;
   providerId: string;
-  onSuccess?: (bookingId: string) => void;
+  onSuccess?: (bookingId: string, bookingNumber?: string) => void;
   onCancel?: () => void;
+  guestMode?: boolean;
 }
 
 interface FormData {
@@ -48,6 +49,11 @@ interface FormData {
 
   // Step 3: Payment
   paymentMethod: 'apple_pay' | 'credit_card' | 'cash';
+
+  // Guest info
+  guestName: string;
+  guestEmail: string;
+  guestPhone: string;
 
   // Legacy fields for compatibility
   address: {
@@ -69,7 +75,8 @@ const BookingFormWizard: React.FC<BookingFormWizardProps> = ({
   service,
   providerId,
   onSuccess,
-  onCancel
+  onCancel,
+  guestMode = false
 }) => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
@@ -79,6 +86,8 @@ const BookingFormWizard: React.FC<BookingFormWizardProps> = ({
   const [isFetchingSlots, setIsFetchingSlots] = useState(false);
   const [bookingConfirmed, setBookingConfirmed] = useState(false);
   const [confirmedBookingId, setConfirmedBookingId] = useState<string | null>(null);
+  const [confirmedBookingNumber, setConfirmedBookingNumber] = useState<string | null>(null);
+  const [guestSubmitting, setGuestSubmitting] = useState(false);
 
   // Get duration options from service or create default
   const durationOptions = service.durationOptions && service.durationOptions.length > 0
@@ -92,7 +101,10 @@ const BookingFormWizard: React.FC<BookingFormWizardProps> = ({
     selectedDuration: durationOptions[0]?.duration || service.duration,
     professionalPreference: 'no_preference',
     specialRequests: '',
-    paymentMethod: 'credit_card',
+    guestName: '',
+    guestEmail: '',
+    guestPhone: '',
+    paymentMethod: 'cash',
     address: {
       street: '',
       city: '',
@@ -173,60 +185,135 @@ const BookingFormWizard: React.FC<BookingFormWizardProps> = ({
   };
 
   const handleSubmit = async () => {
+    // Guest mode validation
+    if (guestMode) {
+      if (!formData.guestName.trim()) {
+        alert('Please enter your name');
+        return;
+      }
+      if (!formData.guestEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.guestEmail)) {
+        alert('Please enter a valid email address');
+        return;
+      }
+      if (!formData.guestPhone.trim()) {
+        alert('Please enter your phone number');
+        return;
+      }
+    }
+
     console.log('📝 Submitting booking with data:', {
       serviceId: service._id,
       providerId,
       scheduledDate: formData.scheduledDate,
       scheduledTime: formData.scheduledTime,
+      guestMode,
       formData
     });
 
-    // Transform data to match backend expectations
-    const bookingData: CreateBookingData = {
-      serviceId: service._id,
-      providerId,
-      scheduledDate: formData.scheduledDate,
-      scheduledTime: formData.scheduledTime,
-      location: {
-        type: formData.locationType === 'at_home' ? 'customer_address' : 'provider_location',
-        address: formData.address.street ? {
-          street: formData.address.street,
-          city: formData.address.city,
-          state: formData.address.state,
-          zipCode: formData.address.zipCode,
-          country: formData.address.country || 'AE'
-        } : undefined,
-        notes: formData.customerInfo.accessInstructions || formData.specialRequests || undefined
-      },
-      customerInfo: {
-        phone: formData.customerInfo.phone || user?.phone || '',
-        specialRequests: formData.specialRequests || undefined,
-        accessInstructions: formData.customerInfo.accessInstructions || undefined
-      },
-      addOns: formData.addOns,
-      notes: formData.specialRequests || undefined,
-      // New booking flow fields
-      locationType: formData.locationType,
-      selectedDuration: formData.selectedDuration,
-      professionalPreference: formData.professionalPreference,
-      paymentMethod: formData.paymentMethod
-    };
+    if (guestMode) {
+      // Guest booking - call guest API directly
+      setGuestSubmitting(true);
+      try {
+        const guestBookingData = {
+          serviceId: service._id,
+          providerId,
+          scheduledDate: formData.scheduledDate,
+          scheduledTime: formData.scheduledTime,
+          guestInfo: {
+            name: formData.guestName,
+            email: formData.guestEmail,
+            phone: formData.guestPhone
+          },
+          location: {
+            type: formData.locationType === 'at_home' ? 'customer_address' : 'provider_location',
+            address: formData.address.street ? {
+              street: formData.address.street,
+              city: formData.address.city,
+              state: formData.address.state,
+              zipCode: formData.address.zipCode,
+              country: formData.address.country || 'AE'
+            } : undefined,
+            notes: formData.customerInfo.accessInstructions || formData.specialRequests || undefined
+          },
+          notes: formData.specialRequests || undefined,
+          locationType: formData.locationType,
+          selectedDuration: formData.selectedDuration,
+          professionalPreference: formData.professionalPreference,
+          paymentMethod: formData.paymentMethod
+        };
 
-    console.log('🚀 Sending booking data to API:', bookingData);
+        const response = await fetch('http://localhost:5000/api/bookings/guest', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(guestBookingData)
+        });
 
-    try {
-      const booking = await createBooking(bookingData);
-      console.log('✅ Booking created successfully:', booking);
+        const result = await response.json();
 
-      if (booking && booking._id) {
-        setBookingConfirmed(true);
-        setConfirmedBookingId(booking._id);
-        setCurrentStep(4);
+        if (response.ok && result.data) {
+          console.log('✅ Guest booking created:', result.data);
+          const bookingData = result.data.booking || result.data;
+          setBookingConfirmed(true);
+          setConfirmedBookingId(bookingData._id || null);
+          setConfirmedBookingNumber(bookingData.bookingNumber || null);
+          setCurrentStep(4);
+        } else {
+          alert(result.message || 'Failed to create booking. Please try again.');
+        }
+      } catch (error: any) {
+        console.error('❌ Guest booking failed:', error);
+        alert('Failed to create booking. Please try again.');
+      } finally {
+        setGuestSubmitting(false);
       }
-    } catch (error: any) {
-      console.error('❌ Booking creation failed:', error);
-      const errorMessage = error?.response?.data?.message || error?.message || 'Failed to create booking. Please try again.';
-      alert(errorMessage);
+    } else {
+      // Authenticated booking - use store
+      const bookingData: CreateBookingData = {
+        serviceId: service._id,
+        providerId,
+        scheduledDate: formData.scheduledDate,
+        scheduledTime: formData.scheduledTime,
+        location: {
+          type: formData.locationType === 'at_home' ? 'customer_address' : 'provider_location',
+          address: formData.address.street ? {
+            street: formData.address.street,
+            city: formData.address.city,
+            state: formData.address.state,
+            zipCode: formData.address.zipCode,
+            country: formData.address.country || 'AE'
+          } : undefined,
+          notes: formData.customerInfo.accessInstructions || formData.specialRequests || undefined
+        },
+        customerInfo: {
+          phone: formData.customerInfo.phone || user?.phone || '',
+          specialRequests: formData.specialRequests || undefined,
+          accessInstructions: formData.customerInfo.accessInstructions || undefined
+        },
+        addOns: formData.addOns,
+        notes: formData.specialRequests || undefined,
+        locationType: formData.locationType,
+        selectedDuration: formData.selectedDuration,
+        professionalPreference: formData.professionalPreference,
+        paymentMethod: formData.paymentMethod
+      };
+
+      console.log('🚀 Sending booking data to API:', bookingData);
+
+      try {
+        const booking = await createBooking(bookingData);
+        console.log('✅ Booking created successfully:', booking);
+
+        if (booking && booking._id) {
+          setBookingConfirmed(true);
+          setConfirmedBookingId(booking._id);
+          setConfirmedBookingNumber(booking.bookingNumber || null);
+          setCurrentStep(4);
+        }
+      } catch (error: any) {
+        console.error('❌ Booking creation failed:', error);
+        const errorMessage = error?.response?.data?.message || error?.message || 'Failed to create booking. Please try again.';
+        alert(errorMessage);
+      }
     }
   };
 
@@ -510,6 +597,37 @@ const BookingFormWizard: React.FC<BookingFormWizardProps> = ({
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">Payment Authorization</h2>
                 <p className="text-gray-600 mb-6">Select your preferred payment method</p>
 
+                {/* Guest Info Section */}
+                {guestMode && (
+                  <div className="mb-6 p-5 bg-[#E8E5FF]/10 border border-[#E8E5FF]/30 rounded-xl">
+                    <h3 className="text-sm font-semibold text-gray-900 mb-3">Your Contact Information</h3>
+                    <p className="text-xs text-gray-500 mb-4">We'll send your booking confirmation and tracking details to this email.</p>
+                    <div className="space-y-3">
+                      <input
+                        type="text"
+                        value={formData.guestName}
+                        onChange={(e) => setFormData({ ...formData, guestName: e.target.value })}
+                        placeholder="Full Name"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8B9B7C]/20 focus:border-[#8B9B7C]"
+                      />
+                      <input
+                        type="email"
+                        value={formData.guestEmail}
+                        onChange={(e) => setFormData({ ...formData, guestEmail: e.target.value })}
+                        placeholder="Email Address"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8B9B7C]/20 focus:border-[#8B9B7C]"
+                      />
+                      <input
+                        type="tel"
+                        value={formData.guestPhone}
+                        onChange={(e) => setFormData({ ...formData, guestPhone: e.target.value })}
+                        placeholder="Phone Number"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8B9B7C]/20 focus:border-[#8B9B7C]"
+                      />
+                    </div>
+                  </div>
+                )}
+
                 {/* Booking Summary Card */}
                 <div className="mb-6">
                   <BookingSummaryCard
@@ -550,9 +668,20 @@ const BookingFormWizard: React.FC<BookingFormWizardProps> = ({
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">
                   Your Booking is Confirmed!
                 </h2>
-                <p className="text-gray-600 mb-8">
-                  We've sent a confirmation to your email and phone.
+                <p className="text-gray-600 mb-2">
+                  {guestMode
+                    ? `We've sent a confirmation to ${formData.guestEmail}`
+                    : "We've sent a confirmation to your email and phone."}
                 </p>
+
+                {/* Show booking number for all users */}
+                {confirmedBookingNumber && (
+                  <div className="bg-[#E8E5FF]/20 border border-[#E8E5FF]/40 rounded-xl px-6 py-4 mb-6 inline-block">
+                    <p className="text-sm text-gray-500 mb-1">Your Booking Number</p>
+                    <p className="text-2xl font-bold text-gray-900 tracking-wide">{confirmedBookingNumber}</p>
+                    <p className="text-xs text-gray-500 mt-1">Use this to track your booking</p>
+                  </div>
+                )}
 
                 {/* Booking Details */}
                 <div className="bg-gray-50 rounded-xl p-6 mb-8 text-left max-w-md mx-auto">
@@ -582,14 +711,24 @@ const BookingFormWizard: React.FC<BookingFormWizardProps> = ({
 
                 {/* Action Buttons */}
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                  {confirmedBookingId && (
+                  {guestMode && confirmedBookingNumber ? (
+                    <button
+                      onClick={() => {
+                        navigate(`/track/${confirmedBookingNumber}`);
+                        if (onSuccess) onSuccess(confirmedBookingId || '', confirmedBookingNumber);
+                      }}
+                      className="px-6 py-3 bg-[#8B9B7C] text-white rounded-xl font-semibold hover:bg-[#7A8A6B] transition-colors"
+                    >
+                      Track Booking
+                    </button>
+                  ) : confirmedBookingId ? (
                     <button
                       onClick={() => navigate(`/customer/bookings/${confirmedBookingId}`)}
                       className="px-6 py-3 bg-[#8B9B7C] text-white rounded-xl font-semibold hover:bg-[#7A8A6B] transition-colors"
                     >
                       View Booking
                     </button>
-                  )}
+                  ) : null}
                   <button
                     onClick={() => navigate('/')}
                     className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
@@ -627,10 +766,10 @@ const BookingFormWizard: React.FC<BookingFormWizardProps> = ({
                 ) : (
                   <button
                     onClick={handleSubmit}
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || guestSubmitting}
                     className="flex items-center gap-2 px-8 py-3 bg-[#8B9B7C] text-white rounded-xl font-semibold hover:bg-[#7A8A6B] transition-colors disabled:opacity-50"
                   >
-                    {isSubmitting ? 'Processing...' : 'Confirm Booking'}
+                    {(isSubmitting || guestSubmitting) ? 'Processing...' : 'Confirm Booking'}
                     <CheckCircle className="h-5 w-5" />
                   </button>
                 )}
