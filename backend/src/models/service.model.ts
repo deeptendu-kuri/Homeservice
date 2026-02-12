@@ -181,8 +181,8 @@ const serviceSchema = new Schema<IService>(
       },
       currency: {
         type: String,
-        default: 'INR',
-        enum: ['INR', 'USD', 'EUR', 'GBP']
+        default: 'AED',
+        enum: ['AED', 'INR', 'USD', 'EUR', 'GBP']
       },
       type: {
         type: String,
@@ -260,7 +260,7 @@ const serviceSchema = new Schema<IService>(
         city: { type: String, required: true, index: true },
         state: { type: String, required: true, index: true },
         zipCode: { type: String, required: true },
-        country: { type: String, default: 'US' }
+        country: { type: String, default: 'AE' }
       },
       coordinates: {
         type: {

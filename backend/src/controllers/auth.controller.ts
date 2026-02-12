@@ -123,7 +123,7 @@ export const registerCustomer = asyncHandler(async (req: Request, res: Response)
           },
           language: communicationPreferences?.language || 'en',
           timezone: communicationPreferences?.timezone || 'UTC',
-          currency: communicationPreferences?.currency || 'USD'
+          currency: communicationPreferences?.currency || 'AED'
         },
         
         // AI personalization initialization
@@ -177,7 +177,7 @@ export const registerCustomer = asyncHandler(async (req: Request, res: Response)
           city: address.city,
           state: address.state,
           zipCode: address.zipCode,
-          country: address.country || 'US',
+          country: address.country || 'AE',
           coordinates: address.coordinates,
           isDefault: true,
           createdAt: new Date()
@@ -392,9 +392,9 @@ export const registerProvider = asyncHandler(async (req: Request, res: Response)
           },
           language: 'en',
           timezone: 'UTC',
-          currency: 'USD'
+          currency: 'AED'
         },
-        
+
         // AI personalization (minimal for providers)
         aiPersonalization: {
           preferences: {
@@ -477,7 +477,7 @@ export const registerProvider = asyncHandler(async (req: Request, res: Response)
           duration: service.duration,
           price: {
             amount: service.price.amount,
-            currency: service.price.currency || 'USD',
+            currency: service.price.currency || 'AED',
             type: service.price.type || 'fixed'
           },
           images: [],
@@ -706,7 +706,7 @@ export const registerProvider = asyncHandler(async (req: Request, res: Response)
               duration: service.duration,
               price: {
                 amount: service.price.amount,
-                currency: service.price.currency || 'INR',
+                currency: service.price.currency || 'AED',
                 type: service.price.type || 'fixed'
               },
               location: {
@@ -722,7 +722,7 @@ export const registerProvider = asyncHandler(async (req: Request, res: Response)
                   city: locationInfo.primaryAddress?.city || '',
                   state: locationInfo.primaryAddress?.state || '',
                   zipCode: locationInfo.primaryAddress?.zipCode || '',
-                  country: locationInfo.primaryAddress?.country || 'IN'
+                  country: locationInfo.primaryAddress?.country || 'AE'
                 }
               },
               availability: {
@@ -906,9 +906,9 @@ export const registerAdmin = asyncHandler(async (req: Request, res: Response) =>
           },
           language: 'en',
           timezone: 'UTC',
-          currency: 'USD'
+          currency: 'AED'
         },
-        
+
         // Minimal AI personalization for admin
         aiPersonalization: {
           preferences: {

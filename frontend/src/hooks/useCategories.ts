@@ -15,7 +15,7 @@ interface UseCategoryState {
 }
 
 // Hook to fetch all categories
-export function useCategories(featured?: boolean) {
+export function useCategories(featured?: boolean, includeComingSoon?: boolean) {
   const [state, setState] = useState<UseCategoriesState>({
     categories: [],
     isLoading: true,
@@ -25,7 +25,7 @@ export function useCategories(featured?: boolean) {
   const fetchCategories = useCallback(async () => {
     setState(prev => ({ ...prev, isLoading: true, error: null }));
     try {
-      const response = await categoryApi.getCategories(featured);
+      const response = await categoryApi.getCategories(featured, includeComingSoon);
       setState({
         categories: response.data.categories,
         isLoading: false,
@@ -38,7 +38,7 @@ export function useCategories(featured?: boolean) {
         error: err instanceof Error ? err.message : 'Failed to fetch categories',
       });
     }
-  }, [featured]);
+  }, [featured, includeComingSoon]);
 
   useEffect(() => {
     fetchCategories();

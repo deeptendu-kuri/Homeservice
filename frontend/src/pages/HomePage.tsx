@@ -21,7 +21,7 @@ import {
   ProviderCTA,
 } from '../components/home';
 
-// Simple category image lookup - now uses database images
+// Category image lookup by slug or name
 const getCategoryImage = (category: string): string => {
   const CATEGORY_IMAGES: Record<string, string> = {
     'beauty-wellness': 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400',
@@ -30,15 +30,17 @@ const getCategoryImage = (category: string): string => {
     'education-personal-development': 'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=400',
     'corporate-services': 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=400',
     'home-maintenance': 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=400',
-    'Cleaning': 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=400',
-    'Beauty': 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400',
-    'Fitness': 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400',
-    'Home Repair': 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=400',
+    'Beauty & Wellness': 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400',
+    'Fitness & Personal Health': 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400',
+    'Mobile Medical Care': 'https://images.unsplash.com/photo-1584982751601-97dcc096659c?w=400',
+    'Education & Personal Development': 'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=400',
+    'Corporate Services': 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=400',
+    'Home & Maintenance': 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=400',
   };
   return CATEGORY_IMAGES[category] || 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=400';
 };
 
-// Get styling for category
+// Get styling for category by slug or name
 const getCategoryStyle = (category: string): { gradient: string; badge: string } => {
   const styles: Record<string, { gradient: string; badge: string }> = {
     'beauty-wellness': { gradient: 'from-pink-500 to-rose-500', badge: 'bg-pink-500' },
@@ -47,9 +49,12 @@ const getCategoryStyle = (category: string): { gradient: string; badge: string }
     'education-personal-development': { gradient: 'from-orange-500 to-amber-500', badge: 'bg-orange-500' },
     'corporate-services': { gradient: 'from-violet-500 to-purple-500', badge: 'bg-violet-500' },
     'home-maintenance': { gradient: 'from-amber-500 to-yellow-500', badge: 'bg-amber-500' },
-    'Cleaning': { gradient: 'from-cyan-500 to-teal-500', badge: 'bg-cyan-500' },
-    'Beauty': { gradient: 'from-pink-500 to-rose-500', badge: 'bg-pink-500' },
-    'Fitness': { gradient: 'from-emerald-500 to-green-500', badge: 'bg-emerald-500' },
+    'Beauty & Wellness': { gradient: 'from-pink-500 to-rose-500', badge: 'bg-pink-500' },
+    'Fitness & Personal Health': { gradient: 'from-emerald-500 to-green-500', badge: 'bg-emerald-500' },
+    'Mobile Medical Care': { gradient: 'from-blue-500 to-cyan-500', badge: 'bg-blue-500' },
+    'Education & Personal Development': { gradient: 'from-orange-500 to-amber-500', badge: 'bg-orange-500' },
+    'Corporate Services': { gradient: 'from-violet-500 to-purple-500', badge: 'bg-violet-500' },
+    'Home & Maintenance': { gradient: 'from-amber-500 to-yellow-500', badge: 'bg-amber-500' },
   };
   return styles[category] || { gradient: 'from-indigo-500 to-purple-500', badge: 'bg-indigo-500' };
 };

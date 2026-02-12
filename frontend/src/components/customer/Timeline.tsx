@@ -103,7 +103,7 @@ const Timeline: React.FC<TimelineProps> = ({ events }) => {
                 {event.timestamp && (
                   <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
                     <Clock className="h-3 w-3" />
-                    {new Date(event.timestamp).toLocaleString('en-IN', {
+                    {new Date(event.timestamp).toLocaleString('en-AE', {
                       day: 'numeric',
                       month: 'short',
                       year: 'numeric',

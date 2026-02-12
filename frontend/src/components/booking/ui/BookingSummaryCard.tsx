@@ -18,7 +18,7 @@ const BookingSummaryCard: React.FC<BookingSummaryCardProps> = ({
   duration,
   locationType,
   price,
-  currency = 'INR'
+  currency = 'AED'
 }) => {
   // Format date to display
   const formatDate = (dateStr: string) => {
@@ -53,8 +53,8 @@ const BookingSummaryCard: React.FC<BookingSummaryCardProps> = ({
   };
 
   const formatPrice = (amount: number) => {
-    if (currency === 'INR') {
-      return `₹${amount.toLocaleString('en-IN')}`;
+    if (currency === 'AED') {
+      return `AED ${amount.toLocaleString('en-AE')}`;
     }
     return `$${amount.toLocaleString('en-US')}`;
   };

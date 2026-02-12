@@ -98,7 +98,7 @@ const BookingFormWizard: React.FC<BookingFormWizardProps> = ({
       city: '',
       state: '',
       zipCode: '',
-      country: 'IN'
+      country: 'AE'
     },
     customerInfo: {
       phone: user?.phone || '',
@@ -194,7 +194,7 @@ const BookingFormWizard: React.FC<BookingFormWizardProps> = ({
           city: formData.address.city,
           state: formData.address.state,
           zipCode: formData.address.zipCode,
-          country: formData.address.country || 'IN'
+          country: formData.address.country || 'AE'
         } : undefined,
         notes: formData.customerInfo.accessInstructions || formData.specialRequests || undefined
       },
@@ -472,7 +472,7 @@ const BookingFormWizard: React.FC<BookingFormWizardProps> = ({
                       options={durationOptions}
                       selected={formData.selectedDuration}
                       onSelect={(duration) => setFormData({ ...formData, selectedDuration: duration })}
-                      currency="INR"
+                      currency="AED"
                     />
                   </div>
                 )}
@@ -519,7 +519,7 @@ const BookingFormWizard: React.FC<BookingFormWizardProps> = ({
                     duration={formData.selectedDuration}
                     locationType={formData.locationType}
                     price={getCurrentPrice()}
-                    currency="INR"
+                    currency="AED"
                   />
                 </div>
 
@@ -575,7 +575,7 @@ const BookingFormWizard: React.FC<BookingFormWizardProps> = ({
                   <div className="border-t mt-4 pt-4">
                     <div className="flex justify-between items-center">
                       <span className="font-medium text-gray-900">{service.name}</span>
-                      <span className="font-bold text-gray-900">₹{getCurrentPrice().toLocaleString('en-IN')}</span>
+                      <span className="font-bold text-gray-900">AED {getCurrentPrice().toLocaleString('en-AE')}</span>
                     </div>
                   </div>
                 </div>

@@ -275,7 +275,7 @@ const bookingSchema = new Schema<IBooking>(
             return this.location.type === 'customer_address';
           }
         },
-        country: { type: String, default: 'US' },
+        country: { type: String, default: 'AE' },
         coordinates: {
           type: {
             type: String,
@@ -358,8 +358,8 @@ const bookingSchema = new Schema<IBooking>(
       },
       currency: {
         type: String,
-        default: 'USD',
-        enum: ['USD', 'INR', 'EUR', 'GBP']
+        default: 'AED',
+        enum: ['AED', 'USD', 'INR', 'EUR', 'GBP']
       }
     },
 

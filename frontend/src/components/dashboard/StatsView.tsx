@@ -330,7 +330,7 @@ const StatsView: React.FC = () => {
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-medium text-gray-900">₹{booking.totalAmount}</p>
+                        <p className="text-sm font-medium text-gray-900">AED {booking.totalAmount}</p>
                         {booking.rating && (
                           <div className="flex items-center">
                             <Star className="h-3 w-3 text-yellow-400 fill-current" />

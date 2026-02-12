@@ -75,7 +75,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
       city: '',
       state: '',
       zipCode: '',
-      country: 'US'
+      country: 'AE'
     },
     customerInfo: {
       phone: '',
@@ -91,10 +91,8 @@ const BookingForm: React.FC<BookingFormProps> = ({
 
   // Available add-ons (in real app, this would come from service data)
   const availableAddOns: BookingAddOn[] = [
-    { name: 'Deep clean refrigerator', price: 25, description: 'Thorough cleaning of refrigerator interior and exterior' },
-    { name: 'Oven cleaning', price: 35, description: 'Complete oven interior and exterior cleaning' },
-    { name: 'Window cleaning (interior)', price: 15, description: 'Clean all interior windows' },
-    { name: 'Garage cleaning', price: 45, description: 'Basic garage organization and cleaning' }
+    { name: 'Premium Products', price: 75, description: 'Use premium, salon-grade products for your service' },
+    { name: 'Express Finish', price: 50, description: 'Priority scheduling with faster service completion' }
   ];
 
   // Load available slots when date changes

@@ -57,7 +57,7 @@ export const AddServiceModal: React.FC<AddServiceModalProps> = ({ isOpen, onClos
     duration: 60,
     price: {
       amount: 0,
-      currency: 'INR',
+      currency: 'AED',
       type: 'fixed'
     },
     tags: []
@@ -155,7 +155,7 @@ export const AddServiceModal: React.FC<AddServiceModalProps> = ({ isOpen, onClos
           description: '',
           shortDescription: '',
           duration: 60,
-          price: { amount: 0, currency: 'INR', type: 'fixed' },
+          price: { amount: 0, currency: 'AED', type: 'fixed' },
           tags: []
         });
         setErrors({});
@@ -307,6 +307,7 @@ export const AddServiceModal: React.FC<AddServiceModalProps> = ({ isOpen, onClos
                 onChange={(e) => handleInputChange('price.currency', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
+                <option value="AED">AED (د.إ)</option>
                 <option value="INR">INR (₹)</option>
                 <option value="USD">USD ($)</option>
                 <option value="EUR">EUR (€)</option>

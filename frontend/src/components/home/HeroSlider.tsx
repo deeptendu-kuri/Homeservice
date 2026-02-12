@@ -8,7 +8,7 @@ const SLIDES = [
     id: 1,
     headline: 'Smart Services',
     subheadline: 'Delivered to Your Door.',
-    description: 'Medical · Beauty · Fitness · Business Services',
+    description: 'Beauty & Wellness Services in Dubai',
     accentColor: 'from-nilin-primary to-nilin-secondary',
   },
   {
@@ -62,12 +62,12 @@ const PhoneMockup: React.FC = () => (
       {/* Category Icons Grid */}
       <div className="grid grid-cols-3 gap-2 mb-4">
         {[
-          { icon: '👨‍⚕️', label: 'Doctor', bg: 'bg-gradient-to-br from-nilin-blue to-blue-200' },
-          { icon: '💅', label: 'Beauty', bg: 'bg-gradient-to-br from-nilin-pink to-pink-200' },
-          { icon: '💪', label: 'Fitness', bg: 'bg-gradient-to-br from-green-100 to-emerald-200' },
-          { icon: '🏢', label: 'Business', bg: 'bg-gradient-to-br from-nilin-lavender to-purple-200' },
-          { icon: '🔍', label: 'Browse', bg: 'bg-gradient-to-br from-nilin-cream to-yellow-200' },
-          { icon: '✨', label: 'More', bg: 'bg-gradient-to-br from-rose-100 to-pink-200' },
+          { icon: '💇', label: 'Hair', bg: 'bg-gradient-to-br from-nilin-pink to-pink-200' },
+          { icon: '💅', label: 'Nails', bg: 'bg-gradient-to-br from-nilin-lavender to-purple-200' },
+          { icon: '💆', label: 'Massage', bg: 'bg-gradient-to-br from-nilin-blue to-blue-200' },
+          { icon: '💄', label: 'Makeup', bg: 'bg-gradient-to-br from-rose-100 to-pink-200' },
+          { icon: '✨', label: 'Facial', bg: 'bg-gradient-to-br from-nilin-cream to-yellow-200' },
+          { icon: '👁️', label: 'Eyes', bg: 'bg-gradient-to-br from-green-100 to-emerald-200' },
         ].map((cat, i) => (
           <div key={i} className="flex flex-col items-center">
             <div className={`w-11 h-11 rounded-xl ${cat.bg} flex items-center justify-center text-lg mb-1 shadow-sm`}>

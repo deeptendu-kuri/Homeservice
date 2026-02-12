@@ -178,7 +178,7 @@ const BookingCard: React.FC<BookingCardProps> = ({
       <div className="p-4 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
         <div>
           <p className="text-xs text-gray-500 mb-0.5">Total Price</p>
-          <p className="text-xl font-bold text-gray-900">₹{booking.totalPrice}</p>
+          <p className="text-xl font-bold text-gray-900">AED {booking.totalPrice}</p>
         </div>
 
         {showActions && booking.status !== 'cancelled' && booking.status !== 'completed' && (

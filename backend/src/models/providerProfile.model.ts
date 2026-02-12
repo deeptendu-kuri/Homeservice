@@ -626,7 +626,7 @@ const providerProfileSchema = new Schema<IProviderProfile>(
       duration: { type: Number, required: true, min: 15, max: 480 },
       price: {
         amount: { type: Number, required: true, min: 0 },
-        currency: { type: String, default: 'USD' },
+        currency: { type: String, default: 'AED' },
         type: { type: String, enum: ['fixed', 'hourly', 'custom'], default: 'fixed' },
         discounts: [{
           type: { type: String, enum: ['bulk', 'seasonal', 'loyalty', 'first_time'] },
@@ -790,7 +790,7 @@ const providerProfileSchema = new Schema<IProviderProfile>(
         city: { type: String, required: true },
         state: { type: String, required: true },
         zipCode: { type: String, required: true },
-        country: { type: String, default: 'US' },
+        country: { type: String, default: 'AE' },
         coordinates: {
           lat: { type: Number, required: true, min: -90, max: 90 },
           lng: { type: Number, required: true, min: -180, max: 180 }

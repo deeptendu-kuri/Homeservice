@@ -217,7 +217,7 @@ const createBooking = asyncHandler(async (req: Request, res: Response): Promise<
   const totalAmount = subtotal + tax;
 
   // Determine currency based on provider location or service currency
-  const currency = service.price.currency || 'INR';
+  const currency = service.price.currency || 'AED';
 
   // Calculate estimated end time
   const [hours, minutes] = scheduledTime.split(':').map(Number);

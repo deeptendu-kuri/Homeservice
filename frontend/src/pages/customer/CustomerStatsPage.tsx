@@ -103,7 +103,7 @@ const CustomerStatsPage: React.FC = () => {
     },
     {
       title: 'Total Spent',
-      value: `₹${stats.totalSpent.toFixed(2)}`,
+      value: `AED ${stats.totalSpent.toFixed(2)}`,
       change: '+8%',
       changeType: 'increase',
       icon: <DollarSign className="h-6 w-6" />,
@@ -117,7 +117,7 @@ const CustomerStatsPage: React.FC = () => {
     },
     {
       title: 'Average Spent',
-      value: `₹${stats.averageSpent.toFixed(2)}`,
+      value: `AED ${stats.averageSpent.toFixed(2)}`,
       icon: <TrendingUp className="h-6 w-6" />,
       gradient: 'bg-gradient-to-br from-purple-100 to-purple-50'
     }
@@ -334,7 +334,7 @@ const CustomerStatsPage: React.FC = () => {
                         </p>
                       </div>
                       <div className="flex flex-col items-end gap-1">
-                        <span className="font-bold text-gray-900">₹{booking.pricing?.totalAmount || booking.pricing?.total || 0}</span>
+                        <span className="font-bold text-gray-900">AED {booking.pricing?.totalAmount || booking.pricing?.total || 0}</span>
                         <span
                           className={`text-xs px-2 py-1 rounded-full ${
                             booking.status === 'completed'

@@ -72,28 +72,43 @@ const Footer: React.FC = () => {
             <h3 className="font-bold text-white mb-4">Services</h3>
             <ul className="space-y-3">
               <li>
-                <Link to="/search?category=Cleaning" className="text-gray-400 text-sm hover:text-white transition-colors">
-                  Cleaning
+                <Link to="/category/beauty-wellness" className="text-gray-400 text-sm hover:text-white transition-colors">
+                  Hair
                 </Link>
               </li>
               <li>
-                <Link to="/search?category=Beauty" className="text-gray-400 text-sm hover:text-white transition-colors">
-                  Beauty
+                <Link to="/category/beauty-wellness" className="text-gray-400 text-sm hover:text-white transition-colors">
+                  Nails
                 </Link>
               </li>
               <li>
-                <Link to="/search?category=Fitness" className="text-gray-400 text-sm hover:text-white transition-colors">
-                  Fitness
+                <Link to="/category/beauty-wellness" className="text-gray-400 text-sm hover:text-white transition-colors">
+                  Massage
                 </Link>
               </li>
               <li>
-                <Link to="/search?category=Tutoring" className="text-gray-400 text-sm hover:text-white transition-colors">
-                  Tutoring
+                <Link to="/category/beauty-wellness" className="text-gray-400 text-sm hover:text-white transition-colors">
+                  Makeup
                 </Link>
               </li>
               <li>
-                <Link to="/search?category=Home Repair" className="text-gray-400 text-sm hover:text-white transition-colors">
-                  Home Repair
+                <Link to="/category/beauty-wellness" className="text-gray-400 text-sm hover:text-white transition-colors">
+                  Facial
+                </Link>
+              </li>
+              <li>
+                <Link to="/category/beauty-wellness" className="text-gray-400 text-sm hover:text-white transition-colors">
+                  Waxing
+                </Link>
+              </li>
+              <li>
+                <Link to="/category/beauty-wellness" className="text-gray-400 text-sm hover:text-white transition-colors">
+                  Eyes
+                </Link>
+              </li>
+              <li>
+                <Link to="/category/beauty-wellness" className="text-gray-400 text-sm hover:text-white transition-colors">
+                  Threading
                 </Link>
               </li>
             </ul>
@@ -163,7 +178,7 @@ const Footer: React.FC = () => {
               </div>
               <div>
                 <p className="text-xs text-gray-500">Call Us</p>
-                <p className="text-sm font-medium text-white">1800-123-4567</p>
+                <p className="text-sm font-medium text-white">+971 4 123 4567</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -181,7 +196,7 @@ const Footer: React.FC = () => {
               </div>
               <div>
                 <p className="text-xs text-gray-500">Location</p>
-                <p className="text-sm font-medium text-white">New Delhi, India</p>
+                <p className="text-sm font-medium text-white">Dubai, UAE</p>
               </div>
             </div>
           </div>
@@ -190,7 +205,7 @@ const Footer: React.FC = () => {
         {/* Bottom Bar */}
         <div className="border-t border-white/10 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-sm text-gray-400">
-            © {currentYear} NILIN. All rights reserved. Made with love in India.
+            © {currentYear} NILIN. All rights reserved. Made with love in Dubai.
           </p>
           <div className="flex gap-6">
             <Link to="/privacy" className="text-sm text-gray-400 hover:text-white transition-colors">

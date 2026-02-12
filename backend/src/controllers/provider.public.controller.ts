@@ -98,7 +98,7 @@ export const getProviderById = asyncHandler(async (req: Request, res: Response):
         duration: service.duration,
         price: {
           amount: service.price?.amount || 0,
-          currency: service.price?.currency || 'INR',
+          currency: service.price?.currency || 'AED',
           type: service.price?.type || 'fixed',
         },
         images: service.images || [],

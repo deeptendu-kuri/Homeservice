@@ -28,6 +28,7 @@ export interface IServiceCategory extends Document {
   
   isActive: boolean;
   isFeatured: boolean;
+  comingSoon: boolean;
   sortOrder: number;
   
   metadata: {
@@ -131,6 +132,7 @@ const serviceCategorySchema = new Schema<IServiceCategory>(
     
     isActive: { type: Boolean, default: true },
     isFeatured: { type: Boolean, default: false },
+    comingSoon: { type: Boolean, default: false },
     sortOrder: { type: Number, default: 0 },
     
     metadata: {

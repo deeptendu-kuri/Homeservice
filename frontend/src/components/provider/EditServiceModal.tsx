@@ -66,7 +66,7 @@ export const EditServiceModal: React.FC<EditServiceModalProps> = ({
     duration: 60,
     price: {
       amount: 0,
-      currency: 'USD',
+      currency: 'AED',
       type: 'fixed'
     },
     tags: [],
@@ -91,7 +91,7 @@ export const EditServiceModal: React.FC<EditServiceModalProps> = ({
       description: '',
       shortDescription: '',
       duration: 60,
-      price: { amount: 0, currency: 'USD', type: 'fixed' },
+      price: { amount: 0, currency: 'AED', type: 'fixed' },
       tags: [],
       status: 'active'
     });
@@ -118,7 +118,7 @@ export const EditServiceModal: React.FC<EditServiceModalProps> = ({
           duration: service.duration || 60,
           price: {
             amount: service.price?.amount || 0,
-            currency: service.price?.currency || 'USD',
+            currency: service.price?.currency || 'AED',
             type: service.price?.type || 'fixed'
           },
           tags: service.tags || [],
@@ -395,6 +395,7 @@ export const EditServiceModal: React.FC<EditServiceModalProps> = ({
                 onChange={(e) => handleInputChange('price.currency', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
+                <option value="AED">AED (د.إ)</option>
                 <option value="USD">USD ($)</option>
               </select>
             </div>

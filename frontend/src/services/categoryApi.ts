@@ -15,8 +15,10 @@ const api = axios.create({
 
 export const categoryApi = {
   // Get all master categories (with optional featured filter)
-  getCategories: async (featured?: boolean): Promise<CategoriesResponse> => {
-    const params = featured !== undefined ? { featured: String(featured) } : {};
+  getCategories: async (featured?: boolean, includeComingSoon?: boolean): Promise<CategoriesResponse> => {
+    const params: Record<string, string> = {};
+    if (featured !== undefined) params.featured = String(featured);
+    if (includeComingSoon) params.includeComingSoon = 'true';
     const response = await api.get('/', { params });
     return response.data;
   },

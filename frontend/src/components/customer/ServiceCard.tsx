@@ -72,7 +72,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
           </h3>
           <div className="flex items-center justify-between">
             <span className="text-lg font-bold text-gray-900">
-              ₹{displayPrice}
+              AED {displayPrice}
             </span>
             {displayRating > 0 && (
               <div className="flex items-center gap-1">
@@ -174,7 +174,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
               <p className="text-xs text-gray-500 mb-1">by {service.provider.name}</p>
             )}
             <div className="flex items-baseline gap-1">
-              <span className="text-2xl font-bold text-gray-900">₹{displayPrice}</span>
+              <span className="text-2xl font-bold text-gray-900">AED {displayPrice}</span>
               <span className="text-sm text-gray-500">/ service</span>
             </div>
           </div>

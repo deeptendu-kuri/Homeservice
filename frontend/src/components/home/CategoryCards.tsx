@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, X } from 'lucide-react';
 import { useCategories } from '../../hooks/useCategories';
 
 // Static "Browse All" card - kept in frontend as per plan
@@ -84,6 +84,7 @@ interface CategoryCardProps {
   hoverBorder: string;
   onClick: () => void;
   isViewAll?: boolean;
+  comingSoon?: boolean;
 }
 
 const CategoryCard: React.FC<CategoryCardProps> = ({
@@ -95,11 +96,19 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
   accentColor,
   hoverBorder,
   onClick,
+  comingSoon,
 }) => (
   <button
     onClick={onClick}
-    className={`group relative w-full text-left p-4 sm:p-5 rounded-2xl border border-transparent transition-all duration-300 hover:shadow-xl hover:-translate-y-1 bg-gradient-to-br ${bgGradient} ${hoverBorder} overflow-hidden`}
+    className={`group relative w-full text-left p-4 sm:p-5 rounded-2xl border border-transparent transition-all duration-300 hover:shadow-xl hover:-translate-y-1 bg-gradient-to-br ${bgGradient} ${hoverBorder} overflow-hidden ${comingSoon ? 'opacity-80' : ''}`}
   >
+    {/* Coming Soon Badge */}
+    {comingSoon && (
+      <div className="absolute top-2 right-2 z-10 px-2 py-0.5 bg-gray-900/80 text-white text-[10px] font-semibold rounded-full">
+        Coming Soon
+      </div>
+    )}
+
     {/* Decorative circle */}
     <div className="absolute -top-6 -right-6 w-24 h-24 bg-white/30 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500" />
 
@@ -142,9 +151,15 @@ const CategoryCardSkeleton: React.FC = () => (
 
 const CategoryCards: React.FC = () => {
   const navigate = useNavigate();
-  const { categories, isLoading } = useCategories();
+  const { categories, isLoading } = useCategories(undefined, true);
+  const [comingSoonPopup, setComingSoonPopup] = useState<string | null>(null);
 
-  const handleCategoryClick = (slug: string, isViewAll?: boolean) => {
+  const handleCategoryClick = (slug: string, isViewAll?: boolean, comingSoon?: boolean) => {
+    if (comingSoon) {
+      const cat = categories.find((c: any) => c.slug === slug);
+      setComingSoonPopup(cat?.name || slug);
+      return;
+    }
     if (isViewAll) {
       navigate('/search');
     } else {
@@ -163,14 +178,13 @@ const CategoryCards: React.FC = () => {
       icon: displayConfig.iconEmoji || '📦',
       title: CATEGORY_DISPLAY_TITLES[category.slug] || category.name,
       description: category.description?.slice(0, 40) || 'Professional services',
+      comingSoon: category.comingSoon || false,
       ...styles,
     };
   };
 
-  // Filter to featured categories and limit to 4
-  const featuredCategories = categories
-    .filter((cat: any) => cat.isFeatured)
-    .slice(0, 4);
+  // Show all 6 categories (not just featured)
+  const allCategories = categories.slice(0, 6);
 
   return (
     <section className="py-10 md:py-16 bg-gradient-to-b from-white via-gray-50/50 to-white">
@@ -183,19 +197,18 @@ const CategoryCards: React.FC = () => {
           <p className="text-sm text-gray-500">Choose from our wide range of professional services</p>
         </div>
 
-        {/* Category Grid - 5 cards: 2 cols mobile, 5 cols desktop */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 sm:gap-4 lg:gap-5">
+        {/* Category Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 sm:gap-4 lg:gap-5">
           {isLoading ? (
-            // Loading skeletons
             <>
-              {[1, 2, 3, 4, 5].map((i) => (
+              {[1, 2, 3, 4, 5, 6, 7].map((i) => (
                 <CategoryCardSkeleton key={i} />
               ))}
             </>
           ) : (
             <>
               {/* Dynamic category cards from API */}
-              {featuredCategories.map((category: any) => {
+              {allCategories.map((category: any) => {
                 const config = getCardConfig(category);
                 return (
                   <CategoryCard
@@ -207,7 +220,8 @@ const CategoryCards: React.FC = () => {
                     iconBg={config.iconBg}
                     accentColor={config.accentColor}
                     hoverBorder={config.hoverBorder}
-                    onClick={() => handleCategoryClick(config.slug)}
+                    comingSoon={config.comingSoon}
+                    onClick={() => handleCategoryClick(config.slug, false, config.comingSoon)}
                   />
                 );
               })}
@@ -228,6 +242,32 @@ const CategoryCards: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Coming Soon Popup */}
+      {comingSoonPopup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setComingSoonPopup(null)}>
+          <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-start mb-4">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-nilin-lavender to-nilin-pink flex items-center justify-center text-2xl">
+                🚀
+              </div>
+              <button onClick={() => setComingSoonPopup(null)} className="p-1 hover:bg-gray-100 rounded-full">
+                <X className="w-5 h-5 text-gray-400" />
+              </button>
+            </div>
+            <h3 className="text-lg font-bold text-gray-900 mb-2">Coming Soon!</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              <strong>{comingSoonPopup}</strong> services are coming to Dubai soon. We're working hard to bring you the best professionals in this category.
+            </p>
+            <button
+              onClick={() => setComingSoonPopup(null)}
+              className="w-full py-2.5 bg-gradient-to-r from-nilin-primary to-nilin-secondary text-white rounded-xl font-semibold text-sm hover:shadow-lg transition-all"
+            >
+              Got it!
+            </button>
+          </div>
+        </div>
+      )}
     </section>
   );
 };

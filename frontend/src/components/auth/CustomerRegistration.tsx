@@ -50,7 +50,7 @@ const customerRegistrationSchema = z.object({
     city: z.string().optional(),
     state: z.string().optional(),
     zipCode: z.string().optional(),
-    country: z.string().default('US'),
+    country: z.string().default('AE'),
   }).optional(),
   
   referralCode: z.string().optional(),
@@ -117,7 +117,7 @@ const CustomerRegistration: React.FC = () => {
         },
       },
       address: {
-        country: 'US',
+        country: 'AE',
       },
       agreeToTerms: false,
       agreeToPrivacy: false,

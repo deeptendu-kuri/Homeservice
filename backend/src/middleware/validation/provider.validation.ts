@@ -48,7 +48,7 @@ const serviceCreationSchema = Joi.object({
         'number.max': 'Price cannot exceed $10,000',
         'any.required': 'Price amount is required'
       }),
-    currency: Joi.string().valid('INR', 'USD', 'EUR', 'GBP').default('INR'),
+    currency: Joi.string().valid('AED', 'INR', 'USD', 'EUR', 'GBP').default('AED'),
     type: Joi.string()
       .valid('fixed', 'hourly', 'custom')
       .required()
@@ -96,7 +96,7 @@ const serviceCreationSchema = Joi.object({
       city: Joi.string().required(),
       state: Joi.string().required(),
       zipCode: Joi.string().required(),
-      country: Joi.string().default('US')
+      country: Joi.string().default('AE')
     }).required(),
     coordinates: Joi.object({
       type: Joi.string().valid('Point').default('Point'),

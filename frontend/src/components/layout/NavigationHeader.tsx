@@ -12,7 +12,7 @@ interface NavigationHeaderProps {
 const NavigationHeader: React.FC<NavigationHeaderProps> = ({
   showSearch = true,
   onSearch,
-  currentLocation = 'Delhi'
+  currentLocation = 'Dubai'
 }) => {
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();

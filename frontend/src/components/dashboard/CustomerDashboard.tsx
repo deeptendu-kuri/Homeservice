@@ -39,7 +39,7 @@ const CustomerDashboard: React.FC = () => {
     {
       id: '3',
       title: 'Refer & Earn',
-      description: 'Refer a friend and both get ₹500 in your wallet',
+      description: 'Refer a friend and both get AED 50 in your wallet',
       badge: 'REWARDS',
       ctaText: 'Refer Now',
       ctaLink: '/customer/rewards',

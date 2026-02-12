@@ -83,7 +83,7 @@ const providerRegistrationSchema = z.object({
       city: z.string().min(1, 'City is required'),
       state: z.string().min(1, 'State is required'),
       zipCode: z.string().min(1, 'ZIP code is required'),
-      country: z.string().default('US'),
+      country: z.string().default('AE'),
     }),
     mobileService: z.boolean().default(true),
     hasFixedLocation: z.boolean().default(false),
@@ -98,7 +98,7 @@ const providerRegistrationSchema = z.object({
     duration: z.number().min(15, 'Duration must be at least 15 minutes').max(480, 'Duration cannot exceed 480 minutes'),
     price: z.object({
       amount: z.number().min(0, 'Price cannot be negative'),
-      currency: z.string().default('USD'),
+      currency: z.string().default('AED'),
       type: z.enum(['fixed', 'hourly', 'custom']).default('fixed'),
     }),
     tags: z.array(z.string()).optional(),
@@ -177,7 +177,7 @@ const ProviderRegistration: React.FC = () => {
       },
       locationInfo: {
         primaryAddress: {
-          country: 'US',
+          country: 'AE',
         },
         mobileService: true,
         hasFixedLocation: false,
@@ -185,7 +185,7 @@ const ProviderRegistration: React.FC = () => {
       services: [
         {
           price: {
-            currency: 'USD',
+            currency: 'AED',
             type: 'fixed',
             amount: 0,
           },
@@ -230,7 +230,7 @@ const ProviderRegistration: React.FC = () => {
         duration: 60,
         price: {
           amount: 0,
-          currency: 'USD',
+          currency: 'AED',
           type: 'fixed' as const,
         },
         tags: [],

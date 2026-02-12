@@ -17,11 +17,11 @@ const DurationSelector: React.FC<DurationSelectorProps> = ({
   options,
   selected,
   onSelect,
-  currency = 'INR'
+  currency = 'AED'
 }) => {
   const formatPrice = (price: number) => {
-    if (currency === 'INR') {
-      return `₹${price.toLocaleString('en-IN')}`;
+    if (currency === 'AED') {
+      return `AED ${price.toLocaleString('en-AE')}`;
     }
     return `$${price.toLocaleString('en-US')}`;
   };

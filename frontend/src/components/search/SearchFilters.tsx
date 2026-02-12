@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Filter, X, MapPin, DollarSign, Star, ChevronDown } from 'lucide-react';
 import { useSearchStore } from '@/store/searchStore';
+import { useCategories } from '@/hooks/useCategories';
 import { cn } from '@/lib/utils';
 
 interface SearchFiltersProps {
@@ -8,21 +9,6 @@ interface SearchFiltersProps {
   isCollapsed?: boolean;
   onToggle?: () => void;
 }
-
-const CATEGORY_MAP = {
-  'cleaning': 'Cleaning',
-  'beauty': 'Beauty & Personal Care',
-  'health': 'Health & Wellness',
-  'home-services': 'Home Services',
-  'education': 'Education',
-  'technology': 'Technology',
-  'automotive': 'Automotive',
-  'pet-care': 'Pet Care',
-  'fitness': 'Fitness',
-  'events': 'Events'
-};
-
-const CATEGORIES = Object.keys(CATEGORY_MAP);
 
 const SORT_OPTIONS = [
   { value: 'popularity', label: 'Most Popular' },
@@ -39,6 +25,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
   onToggle,
 }) => {
   const { filters, setFilters, clearFilters, performSearch } = useSearchStore();
+  const { categories } = useCategories();
 
   const [localFilters, setLocalFilters] = useState(filters);
   const [showPriceRange, setShowPriceRange] = useState(false);
@@ -55,16 +42,9 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
   );
 
   const handleFilterChange = (key: string, value: any) => {
-    let processedValue = value;
-    
-    // Map category values from frontend to backend format
-    if (key === 'category' && value) {
-      processedValue = CATEGORY_MAP[value as keyof typeof CATEGORY_MAP] || value;
-    }
-    
     const newFilters = {
       ...localFilters,
-      [key]: processedValue,
+      [key]: value,
       page: 1, // Reset to first page when filters change
     };
     setLocalFilters(newFilters);
@@ -78,18 +58,6 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
   const handleClearFilters = () => {
     clearFilters();
     setLocalFilters(filters);
-  };
-
-  const formatCategoryName = (category: string) => {
-    return CATEGORY_MAP[category as keyof typeof CATEGORY_MAP] || 
-           category.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-  };
-
-  // Get the frontend category key from backend category value
-  const getSelectedCategoryKey = (backendCategory: string | undefined) => {
-    if (!backendCategory) return '';
-    const entry = Object.entries(CATEGORY_MAP).find(([key, value]) => value === backendCategory);
-    return entry ? entry[0] : backendCategory;
   };
 
   if (isCollapsed) {
@@ -156,14 +124,14 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
             Category
           </label>
           <select
-            value={getSelectedCategoryKey(localFilters.category)}
+            value={localFilters.category || ''}
             onChange={(e) => handleFilterChange('category', e.target.value || undefined)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">All Categories</option>
-            {CATEGORIES.map((category) => (
-              <option key={category} value={category}>
-                {formatCategoryName(category)}
+            {categories.map((cat) => (
+              <option key={cat._id} value={cat.name}>
+                {cat.name}
               </option>
             ))}
           </select>
@@ -200,7 +168,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
               {showPriceRange ? 'Hide' : 'Show'}
             </button>
           </div>
-          
+
           {showPriceRange && (
             <div className="grid grid-cols-2 gap-2">
               <div>
@@ -262,7 +230,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
               onChange={(e) => handleFilterChange('city', e.target.value || undefined)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            
+
             <div className="flex items-center justify-between">
               <label className="text-sm text-gray-600">
                 Search Radius
@@ -274,7 +242,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
                 {showRadius ? 'Hide' : 'Show'}
               </button>
             </div>
-            
+
             {showRadius && (
               <div className="flex items-center gap-2">
                 <input

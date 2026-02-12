@@ -33,6 +33,7 @@ export interface Category {
   color: string;
   sortOrder: number;
   isFeatured: boolean;
+  comingSoon?: boolean;
   subcategoryCount: number;
   subcategories: Subcategory[];
   imageUrl?: string;

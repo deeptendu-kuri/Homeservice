@@ -3,38 +3,6 @@ import { persist } from 'zustand/middleware';
 import { searchApi } from '@/services/searchApi';
 import type { SearchFilters, Service, Suggestion } from '@/types/search';
 
-// Category mapping for frontend to backend conversion
-const CATEGORY_MAP: Record<string, string> = {
-  'cleaning': 'Cleaning',
-  'beauty': 'Beauty & Personal Care', 
-  'health': 'Health & Wellness',
-  'home-services': 'Home Services',
-  'education': 'Education',
-  'technology': 'Technology',
-  'automotive': 'Automotive',
-  'pet-care': 'Pet Care',
-  'fitness': 'Fitness',
-  'events': 'Events'
-};
-
-// Helper function to normalize search filters
-const normalizeFilters = (filters: SearchFilters): SearchFilters => {
-  const normalized = { ...filters };
-  
-  // Normalize category - map frontend values to backend values
-  if (normalized.category) {
-    const lowerCategory = normalized.category.toLowerCase();
-    normalized.category = CATEGORY_MAP[lowerCategory] || normalized.category;
-  }
-  
-  // Normalize query - convert to lowercase for backend processing
-  if (normalized.q) {
-    normalized.q = normalized.q.trim();
-  }
-  
-  return normalized;
-};
-
 interface SearchState {
   // Search data
   services: Service[];
@@ -140,9 +108,7 @@ export const useSearchStore = create<SearchState>()(
         set({ isLoading: true, error: null });
         
         try {
-          // Normalize filters before sending to API
-          const normalizedFilters = normalizeFilters(filters);
-          const response = await searchApi.searchServices(normalizedFilters);
+          const response = await searchApi.searchServices(filters);
           
           if (response.success) {
             set({

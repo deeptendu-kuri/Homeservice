@@ -123,7 +123,7 @@ export const approveProvider = asyncHandler(async (req: Request, res: Response) 
             
             price: {
               amount: service.price.amount,
-              currency: service.price.currency || 'USD',
+              currency: service.price.currency || 'AED',
               type: service.price.type || 'fixed',
               discounts: service.price.discounts || []
             },
@@ -333,7 +333,7 @@ export const createTestProvider = asyncHandler(async (req: Request, res: Respons
       category: 'Plumbing',
       description: '24/7 emergency plumbing repairs including pipe leaks, burst pipes, and clogged drains',
       duration: 120,
-      price: { amount: 150, currency: 'USD', type: 'fixed' },
+      price: { amount: 150, currency: 'AED', type: 'fixed' },
       tags: ['emergency', 'repair', '24-7'],
       isActive: true,
       images: []
@@ -343,7 +343,7 @@ export const createTestProvider = asyncHandler(async (req: Request, res: Respons
       category: 'Plumbing',
       description: 'Professional water heater installation and replacement services',
       duration: 240,
-      price: { amount: 350, currency: 'USD', type: 'fixed' },
+      price: { amount: 350, currency: 'AED', type: 'fixed' },
       tags: ['installation', 'water-heater'],
       isActive: true,
       images: []
@@ -353,7 +353,7 @@ export const createTestProvider = asyncHandler(async (req: Request, res: Respons
       category: 'Plumbing',
       description: 'Complete drain cleaning and unclogging services for all types of drains',
       duration: 90,
-      price: { amount: 120, currency: 'USD', type: 'fixed' },
+      price: { amount: 120, currency: 'AED', type: 'fixed' },
       tags: ['drain', 'cleaning', 'unclog'],
       isActive: true,
       images: []

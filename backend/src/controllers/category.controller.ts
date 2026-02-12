@@ -9,7 +9,7 @@ import { asyncHandler } from '../utils/asyncHandler';
  * GET /api/categories
  */
 export const getMasterCategories = asyncHandler(async (req: Request, res: Response) => {
-  const { featured } = req.query;
+  const { featured, includeComingSoon } = req.query;
 
   let query: any = { isActive: true };
 
@@ -18,8 +18,13 @@ export const getMasterCategories = asyncHandler(async (req: Request, res: Respon
     query.isFeatured = true;
   }
 
+  // Exclude comingSoon categories unless explicitly requested
+  if (includeComingSoon !== 'true') {
+    query.comingSoon = { $ne: true };
+  }
+
   const categories = await ServiceCategory.find(query)
-    .select('name slug icon color description sortOrder isFeatured subcategories')
+    .select('name slug icon color description sortOrder isFeatured comingSoon subcategories')
     .sort({ sortOrder: 1 });
 
   // Transform to include subcategory count
@@ -32,6 +37,7 @@ export const getMasterCategories = asyncHandler(async (req: Request, res: Respon
     description: cat.description,
     sortOrder: cat.sortOrder,
     isFeatured: cat.isFeatured,
+    comingSoon: cat.comingSoon || false,
     subcategoryCount: cat.subcategories?.filter(sub => sub.isActive).length || 0,
     subcategories: cat.subcategories?.filter(sub => sub.isActive).map(sub => ({
       name: sub.name,
@@ -62,6 +68,11 @@ export const getCategoryBySlug = asyncHandler(async (req: Request, res: Response
 
   if (!category) {
     throw new ApiError(404, 'Category not found');
+  }
+
+  // If category is comingSoon, return unavailable response
+  if (category.comingSoon) {
+    throw new ApiError(404, 'This category is coming soon and not yet available');
   }
 
   // Get service count for this category
@@ -210,7 +221,7 @@ export const getCategoryServices = asyncHandler(async (req: Request, res: Respon
  * GET /api/categories/stats
  */
 export const getCategoryStats = asyncHandler(async (_req: Request, res: Response) => {
-  const categories = await ServiceCategory.find({ isActive: true })
+  const categories = await ServiceCategory.find({ isActive: true, comingSoon: { $ne: true } })
     .select('name slug icon color')
     .sort({ sortOrder: 1 });
 
@@ -262,6 +273,7 @@ export const searchCategories = asyncHandler(async (req: Request, res: Response)
 
   const categories = await ServiceCategory.find({
     isActive: true,
+    comingSoon: { $ne: true },
     $or: [
       { name: { $regex: q, $options: 'i' } },
       { 'subcategories.name': { $regex: q, $options: 'i' } }
