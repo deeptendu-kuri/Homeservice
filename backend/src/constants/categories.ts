@@ -1,17 +1,17 @@
 /**
  * SERVICE CATEGORIES
  * Single source of truth for all service categories across the platform.
- * These match the 6 NILIN categories stored in the ServiceCategory MongoDB collection.
+ * Beauty-only categories for Dubai Beauty & Wellness marketplace.
  * Used by: Provider service creation, Search/filtering, Backend validation
  */
 
 export const SERVICE_CATEGORIES = [
-  'Beauty & Wellness',
-  'Fitness & Personal Health',
-  'Mobile Medical Care',
-  'Education & Personal Development',
-  'Corporate Services',
-  'Home & Maintenance'
+  'Hair',
+  'Makeup',
+  'Nails',
+  'Skin & Aesthetics',
+  'Massage & Body',
+  'Personal Care'
 ] as const;
 
 export type ServiceCategory = typeof SERVICE_CATEGORIES[number];
@@ -20,12 +20,12 @@ export type ServiceCategory = typeof SERVICE_CATEGORIES[number];
  * Category slug to name mapping (for URL-based lookups)
  */
 export const CATEGORY_SLUG_MAP: Record<string, string> = {
-  'beauty-wellness': 'Beauty & Wellness',
-  'fitness-personal-health': 'Fitness & Personal Health',
-  'mobile-medical-care': 'Mobile Medical Care',
-  'education-personal-development': 'Education & Personal Development',
-  'corporate-services': 'Corporate Services',
-  'home-maintenance': 'Home & Maintenance',
+  'hair': 'Hair',
+  'makeup': 'Makeup',
+  'nails': 'Nails',
+  'skin-aesthetics': 'Skin & Aesthetics',
+  'massage-body': 'Massage & Body',
+  'personal-care': 'Personal Care',
 };
 
 /**

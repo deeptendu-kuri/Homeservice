@@ -17,130 +17,127 @@ import Service from '../models/service.model';
 import ServiceCategory from '../models/serviceCategory.model';
 import Availability from '../models/availability.model';
 
-// NILIN Category Data (matching database)
+// NILIN Beauty Categories (matching database)
 const CATEGORIES = [
   {
-    name: 'Beauty & Wellness',
-    slug: 'beauty-wellness',
-    color: '#FF6B9D',
+    name: 'Hair',
+    slug: 'hair',
+    color: '#FF8A80',
     provider: {
-      firstName: 'Priya',
-      lastName: 'Sharma',
-      email: 'priya.beauty@nilin.test',
-      businessName: 'Priya\'s Beauty Studio',
-      tagline: 'Your beauty, our passion',
-      bio: 'Expert beautician with 10+ years of experience in hair, makeup, and skincare. Certified from Lakme Academy.',
+      firstName: 'Layla',
+      lastName: 'Al Maktoum',
+      email: 'layla.hair@nilin.test',
+      businessName: 'Layla\'s Hair Atelier',
+      tagline: 'Your hair, our artistry',
+      bio: 'Award-winning hair stylist with 12 years of experience in Dubai. Certified by Toni & Guy Academy. Specializing in bridal hair and balayage.',
     },
     subcategories: [
-      { name: 'Hair', slug: 'hair', services: ['Haircut & Styling', 'Hair Coloring', 'Keratin Treatment'] },
-      { name: 'Makeup', slug: 'makeup', services: ['Bridal Makeup', 'Party Makeup', 'HD Makeup'] },
-      { name: 'Nails', slug: 'nails', services: ['Manicure', 'Pedicure', 'Nail Art'] },
-      { name: 'Skin & Aesthetics', slug: 'skin-aesthetics', services: ['Facial Treatment', 'Cleanup', 'Anti-Aging Treatment'] },
-      { name: 'Massage & Body Treatment', slug: 'massage-body', services: ['Swedish Massage', 'Deep Tissue Massage', 'Body Wrap'] },
-      { name: 'Personal Care', slug: 'personal-care', services: ['Full Body Waxing', 'Threading', 'Eyebrow Shaping'] },
+      { name: "Women's Haircut", slug: 'womens-haircut', services: ["Women's Haircut & Style", 'Layered Cut', 'Trim & Reshape'] },
+      { name: "Men's Haircut", slug: 'mens-haircut', services: ["Men's Haircut", 'Fade & Taper', 'Beard Trim & Shape'] },
+      { name: 'Coloring', slug: 'coloring', services: ['Full Color', 'Highlights & Balayage', 'Root Touch-Up'] },
+      { name: 'Treatments', slug: 'treatments', services: ['Keratin Treatment', 'Deep Conditioning', 'Hair Spa'] },
+      { name: 'Blowout', slug: 'blowout', services: ['Classic Blowout', 'Bouncy Blowdry', 'Straightening Blowout'] },
+      { name: 'Bridal Hair', slug: 'bridal-hair', services: ['Bridal Updo', 'Bridal Trial Session', 'Bridesmaid Styling'] },
     ]
   },
   {
-    name: 'Fitness & Personal Health',
-    slug: 'fitness-personal-health',
-    color: '#FF9800',
+    name: 'Makeup',
+    slug: 'makeup',
+    color: '#F48FB1',
     provider: {
-      firstName: 'Arjun',
-      lastName: 'Reddy',
-      email: 'arjun.fitness@nilin.test',
-      businessName: 'FitLife by Arjun',
-      tagline: 'Transform your body, transform your life',
-      bio: 'Certified personal trainer and nutrition coach. Former national level athlete with 8 years of coaching experience.',
+      firstName: 'Fatima',
+      lastName: 'Hassan',
+      email: 'fatima.makeup@nilin.test',
+      businessName: 'Fatima Glam Studio',
+      tagline: 'Flawless looks for every occasion',
+      bio: 'Celebrity makeup artist based in Dubai with 10+ years of experience. Trained at MAC Pro and Bobbi Brown Academy. Featured in Vogue Arabia.',
     },
     subcategories: [
-      { name: 'Personal Training', slug: 'personal-training', services: ['Strength Training', 'HIIT Sessions', 'Weight Loss Program'] },
-      { name: 'Group Classes', slug: 'group-classes', services: ['Bootcamp', 'CrossFit', 'Zumba'] },
-      { name: 'Yoga & Meditation', slug: 'yoga-meditation', services: ['Hatha Yoga', 'Power Yoga', 'Meditation Session'] },
-      { name: 'Nutrition & Dietetics', slug: 'nutrition-dietetics', services: ['Custom Meal Plan', 'Diet Consultation', 'Macro Coaching'] },
-      { name: 'Rehabilitation & Physiotherapy', slug: 'rehabilitation-physiotherapy', services: ['Injury Recovery', 'Posture Correction', 'Sports Rehab'] },
-      { name: 'Wellness Coaching', slug: 'wellness-coaching', services: ['Lifestyle Coaching', 'Stress Management', 'Sleep Optimization'] },
+      { name: 'Bridal', slug: 'bridal-makeup', services: ['Bridal Makeup Full', 'Bridal Trial', 'Nikah Makeup'] },
+      { name: 'Party & Event', slug: 'party-event-makeup', services: ['Party Glam', 'Red Carpet Look', 'Cocktail Makeup'] },
+      { name: 'Everyday', slug: 'everyday-makeup', services: ['Natural Day Look', 'Office Ready', 'Fresh & Dewy'] },
+      { name: 'Lessons', slug: 'makeup-lessons', services: ['Beginner Lesson', 'Advanced Techniques', 'Bridal Self-Makeup'] },
+      { name: 'Editorial', slug: 'editorial-makeup', services: ['Fashion Shoot', 'Editorial Glam', 'Creative Makeup'] },
     ]
   },
   {
-    name: 'Mobile Medical Care',
-    slug: 'mobile-medical-care',
-    color: '#4CAF50',
+    name: 'Nails',
+    slug: 'nails',
+    color: '#CE93D8',
     provider: {
-      firstName: 'Meera',
-      lastName: 'Patel',
-      email: 'meera.medical@nilin.test',
-      businessName: 'Dr Meera\'s CareAtHome',
-      tagline: 'Quality healthcare at your doorstep',
-      bio: 'MBBS, MD with 12 years of clinical experience. Passionate about making healthcare accessible through home visits.',
+      firstName: 'Mariam',
+      lastName: 'Khan',
+      email: 'mariam.nails@nilin.test',
+      businessName: 'Nails by Mariam',
+      tagline: 'Art at your fingertips',
+      bio: 'Certified nail technician with 8 years of experience. Specializing in gel extensions, nail art, and luxury manicures. OPI & CND certified.',
     },
     subcategories: [
-      { name: 'Home Consultations', slug: 'home-consultations', services: ['GP Home Visit', 'Pediatric Checkup', 'Elderly Care Visit'] },
-      { name: 'Nurse Services', slug: 'nurse-services', services: ['Injection Administration', 'Wound Dressing', 'IV Therapy'] },
-      { name: 'Diagnostic Services', slug: 'diagnostic-services', services: ['Blood Sample Collection', 'ECG at Home', 'Rapid Testing'] },
-      { name: 'Vaccination & Preventive Care', slug: 'vaccination-preventive', services: ['Flu Vaccination', 'COVID Vaccination', 'Child Immunization'] },
-      { name: 'Telemedicine', slug: 'telemedicine', services: ['Video Consultation', 'Follow-up Call', 'Second Opinion'] },
-      { name: 'Emergency Triage', slug: 'emergency-triage', services: ['Emergency Assessment', 'First Aid', 'Hospital Coordination'] },
+      { name: 'Manicure', slug: 'manicure', services: ['Classic Manicure', 'Luxury Spa Manicure', 'Express Manicure'] },
+      { name: 'Pedicure', slug: 'pedicure', services: ['Classic Pedicure', 'Luxury Spa Pedicure', 'Medical Pedicure'] },
+      { name: 'Gel', slug: 'gel-nails', services: ['Gel Polish Application', 'Gel Extensions', 'Gel Removal & Redo'] },
+      { name: 'Acrylic', slug: 'acrylic-nails', services: ['Acrylic Full Set', 'Acrylic Fill', 'Acrylic Removal'] },
+      { name: 'Nail Art', slug: 'nail-art', services: ['Custom Nail Art', 'French Tips', 'Ombre Nails'] },
     ]
   },
   {
-    name: 'Education & Personal Development',
-    slug: 'education-personal-development',
-    color: '#9C27B0',
+    name: 'Skin & Aesthetics',
+    slug: 'skin-aesthetics',
+    color: '#B39DDB',
     provider: {
-      firstName: 'Sneha',
-      lastName: 'Iyer',
-      email: 'sneha.education@nilin.test',
-      businessName: 'BrightMinds Tutoring',
-      tagline: 'Unlock your potential',
-      bio: 'Education specialist with Masters in Education. 15 years of experience in tutoring and career guidance.',
+      firstName: 'Noura',
+      lastName: 'Al Rashid',
+      email: 'noura.skin@nilin.test',
+      businessName: 'Noura Skin Clinic',
+      tagline: 'Glow from within',
+      bio: 'Licensed esthetician with 15 years of experience. CIDESCO-certified. Expert in facials, chemical peels, and anti-aging treatments.',
     },
     subcategories: [
-      { name: 'Academic Tutoring', slug: 'academic-tutoring', services: ['Math Tutoring', 'Science Tutoring', 'Exam Preparation'] },
-      { name: 'Language Lessons', slug: 'language-lessons', services: ['English Conversation', 'IELTS Prep', 'Spanish Lessons'] },
-      { name: 'Professional Skills', slug: 'professional-skills', services: ['Coding Basics', 'Excel Training', 'Digital Marketing'] },
-      { name: 'Creative Skills', slug: 'creative-skills', services: ['Guitar Lessons', 'Art Classes', 'Photography Workshop'] },
-      { name: 'Career Coaching', slug: 'career-coaching', services: ['Resume Review', 'Interview Prep', 'Career Mapping'] },
+      { name: 'Facial', slug: 'facial', services: ['Classic Facial', 'HydraFacial', 'Gold Facial'] },
+      { name: 'Chemical Peel', slug: 'chemical-peel', services: ['Glycolic Peel', 'Salicylic Peel', 'Lactic Acid Peel'] },
+      { name: 'Anti-Aging', slug: 'anti-aging', services: ['Anti-Wrinkle Facial', 'Collagen Boost', 'Microcurrent Therapy'] },
+      { name: 'Acne', slug: 'acne-treatment', services: ['Acne Facial', 'Extraction Treatment', 'LED Blue Light'] },
+      { name: 'Consultation', slug: 'skin-consultation', services: ['Skin Analysis', 'Treatment Plan', 'Product Recommendation'] },
     ]
   },
   {
-    name: 'Corporate Services',
-    slug: 'corporate-services',
-    color: '#607D8B',
+    name: 'Massage & Body',
+    slug: 'massage-body',
+    color: '#90CAF9',
     provider: {
-      firstName: 'Rahul',
-      lastName: 'Kapoor',
-      email: 'rahul.corporate@nilin.test',
-      businessName: 'ProBiz Solutions',
-      tagline: 'Your trusted business partner',
-      bio: 'Corporate services expert with MBA from IIM. 10 years of experience in facility management and corporate wellness.',
+      firstName: 'Sara',
+      lastName: 'Ibrahim',
+      email: 'sara.massage@nilin.test',
+      businessName: 'Sara\'s Healing Hands',
+      tagline: 'Relax, restore, rejuvenate',
+      bio: 'Licensed massage therapist with 10 years of experience. Trained in Thai, Swedish, and deep tissue techniques. ITEC Level 3 certified.',
     },
     subcategories: [
-      { name: 'Employee Wellness', slug: 'employee-wellness', services: ['Office Yoga Session', 'Health Screening Camp', 'Mental Wellness Workshop'] },
-      { name: 'Facility Maintenance', slug: 'facility-maintenance', services: ['Office Deep Cleaning', 'HVAC Maintenance', 'Electrical Audit'] },
-      { name: 'Medical Programs', slug: 'medical-programs', services: ['Annual Health Checkup', 'Vaccination Drive', 'First Aid Training'] },
-      { name: 'Hospitality & Events', slug: 'hospitality-events', services: ['Event Staffing', 'Corporate Catering', 'Conference Setup'] },
-      { name: 'Managed Services', slug: 'managed-services', services: ['Facility Management', 'Vendor Management', 'Housekeeping Contract'] },
+      { name: 'Swedish', slug: 'swedish-massage', services: ['Full Body Swedish', '60-min Relaxation', '90-min Deep Relaxation'] },
+      { name: 'Deep Tissue', slug: 'deep-tissue', services: ['Full Body Deep Tissue', 'Back & Shoulder Focus', 'Sports Recovery'] },
+      { name: 'Hot Stone', slug: 'hot-stone', services: ['Hot Stone Full Body', 'Hot Stone Back & Neck', 'Volcanic Stone Therapy'] },
+      { name: 'Aromatherapy', slug: 'aromatherapy', services: ['Lavender Relaxation', 'Eucalyptus Energizing', 'Custom Blend Therapy'] },
+      { name: 'Body Scrub', slug: 'body-scrub', services: ['Dead Sea Salt Scrub', 'Coffee Body Scrub', 'Sugar & Honey Scrub'] },
     ]
   },
   {
-    name: 'Home & Maintenance',
-    slug: 'home-maintenance',
-    color: '#2196F3',
+    name: 'Personal Care',
+    slug: 'personal-care',
+    color: '#A5D6A7',
     provider: {
-      firstName: 'Vikram',
-      lastName: 'Singh',
-      email: 'vikram.home@nilin.test',
-      businessName: 'HomeFix Pro',
-      tagline: 'We fix everything at home',
-      bio: 'Licensed contractor with 20 years of experience. Specialized in plumbing, electrical, and general home repairs.',
+      firstName: 'Hana',
+      lastName: 'Ahmed',
+      email: 'hana.care@nilin.test',
+      businessName: 'Hana Beauty Care',
+      tagline: 'Grooming essentials at your door',
+      bio: 'Expert in threading, waxing, and lash artistry with 9 years of experience. Certified lash technician. Known for precision brow shaping.',
     },
     subcategories: [
-      { name: 'Cleaning', slug: 'cleaning', services: ['Deep Cleaning', 'Regular Cleaning', 'Move-out Cleaning'] },
-      { name: 'Plumbing', slug: 'plumbing', services: ['Leak Repair', 'Pipe Installation', 'Drain Cleaning'] },
-      { name: 'Electrical', slug: 'electrical', services: ['Wiring Repair', 'Light Installation', 'Socket Replacement'] },
-      { name: 'HVAC & AC', slug: 'hvac-ac', services: ['AC Installation', 'AC Servicing', 'Duct Cleaning'] },
-      { name: 'Carpentry & Renovation', slug: 'carpentry-renovation', services: ['Furniture Assembly', 'Door Repair', 'Kitchen Renovation'] },
-      { name: 'Smart Home & Appliances', slug: 'smart-home-appliances', services: ['TV Mounting', 'Smart Lock Setup', 'WiFi Network Setup'] },
+      { name: 'Threading', slug: 'threading', services: ['Eyebrow Threading', 'Full Face Threading', 'Upper Lip Thread'] },
+      { name: 'Waxing', slug: 'waxing', services: ['Full Body Wax', 'Half Leg Wax', 'Bikini Wax'] },
+      { name: 'Lash Extensions', slug: 'lash-extensions', services: ['Classic Lash Set', 'Volume Lash Set', 'Hybrid Lash Set'] },
+      { name: 'Brow Shaping', slug: 'brow-shaping', services: ['Brow Shape & Tint', 'Brow Lamination', 'Microblading Touch-Up'] },
+      { name: 'Henna', slug: 'henna', services: ['Bridal Henna', 'Party Henna', 'Simple Henna Design'] },
     ]
   }
 ];
@@ -190,20 +187,20 @@ async function createProvider(categoryData: typeof CATEGORIES[0]) {
     lastName: provider.lastName,
     email: provider.email,
     password: DEFAULT_PASSWORD,
-    phone: '+91' + Math.floor(7000000000 + Math.random() * 2999999999),
+    phone: '+971' + Math.floor(500000000 + Math.random() * 99999999),
     role: 'provider',
     accountStatus: 'active',
     isEmailVerified: true,
     isPhoneVerified: true,
     isActive: true,
     address: {
-      city: 'Mumbai',
-      state: 'Maharashtra',
-      country: 'India',
-      zipCode: '400001',
+      city: 'Dubai',
+      state: 'Dubai',
+      country: 'UAE',
+      zipCode: '00000',
       coordinates: {
-        lat: 19.0760 + (Math.random() * 0.1 - 0.05),
-        lng: 72.8777 + (Math.random() * 0.1 - 0.05)
+        lat: 25.2048 + (Math.random() * 0.1 - 0.05),
+        lng: 55.2708 + (Math.random() * 0.1 - 0.05)
       }
     }
   });
@@ -223,7 +220,7 @@ async function createProvider(categoryData: typeof CATEGORIES[0]) {
         duration: 30 + Math.floor(Math.random() * 90),
         price: {
           amount: basePrice,
-          currency: 'INR',
+          currency: 'AED',
           type: 'fixed' as const
         },
         images: [],
@@ -295,18 +292,18 @@ async function createProvider(categoryData: typeof CATEGORIES[0]) {
     },
     locationInfo: {
       primaryAddress: {
-        street: '123 Test Street',
-        city: 'Mumbai',
-        state: 'Maharashtra',
-        zipCode: '400001',
-        country: 'India',
+        street: '123 Al Wasl Road',
+        city: 'Dubai',
+        state: 'Dubai',
+        zipCode: '00000',
+        country: 'UAE',
         coordinates: {
-          lat: 19.0760 + (Math.random() * 0.1 - 0.05),
-          lng: 72.8777 + (Math.random() * 0.1 - 0.05)
+          lat: 25.2048 + (Math.random() * 0.1 - 0.05),
+          lng: 55.2708 + (Math.random() * 0.1 - 0.05)
         }
       },
       serviceAreas: [
-        { name: 'Mumbai', type: 'city', value: 'Mumbai' }
+        { name: 'Dubai', type: 'city', value: 'Dubai' }
       ],
       travelFee: {
         baseFee: 0,
@@ -426,7 +423,7 @@ async function createProvider(categoryData: typeof CATEGORIES[0]) {
         shortDescription: `Expert ${serviceName.toLowerCase()} service`,
         price: {
           amount: basePrice,
-          currency: 'INR',
+          currency: 'AED',
           type: 'fixed'
         },
         duration: 30 + Math.floor(Math.random() * 90),
@@ -434,19 +431,19 @@ async function createProvider(categoryData: typeof CATEGORIES[0]) {
         tags: [categoryName.toLowerCase(), subcat.name.toLowerCase(), serviceName.toLowerCase().split(' ')].flat(),
         location: {
           address: {
-            street: '123 Test Street',
-            city: 'Mumbai',
-            state: 'Maharashtra',
-            zipCode: '400001',
-            country: 'India'
+            street: '123 Al Wasl Road',
+            city: 'Dubai',
+            state: 'Dubai',
+            zipCode: '00000',
+            country: 'UAE'
           },
           coordinates: {
             type: 'Point',
-            coordinates: [72.8777 + (Math.random() * 0.1 - 0.05), 19.0760 + (Math.random() * 0.1 - 0.05)]
+            coordinates: [55.2708 + (Math.random() * 0.1 - 0.05), 25.2048 + (Math.random() * 0.1 - 0.05)]
           },
           serviceArea: {
             type: 'city',
-            value: 'Mumbai',
+            value: 'Dubai',
             maxDistance: 25
           }
         },
@@ -526,7 +523,7 @@ async function createProvider(categoryData: typeof CATEGORIES[0]) {
     },
     dateOverrides: [],
     blockedPeriods: [],
-    timezone: 'Asia/Kolkata',
+    timezone: 'Asia/Dubai',
     bufferTime: {
       beforeBooking: 15,
       afterBooking: 15,
@@ -580,7 +577,7 @@ async function main() {
     await clearTestData();
 
     console.log('\n========================================');
-    console.log('Creating 6 Test Providers');
+    console.log('Creating 6 Beauty Test Providers (Dubai)');
     console.log('========================================');
 
     const results = [];

@@ -72,43 +72,33 @@ const Footer: React.FC = () => {
             <h3 className="font-bold text-white mb-4">Services</h3>
             <ul className="space-y-3">
               <li>
-                <Link to="/category/beauty-wellness" className="text-gray-400 text-sm hover:text-white transition-colors">
+                <Link to="/category/hair" className="text-gray-400 text-sm hover:text-white transition-colors">
                   Hair
                 </Link>
               </li>
               <li>
-                <Link to="/category/beauty-wellness" className="text-gray-400 text-sm hover:text-white transition-colors">
-                  Nails
-                </Link>
-              </li>
-              <li>
-                <Link to="/category/beauty-wellness" className="text-gray-400 text-sm hover:text-white transition-colors">
-                  Massage
-                </Link>
-              </li>
-              <li>
-                <Link to="/category/beauty-wellness" className="text-gray-400 text-sm hover:text-white transition-colors">
+                <Link to="/category/makeup" className="text-gray-400 text-sm hover:text-white transition-colors">
                   Makeup
                 </Link>
               </li>
               <li>
-                <Link to="/category/beauty-wellness" className="text-gray-400 text-sm hover:text-white transition-colors">
-                  Facial
+                <Link to="/category/nails" className="text-gray-400 text-sm hover:text-white transition-colors">
+                  Nails
                 </Link>
               </li>
               <li>
-                <Link to="/category/beauty-wellness" className="text-gray-400 text-sm hover:text-white transition-colors">
-                  Waxing
+                <Link to="/category/skin-aesthetics" className="text-gray-400 text-sm hover:text-white transition-colors">
+                  Skin & Aesthetics
                 </Link>
               </li>
               <li>
-                <Link to="/category/beauty-wellness" className="text-gray-400 text-sm hover:text-white transition-colors">
-                  Eyes
+                <Link to="/category/massage-body" className="text-gray-400 text-sm hover:text-white transition-colors">
+                  Massage & Body
                 </Link>
               </li>
               <li>
-                <Link to="/category/beauty-wellness" className="text-gray-400 text-sm hover:text-white transition-colors">
-                  Threading
+                <Link to="/category/personal-care" className="text-gray-400 text-sm hover:text-white transition-colors">
+                  Personal Care
                 </Link>
               </li>
             </ul>

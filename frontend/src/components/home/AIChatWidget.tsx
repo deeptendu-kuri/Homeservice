@@ -18,10 +18,10 @@ interface QuickAction {
 }
 
 const QUICK_ACTIONS: QuickAction[] = [
-  { label: 'Doctor', icon: '👨‍⚕️', query: 'I need a doctor', slug: 'mobile-medical-care', color: 'from-nilin-blue to-nilin-blue/70 hover:from-nilin-blue/80 hover:to-nilin-blue' },
-  { label: 'Beauty', icon: '💅', query: 'Beauty services at home', slug: 'beauty-wellness', color: 'from-nilin-pink to-nilin-pink/70 hover:from-nilin-pink/80 hover:to-nilin-pink' },
-  { label: 'Fitness', icon: '💪', query: 'Personal trainer', slug: 'fitness-personal-health', color: 'from-nilin-cream to-nilin-cream/70 hover:from-nilin-cream/80 hover:to-nilin-cream' },
-  { label: 'Business', icon: '🏢', query: 'Corporate services', slug: 'corporate-services', color: 'from-nilin-lavender to-nilin-lavender/70 hover:from-nilin-lavender/80 hover:to-nilin-lavender' },
+  { label: 'Hair', icon: '💇', query: 'Hair styling at home', slug: 'hair', color: 'from-nilin-pink to-nilin-pink/70 hover:from-nilin-pink/80 hover:to-nilin-pink' },
+  { label: 'Makeup', icon: '💄', query: 'Makeup artist at home', slug: 'makeup', color: 'from-rose-100 to-rose-200/70 hover:from-rose-200/80 hover:to-rose-200' },
+  { label: 'Nails', icon: '💅', query: 'Nail services at home', slug: 'nails', color: 'from-nilin-lavender to-nilin-lavender/70 hover:from-nilin-lavender/80 hover:to-nilin-lavender' },
+  { label: 'Massage', icon: '💆', query: 'Massage therapy at home', slug: 'massage-body', color: 'from-nilin-blue to-nilin-blue/70 hover:from-nilin-blue/80 hover:to-nilin-blue' },
 ];
 
 const WELCOME_MESSAGE = `Hi! I'm NILIN AI. How can I help you find the perfect service today?`;
@@ -91,20 +91,26 @@ const AIChatWidget: React.FC<AIChatWidgetProps> = ({ isOpen, onClose }) => {
   const generateAIResponse = (userInput: string): string => {
     const input = userInput.toLowerCase();
 
-    if (input.includes('doctor') || input.includes('medical') || input.includes('nurse')) {
-      return "I'd recommend our Mobile Medical Care services! We have qualified doctors, nurses, and lab technicians who can visit you at home. Would you like me to show you available options?";
+    if (input.includes('hair') || input.includes('haircut') || input.includes('color') || input.includes('blowout')) {
+      return "We have amazing hair stylists! From cuts and coloring to blowouts and bridal hair — all at your doorstep. Let me show you our top-rated hair professionals!";
     }
-    if (input.includes('beauty') || input.includes('hair') || input.includes('makeup') || input.includes('spa')) {
-      return "For beauty services at home, we have expert stylists for hair, makeup, nails, and spa treatments. Let me show you our top-rated beauty professionals!";
+    if (input.includes('makeup') || input.includes('bridal') || input.includes('glam')) {
+      return "Our certified makeup artists can come to you! Whether it's bridal, party, or everyday makeup. Want me to show you available artists?";
     }
-    if (input.includes('fitness') || input.includes('trainer') || input.includes('gym') || input.includes('yoga')) {
-      return "Great choice! We have certified personal trainers and yoga instructors who can come to your home. Would you prefer strength training, cardio, or yoga?";
+    if (input.includes('nail') || input.includes('manicure') || input.includes('pedicure') || input.includes('gel')) {
+      return "From manicures and pedicures to gel nails and nail art — our nail technicians come to your home. Let me find the best options for you!";
     }
-    if (input.includes('business') || input.includes('corporate') || input.includes('office')) {
-      return "For corporate services, we offer on-site wellness, team building, and professional services for your business. What does your company need?";
+    if (input.includes('facial') || input.includes('skin') || input.includes('peel') || input.includes('acne')) {
+      return "We have expert estheticians for facials, chemical peels, anti-aging treatments and more. Would you like to see available skin professionals?";
+    }
+    if (input.includes('massage') || input.includes('spa') || input.includes('relax') || input.includes('body')) {
+      return "Treat yourself to a professional massage at home! We offer Swedish, deep tissue, hot stone, and aromatherapy. What sounds good?";
+    }
+    if (input.includes('wax') || input.includes('thread') || input.includes('lash') || input.includes('brow') || input.includes('henna')) {
+      return "Our personal care experts offer threading, waxing, lash extensions, brow shaping, and henna art. What would you like to book?";
     }
 
-    return "I can help you find the perfect service! You can browse our categories: Medical, Beauty, Fitness, or Business Services. What are you looking for today?";
+    return "I can help you find the perfect beauty service! Browse our categories: Hair, Makeup, Nails, Skin & Aesthetics, Massage & Body, or Personal Care. What are you looking for?";
   };
 
   const handleQuickAction = (action: QuickAction) => {

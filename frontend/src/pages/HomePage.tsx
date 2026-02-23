@@ -24,39 +24,39 @@ import {
 // Category image lookup by slug or name
 const getCategoryImage = (category: string): string => {
   const CATEGORY_IMAGES: Record<string, string> = {
-    'beauty-wellness': 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400',
-    'fitness-personal-health': 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400',
-    'mobile-medical-care': 'https://images.unsplash.com/photo-1584982751601-97dcc096659c?w=400',
-    'education-personal-development': 'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=400',
-    'corporate-services': 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=400',
-    'home-maintenance': 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=400',
-    'Beauty & Wellness': 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400',
-    'Fitness & Personal Health': 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400',
-    'Mobile Medical Care': 'https://images.unsplash.com/photo-1584982751601-97dcc096659c?w=400',
-    'Education & Personal Development': 'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=400',
-    'Corporate Services': 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=400',
-    'Home & Maintenance': 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=400',
+    'hair': 'https://images.unsplash.com/photo-1562322140-8baeececf3df?w=400',
+    'makeup': 'https://images.unsplash.com/photo-1487412912498-0447578fcca8?w=400',
+    'nails': 'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=400',
+    'skin-aesthetics': 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400',
+    'massage-body': 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=400',
+    'personal-care': 'https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=400',
+    'Hair': 'https://images.unsplash.com/photo-1562322140-8baeececf3df?w=400',
+    'Makeup': 'https://images.unsplash.com/photo-1487412912498-0447578fcca8?w=400',
+    'Nails': 'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=400',
+    'Skin & Aesthetics': 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400',
+    'Massage & Body': 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=400',
+    'Personal Care': 'https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=400',
   };
-  return CATEGORY_IMAGES[category] || 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=400';
+  return CATEGORY_IMAGES[category] || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400';
 };
 
 // Get styling for category by slug or name
 const getCategoryStyle = (category: string): { gradient: string; badge: string } => {
   const styles: Record<string, { gradient: string; badge: string }> = {
-    'beauty-wellness': { gradient: 'from-pink-500 to-rose-500', badge: 'bg-pink-500' },
-    'fitness-personal-health': { gradient: 'from-emerald-500 to-green-500', badge: 'bg-emerald-500' },
-    'mobile-medical-care': { gradient: 'from-blue-500 to-cyan-500', badge: 'bg-blue-500' },
-    'education-personal-development': { gradient: 'from-orange-500 to-amber-500', badge: 'bg-orange-500' },
-    'corporate-services': { gradient: 'from-violet-500 to-purple-500', badge: 'bg-violet-500' },
-    'home-maintenance': { gradient: 'from-amber-500 to-yellow-500', badge: 'bg-amber-500' },
-    'Beauty & Wellness': { gradient: 'from-pink-500 to-rose-500', badge: 'bg-pink-500' },
-    'Fitness & Personal Health': { gradient: 'from-emerald-500 to-green-500', badge: 'bg-emerald-500' },
-    'Mobile Medical Care': { gradient: 'from-blue-500 to-cyan-500', badge: 'bg-blue-500' },
-    'Education & Personal Development': { gradient: 'from-orange-500 to-amber-500', badge: 'bg-orange-500' },
-    'Corporate Services': { gradient: 'from-violet-500 to-purple-500', badge: 'bg-violet-500' },
-    'Home & Maintenance': { gradient: 'from-amber-500 to-yellow-500', badge: 'bg-amber-500' },
+    'hair': { gradient: 'from-pink-500 to-rose-500', badge: 'bg-pink-500' },
+    'makeup': { gradient: 'from-rose-400 to-pink-500', badge: 'bg-rose-500' },
+    'nails': { gradient: 'from-purple-400 to-violet-500', badge: 'bg-purple-500' },
+    'skin-aesthetics': { gradient: 'from-violet-500 to-purple-500', badge: 'bg-violet-500' },
+    'massage-body': { gradient: 'from-blue-400 to-cyan-500', badge: 'bg-blue-500' },
+    'personal-care': { gradient: 'from-emerald-400 to-green-500', badge: 'bg-emerald-500' },
+    'Hair': { gradient: 'from-pink-500 to-rose-500', badge: 'bg-pink-500' },
+    'Makeup': { gradient: 'from-rose-400 to-pink-500', badge: 'bg-rose-500' },
+    'Nails': { gradient: 'from-purple-400 to-violet-500', badge: 'bg-purple-500' },
+    'Skin & Aesthetics': { gradient: 'from-violet-500 to-purple-500', badge: 'bg-violet-500' },
+    'Massage & Body': { gradient: 'from-blue-400 to-cyan-500', badge: 'bg-blue-500' },
+    'Personal Care': { gradient: 'from-emerald-400 to-green-500', badge: 'bg-emerald-500' },
   };
-  return styles[category] || { gradient: 'from-indigo-500 to-purple-500', badge: 'bg-indigo-500' };
+  return styles[category] || { gradient: 'from-pink-500 to-rose-500', badge: 'bg-pink-500' };
 };
 
 const HomePage: React.FC = () => {

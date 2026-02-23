@@ -8,7 +8,7 @@ const SLIDES = [
     id: 1,
     headline: 'Smart Services',
     subheadline: 'Delivered to Your Door.',
-    description: 'Beauty & Wellness Services in Dubai',
+    description: 'Premium Beauty Services at Your Doorstep in Dubai',
     accentColor: 'from-nilin-primary to-nilin-secondary',
   },
   {

@@ -42,10 +42,12 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
 
   // Gradient backgrounds based on category
   const categoryGradients: Record<string, string> = {
-    cleaning: 'bg-gradient-to-br from-nilin-pink to-nilin-lavender',
-    plumbing: 'bg-gradient-to-br from-nilin-lavender to-nilin-blue',
-    electrical: 'bg-gradient-to-br from-nilin-blue to-nilin-cream',
-    painting: 'bg-gradient-to-br from-nilin-cream to-nilin-pink',
+    hair: 'bg-gradient-to-br from-nilin-pink to-nilin-lavender',
+    makeup: 'bg-gradient-to-br from-rose-100 to-pink-200',
+    nails: 'bg-gradient-to-br from-nilin-lavender to-purple-200',
+    'skin & aesthetics': 'bg-gradient-to-br from-purple-100 to-purple-200',
+    'massage & body': 'bg-gradient-to-br from-nilin-blue to-blue-200',
+    'personal care': 'bg-gradient-to-br from-nilin-cream to-amber-200',
     default: 'bg-gradient-to-br from-nilin-pink to-nilin-lavender',
   };
 
