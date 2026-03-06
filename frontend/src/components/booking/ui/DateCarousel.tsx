@@ -70,7 +70,7 @@ const DateCarousel: React.FC<DateCarouselProps> = ({
               onClick={() => onDateSelect(dateString)}
               className={`flex-shrink-0 flex flex-col items-center justify-center w-16 h-20 rounded-xl transition-all ${
                 isSelected
-                  ? 'bg-[#8B9B7C] text-white shadow-lg'
+                  ? 'bg-nilin-primary text-white shadow-lg'
                   : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
               }`}
             >

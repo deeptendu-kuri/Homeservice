@@ -49,7 +49,7 @@ const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
             className={`
               w-full flex items-center justify-between p-4 rounded-xl transition-all
               ${isSelected
-                ? 'bg-[#8B9B7C]/10 border-2 border-[#8B9B7C]'
+                ? 'bg-nilin-primary/10 border-2 border-nilin-primary'
                 : 'bg-white border-2 border-gray-200 hover:border-gray-300'
               }
             `}
@@ -57,7 +57,7 @@ const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
             <div className="flex items-center gap-4">
               {option.icon}
               <div className="text-left">
-                <span className={`font-medium ${isSelected ? 'text-[#8B9B7C]' : 'text-gray-800'}`}>
+                <span className={`font-medium ${isSelected ? 'text-nilin-primary' : 'text-gray-800'}`}>
                   {option.label}
                 </span>
                 {option.description && (
@@ -66,7 +66,7 @@ const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
               </div>
             </div>
             {isSelected && (
-              <div className="w-6 h-6 bg-[#8B9B7C] rounded-full flex items-center justify-center">
+              <div className="w-6 h-6 bg-nilin-primary rounded-full flex items-center justify-center">
                 <Check className="w-4 h-4 text-white" />
               </div>
             )}

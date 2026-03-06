@@ -1,5 +1,5 @@
 import React from 'react';
-import { Star, BadgeCheck, User } from 'lucide-react';
+import { Star, BadgeCheck, ChevronRight } from 'lucide-react';
 
 interface Provider {
   id: string;
@@ -26,21 +26,43 @@ const TIER_CONFIG = {
   elite: {
     badge: 'bg-gradient-to-r from-amber-500 to-yellow-500 text-white',
     label: 'Elite',
-    levelText: 'Elite Level',
-    glow: 'ring-2 ring-amber-200',
   },
   premium: {
     badge: 'bg-gradient-to-r from-violet-500 to-purple-500 text-white',
     label: 'Premium',
-    levelText: 'Premium Level',
-    glow: 'ring-2 ring-violet-200',
   },
   standard: {
-    badge: 'bg-gray-600 text-white',
+    badge: 'bg-gray-500 text-white',
     label: 'Standard',
-    levelText: 'Standard Level',
-    glow: '',
   },
+};
+
+// Generate a consistent color from a name string
+const getAvatarColor = (name: string): string => {
+  const colors = [
+    'from-indigo-500 to-purple-500',
+    'from-pink-500 to-rose-500',
+    'from-amber-500 to-orange-500',
+    'from-emerald-500 to-teal-500',
+    'from-blue-500 to-cyan-500',
+    'from-violet-500 to-fuchsia-500',
+  ];
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return colors[Math.abs(hash) % colors.length];
+};
+
+const getInitials = (provider: Provider): string => {
+  if (provider.businessName) {
+    const words = provider.businessName.split(' ');
+    if (words.length >= 2) return (words[0][0] + words[1][0]).toUpperCase();
+    return provider.businessName.substring(0, 2).toUpperCase();
+  }
+  const first = provider.firstName?.[0] || '';
+  const last = provider.lastName?.[0] || '';
+  return (first + last).toUpperCase() || 'PR';
 };
 
 const ProviderCard: React.FC<ProviderCardProps> = ({
@@ -51,115 +73,91 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
 }) => {
   const tier = provider.tier || 'standard';
   const tierConfig = TIER_CONFIG[tier];
-  const displayName = provider.businessName || provider.firstName || 'Professional';
+  const displayName = provider.businessName || `${provider.firstName} ${provider.lastName || ''}`.trim() || 'Professional';
   const minPrice = provider.startingPrice || 500;
-  const maxPrice = provider.maxPrice || minPrice + 150;
   const rating = provider.rating || 0;
   const reviewCount = provider.reviewCount || 0;
+  const initials = getInitials(provider);
+  const avatarColor = getAvatarColor(displayName);
 
   return (
     <div
       onClick={onClick}
-      className={`
-        bg-white rounded-2xl overflow-hidden
-        border border-gray-100 shadow-sm
-        hover:shadow-xl hover:-translate-y-1
-        transition-all duration-300 ease-out
-        cursor-pointer group
-        ${tierConfig.glow}
-      `}
+      className="bg-white rounded-2xl border border-gray-100 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer group overflow-hidden"
     >
-      {/* Provider Photo */}
-      <div className="relative h-52 md:h-56 overflow-hidden bg-gradient-to-br from-gray-100 to-gray-50">
-        {provider.profilePhoto ? (
-          <img
-            src={provider.profilePhoto}
-            alt={displayName}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center">
-              <User className="w-10 h-10 text-gray-400" />
-            </div>
-          </div>
-        )}
-
-        {/* Tier Badge - Overlay */}
-        <div className="absolute top-3 right-3">
-          <span className={`
-            px-3 py-1 rounded-full text-xs font-semibold
-            shadow-lg backdrop-blur-sm
-            ${tierConfig.badge}
-          `}>
-            {tierConfig.label}
-          </span>
-        </div>
-      </div>
-
-      {/* Provider Info */}
       <div className="p-5">
-        {/* Name */}
-        <h3 className="font-bold text-gray-900 text-lg mb-0.5 truncate group-hover:text-indigo-600 transition-colors">
-          {displayName}
-        </h3>
-
-        {/* Level Text */}
-        <p className="text-gray-400 text-sm mb-3">
-          {tierConfig.levelText}
-        </p>
-
-        {/* Rating */}
-        <div className="flex items-center gap-2 mb-3">
-          <div className="flex items-center gap-1 bg-amber-50 px-2 py-1 rounded-lg">
-            <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
-            <span className="font-bold text-amber-700 text-sm">
-              {rating > 0 ? rating.toFixed(1) : 'New'}
-            </span>
+        {/* Top row: Avatar + info */}
+        <div className="flex items-start gap-4">
+          {/* Avatar */}
+          <div className="relative flex-shrink-0">
+            {provider.profilePhoto ? (
+              <img
+                src={provider.profilePhoto}
+                alt={displayName}
+                className="w-16 h-16 rounded-2xl object-cover"
+              />
+            ) : (
+              <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${avatarColor} flex items-center justify-center`}>
+                <span className="text-white font-bold text-lg">{initials}</span>
+              </div>
+            )}
+            {provider.isVerified && (
+              <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center border-2 border-white">
+                <BadgeCheck className="w-3 h-3 text-white" />
+              </div>
+            )}
           </div>
-          {reviewCount > 0 && (
-            <span className="text-gray-400 text-sm">
-              ({reviewCount} reviews)
-            </span>
-          )}
+
+          {/* Info */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <h3 className="font-bold text-gray-900 truncate group-hover:text-nilin-primary transition-colors">
+                {displayName}
+              </h3>
+              <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold flex-shrink-0 ${tierConfig.badge}`}>
+                {tierConfig.label}
+              </span>
+            </div>
+
+            {/* Rating */}
+            <div className="flex items-center gap-2 mb-2">
+              {rating > 0 ? (
+                <>
+                  <div className="flex items-center gap-1">
+                    <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                    <span className="font-semibold text-gray-900 text-sm">{rating.toFixed(1)}</span>
+                  </div>
+                  {reviewCount > 0 && (
+                    <span className="text-gray-400 text-xs">({reviewCount} reviews)</span>
+                  )}
+                </>
+              ) : (
+                <span className="text-gray-400 text-xs">New on NILIN</span>
+              )}
+            </div>
+
+            {/* Verified badge */}
+            {provider.isVerified && (
+              <span className="text-emerald-600 text-xs font-medium">Verified by NILIN</span>
+            )}
+          </div>
         </div>
 
-        {/* Verified Badge */}
-        {provider.isVerified && (
-          <div className="flex items-center gap-1.5 text-emerald-600 text-sm mb-4">
-            <BadgeCheck className="w-4 h-4 fill-emerald-100" />
-            <span className="font-medium">Verified by NILIN</span>
+        {/* Bottom row: Price + CTA */}
+        <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+          <div>
+            <span className="text-lg font-bold text-gray-900">{currency} {minPrice}</span>
+            <span className="text-gray-400 text-xs ml-1">onwards</span>
           </div>
-        )}
-
-        {/* Divider */}
-        <div className="border-t border-gray-100 pt-4 mt-auto">
-          {/* Price Range */}
-          <div className="flex items-baseline gap-1 mb-3">
-            <span className="text-xl font-bold text-gray-900">
-              {currency} {minPrice}
-            </span>
-            <span className="text-gray-400 text-sm">–</span>
-            <span className="text-lg font-semibold text-gray-600">
-              {maxPrice}
-            </span>
-          </div>
-
-          {/* View Profile Link */}
           <button
             onClick={(e) => {
               e.stopPropagation();
               onViewProfile();
             }}
-            className="
-              w-full py-2.5 px-4 rounded-xl
-              bg-gray-50 hover:bg-indigo-50
-              text-indigo-600 font-semibold text-sm
-              border border-gray-200 hover:border-indigo-200
-              transition-all duration-200
-            "
+            className="flex items-center gap-1 px-4 py-2 bg-nilin-primary/10 text-nilin-primary rounded-full text-sm font-semibold hover:bg-nilin-primary hover:text-white transition-all"
           >
             View Profile
+            <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>

@@ -161,15 +161,15 @@ const TrackBookingPage: React.FC = () => {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="flex items-center gap-3 text-gray-700">
-                    <Calendar className="w-5 h-5 text-[#8B9B7C]" />
+                    <Calendar className="w-5 h-5 text-nilin-primary" />
                     <span>{new Date(tracking.scheduledDate).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</span>
                   </div>
                   <div className="flex items-center gap-3 text-gray-700">
-                    <Clock className="w-5 h-5 text-[#8B9B7C]" />
+                    <Clock className="w-5 h-5 text-nilin-primary" />
                     <span>{tracking.scheduledTime}</span>
                   </div>
                   <div className="flex items-center gap-3 text-gray-700">
-                    <User className="w-5 h-5 text-[#8B9B7C]" />
+                    <User className="w-5 h-5 text-nilin-primary" />
                     <span>Provider: {tracking.provider.name}</span>
                   </div>
                 </div>
@@ -205,7 +205,7 @@ const TrackBookingPage: React.FC = () => {
                     {tracking.statusHistory.map((entry, index) => (
                       <div key={index} className="flex gap-4">
                         <div className="flex flex-col items-center">
-                          <div className={`w-3 h-3 rounded-full ${index === 0 ? 'bg-[#8B9B7C]' : 'bg-gray-300'}`} />
+                          <div className={`w-3 h-3 rounded-full ${index === 0 ? 'bg-nilin-primary' : 'bg-gray-300'}`} />
                           {index < tracking.statusHistory.length - 1 && (
                             <div className="w-0.5 h-full bg-gray-200 mt-1" />
                           )}

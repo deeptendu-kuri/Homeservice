@@ -324,53 +324,45 @@ const BookingFormWizard: React.FC<BookingFormWizardProps> = ({
   })) || [];
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-white flex flex-col">
       <NavigationHeader />
 
-      {/* Breadcrumb Navigation */}
-      <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
-        <Breadcrumb />
-      </div>
-
       <div className="flex-1">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
           {/* Header */}
           {!bookingConfirmed && (
             <div className="text-center mb-8">
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Book Your Service</h1>
-              <p className="text-gray-600">Complete your booking in a few simple steps</p>
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">Book Your Service</h1>
+              <p className="text-sm text-gray-500">Complete your booking in a few simple steps</p>
             </div>
           )}
 
-          {/* Progress Indicator - Hide on confirmation */}
+          {/* Progress Indicator */}
           {!bookingConfirmed && (
-            <div className="mb-12">
+            <div className="mb-10">
               <div className="relative">
-                {/* Progress Line */}
-                <div className="absolute top-5 left-0 right-0 h-1 bg-gray-200">
+                <div className="absolute top-5 left-0 right-0 h-0.5 bg-gray-200">
                   <div
-                    className="h-full bg-[#8B9B7C] transition-all duration-300"
+                    className="h-full bg-nilin-primary transition-all duration-300"
                     style={{ width: `${((currentStep - 1) / 3) * 100}%` }}
                   />
                 </div>
-
-                {/* Steps */}
                 <div className="relative flex justify-between">
                   {steps.map((step) => (
                     <div key={step.number} className="flex flex-col items-center">
                       <div
                         className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-all ${
                           step.number < currentStep
-                            ? 'bg-[#8B9B7C] text-white'
+                            ? 'bg-nilin-primary text-white'
                             : step.number === currentStep
-                            ? 'bg-[#8B9B7C] text-white ring-4 ring-[#8B9B7C]/20'
-                            : 'bg-white border-2 border-gray-300 text-gray-400'
+                            ? 'bg-nilin-primary text-white ring-4 ring-nilin-primary/20'
+                            : 'bg-white border-2 border-gray-200 text-gray-400'
                         }`}
                       >
                         {step.number < currentStep ? <Check className="h-5 w-5" /> : step.number}
                       </div>
                       <span
-                        className={`mt-2 text-sm font-medium ${
+                        className={`mt-2 text-xs font-medium ${
                           step.number <= currentStep ? 'text-gray-900' : 'text-gray-400'
                         }`}
                       >
@@ -384,7 +376,7 @@ const BookingFormWizard: React.FC<BookingFormWizardProps> = ({
           )}
 
           {/* Form Container */}
-          <div className="bg-white rounded-2xl shadow-sm border p-6 md:p-8">
+          <div className="bg-white rounded-2xl border border-gray-100 p-6 md:p-8">
             {/* Step 1: Date & Time */}
             {currentStep === 1 && !bookingConfirmed && (
               <div>
@@ -456,7 +448,7 @@ const BookingFormWizard: React.FC<BookingFormWizardProps> = ({
                           })
                         }
                         placeholder="Street Address / Building Name"
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8B9B7C]/20 focus:border-[#8B9B7C]"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-nilin-primary/20 focus:border-nilin-primary"
                       />
                       <div className="grid grid-cols-2 gap-3">
                         <input
@@ -469,7 +461,7 @@ const BookingFormWizard: React.FC<BookingFormWizardProps> = ({
                             })
                           }
                           placeholder="City"
-                          className="px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8B9B7C]/20 focus:border-[#8B9B7C]"
+                          className="px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-nilin-primary/20 focus:border-nilin-primary"
                         />
                         <input
                           type="text"
@@ -481,7 +473,7 @@ const BookingFormWizard: React.FC<BookingFormWizardProps> = ({
                             })
                           }
                           placeholder="State"
-                          className="px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8B9B7C]/20 focus:border-[#8B9B7C]"
+                          className="px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-nilin-primary/20 focus:border-nilin-primary"
                         />
                       </div>
                       <input
@@ -494,7 +486,7 @@ const BookingFormWizard: React.FC<BookingFormWizardProps> = ({
                           })
                         }
                         placeholder="PIN Code"
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8B9B7C]/20 focus:border-[#8B9B7C]"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-nilin-primary/20 focus:border-nilin-primary"
                       />
                     </div>
                   </div>
@@ -517,7 +509,7 @@ const BookingFormWizard: React.FC<BookingFormWizardProps> = ({
                           })
                         }
                         placeholder="Hotel Name"
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8B9B7C]/20 focus:border-[#8B9B7C]"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-nilin-primary/20 focus:border-nilin-primary"
                       />
                       <div className="grid grid-cols-2 gap-3">
                         <input
@@ -530,7 +522,7 @@ const BookingFormWizard: React.FC<BookingFormWizardProps> = ({
                             })
                           }
                           placeholder="City"
-                          className="px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8B9B7C]/20 focus:border-[#8B9B7C]"
+                          className="px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-nilin-primary/20 focus:border-nilin-primary"
                         />
                         <input
                           type="text"
@@ -542,7 +534,7 @@ const BookingFormWizard: React.FC<BookingFormWizardProps> = ({
                             })
                           }
                           placeholder="Room Number"
-                          className="px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8B9B7C]/20 focus:border-[#8B9B7C]"
+                          className="px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-nilin-primary/20 focus:border-nilin-primary"
                         />
                       </div>
                     </div>
@@ -583,7 +575,7 @@ const BookingFormWizard: React.FC<BookingFormWizardProps> = ({
                   <textarea
                     value={formData.specialRequests}
                     onChange={(e) => setFormData({ ...formData, specialRequests: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8B9B7C]/20 focus:border-[#8B9B7C]"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-nilin-primary/20 focus:border-nilin-primary"
                     rows={3}
                     placeholder="Any specific requirements or preferences..."
                   />
@@ -599,7 +591,7 @@ const BookingFormWizard: React.FC<BookingFormWizardProps> = ({
 
                 {/* Guest Info Section */}
                 {guestMode && (
-                  <div className="mb-6 p-5 bg-[#E8E5FF]/10 border border-[#E8E5FF]/30 rounded-xl">
+                  <div className="mb-6 p-5 bg-nilin-lavender/20 border border-nilin-lavender/40 rounded-xl">
                     <h3 className="text-sm font-semibold text-gray-900 mb-3">Your Contact Information</h3>
                     <p className="text-xs text-gray-500 mb-4">We'll send your booking confirmation and tracking details to this email.</p>
                     <div className="space-y-3">
@@ -608,21 +600,21 @@ const BookingFormWizard: React.FC<BookingFormWizardProps> = ({
                         value={formData.guestName}
                         onChange={(e) => setFormData({ ...formData, guestName: e.target.value })}
                         placeholder="Full Name"
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8B9B7C]/20 focus:border-[#8B9B7C]"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-nilin-primary/20 focus:border-nilin-primary"
                       />
                       <input
                         type="email"
                         value={formData.guestEmail}
                         onChange={(e) => setFormData({ ...formData, guestEmail: e.target.value })}
                         placeholder="Email Address"
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8B9B7C]/20 focus:border-[#8B9B7C]"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-nilin-primary/20 focus:border-nilin-primary"
                       />
                       <input
                         type="tel"
                         value={formData.guestPhone}
                         onChange={(e) => setFormData({ ...formData, guestPhone: e.target.value })}
                         placeholder="Phone Number"
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8B9B7C]/20 focus:border-[#8B9B7C]"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-nilin-primary/20 focus:border-nilin-primary"
                       />
                     </div>
                   </div>
@@ -676,7 +668,7 @@ const BookingFormWizard: React.FC<BookingFormWizardProps> = ({
 
                 {/* Show booking number for all users */}
                 {confirmedBookingNumber && (
-                  <div className="bg-[#E8E5FF]/20 border border-[#E8E5FF]/40 rounded-xl px-6 py-4 mb-6 inline-block">
+                  <div className="bg-nilin-lavender/20 border border-nilin-lavender/40 rounded-xl px-6 py-4 mb-6 inline-block">
                     <p className="text-sm text-gray-500 mb-1">Your Booking Number</p>
                     <p className="text-2xl font-bold text-gray-900 tracking-wide">{confirmedBookingNumber}</p>
                     <p className="text-xs text-gray-500 mt-1">Use this to track your booking</p>
@@ -688,15 +680,15 @@ const BookingFormWizard: React.FC<BookingFormWizardProps> = ({
                   <h3 className="font-semibold text-gray-900 mb-4">Booking Details</h3>
                   <div className="space-y-3">
                     <div className="flex items-center gap-3 text-gray-700">
-                      <Calendar className="w-5 h-5 text-[#8B9B7C]" />
+                      <Calendar className="w-5 h-5 text-nilin-primary" />
                       <span>{new Date(formData.scheduledDate).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</span>
                     </div>
                     <div className="flex items-center gap-3 text-gray-700">
-                      <Clock className="w-5 h-5 text-[#8B9B7C]" />
+                      <Clock className="w-5 h-5 text-nilin-primary" />
                       <span>{formData.scheduledTime}</span>
                     </div>
                     <div className="flex items-center gap-3 text-gray-700">
-                      <MapPin className="w-5 h-5 text-[#8B9B7C]" />
+                      <MapPin className="w-5 h-5 text-nilin-primary" />
                       <span>{formData.locationType === 'at_home' ? 'At Home' : 'Hotel'}</span>
                     </div>
                   </div>
@@ -717,14 +709,14 @@ const BookingFormWizard: React.FC<BookingFormWizardProps> = ({
                         navigate(`/track/${confirmedBookingNumber}`);
                         if (onSuccess) onSuccess(confirmedBookingId || '', confirmedBookingNumber);
                       }}
-                      className="px-6 py-3 bg-[#8B9B7C] text-white rounded-xl font-semibold hover:bg-[#7A8A6B] transition-colors"
+                      className="px-6 py-3 bg-nilin-primary text-white rounded-full font-semibold hover:bg-nilin-primary-dark transition-colors"
                     >
                       Track Booking
                     </button>
                   ) : confirmedBookingId ? (
                     <button
                       onClick={() => navigate(`/customer/bookings/${confirmedBookingId}`)}
-                      className="px-6 py-3 bg-[#8B9B7C] text-white rounded-xl font-semibold hover:bg-[#7A8A6B] transition-colors"
+                      className="px-6 py-3 bg-nilin-primary text-white rounded-full font-semibold hover:bg-nilin-primary-dark transition-colors"
                     >
                       View Booking
                     </button>
@@ -758,7 +750,7 @@ const BookingFormWizard: React.FC<BookingFormWizardProps> = ({
                 {currentStep < 3 ? (
                   <button
                     onClick={handleNext}
-                    className="flex items-center gap-2 px-6 py-3 bg-[#8B9B7C] text-white rounded-xl font-semibold hover:bg-[#7A8A6B] transition-colors"
+                    className="flex items-center gap-2 px-6 py-3 bg-nilin-primary text-white rounded-full font-semibold hover:bg-nilin-primary-dark transition-colors"
                   >
                     Continue
                     <ArrowRight className="h-4 w-4" />
@@ -767,7 +759,7 @@ const BookingFormWizard: React.FC<BookingFormWizardProps> = ({
                   <button
                     onClick={handleSubmit}
                     disabled={isSubmitting || guestSubmitting}
-                    className="flex items-center gap-2 px-8 py-3 bg-[#8B9B7C] text-white rounded-xl font-semibold hover:bg-[#7A8A6B] transition-colors disabled:opacity-50"
+                    className="flex items-center gap-2 px-8 py-3 bg-nilin-primary text-white rounded-full font-semibold hover:bg-nilin-primary-dark transition-colors disabled:opacity-50"
                   >
                     {(isSubmitting || guestSubmitting) ? 'Processing...' : 'Confirm Booking'}
                     <CheckCircle className="h-5 w-5" />

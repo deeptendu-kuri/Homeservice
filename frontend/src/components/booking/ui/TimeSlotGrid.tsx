@@ -30,7 +30,7 @@ const TimeSlotGrid: React.FC<TimeSlotGridProps> = ({
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center py-12">
-        <Loader2 className="w-8 h-8 text-[#8B9B7C] animate-spin" />
+        <Loader2 className="w-8 h-8 text-nilin-primary animate-spin" />
         <p className="text-gray-500 mt-3 text-sm">Loading available times...</p>
       </div>
     );
@@ -70,10 +70,10 @@ const TimeSlotGrid: React.FC<TimeSlotGridProps> = ({
             className={`
               relative py-3 px-2 rounded-xl text-sm font-medium transition-all
               ${isSelected
-                ? 'bg-[#8B9B7C] text-white shadow-md'
+                ? 'bg-nilin-primary text-white shadow-md'
                 : isDisabled
                   ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : 'bg-white text-gray-700 border border-gray-200 hover:border-[#8B9B7C] hover:bg-[#8B9B7C]/5'
+                  : 'bg-white text-gray-700 border border-gray-200 hover:border-nilin-primary hover:bg-nilin-primary/5'
               }
             `}
           >

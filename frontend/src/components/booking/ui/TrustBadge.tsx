@@ -8,17 +8,17 @@ interface TrustBadgeProps {
 const TrustBadge: React.FC<TrustBadgeProps> = ({ variant = 'default' }) => {
   if (variant === 'inline') {
     return (
-      <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-[#8B9B7C]/10 rounded-full">
-        <Shield className="w-3.5 h-3.5 text-[#8B9B7C]" />
-        <span className="text-xs font-medium text-[#8B9B7C]">Verified by NILIN</span>
+      <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-nilin-primary/10 rounded-full">
+        <Shield className="w-3.5 h-3.5 text-nilin-primary" />
+        <span className="text-xs font-medium text-nilin-primary">Verified by NILIN</span>
       </div>
     );
   }
 
   if (variant === 'compact') {
     return (
-      <div className="flex items-center gap-2 p-2 bg-[#8B9B7C]/5 rounded-lg">
-        <Shield className="w-4 h-4 text-[#8B9B7C]" />
+      <div className="flex items-center gap-2 p-2 bg-nilin-primary/5 rounded-lg">
+        <Shield className="w-4 h-4 text-nilin-primary" />
         <span className="text-sm text-gray-600">NILIN verified professional</span>
       </div>
     );
@@ -28,7 +28,7 @@ const TrustBadge: React.FC<TrustBadgeProps> = ({ variant = 'default' }) => {
   return (
     <div className="bg-gray-50 rounded-xl p-4">
       <div className="flex items-center gap-2 mb-3">
-        <Shield className="w-5 h-5 text-[#8B9B7C]" />
+        <Shield className="w-5 h-5 text-nilin-primary" />
         <span className="font-medium text-gray-800">Booking Protection</span>
       </div>
 

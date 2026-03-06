@@ -43,8 +43,8 @@ const DurationSelector: React.FC<DurationSelectorProps> = ({
             className={`
               flex-shrink-0 flex flex-col items-center py-3 px-5 rounded-xl transition-all
               ${isSelected
-                ? 'bg-[#8B9B7C] text-white shadow-md'
-                : 'bg-white text-gray-700 border border-gray-200 hover:border-[#8B9B7C]'
+                ? 'bg-nilin-primary text-white shadow-md'
+                : 'bg-white text-gray-700 border border-gray-200 hover:border-nilin-primary'
               }
             `}
           >

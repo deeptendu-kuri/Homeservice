@@ -1,5 +1,6 @@
 import React from 'react';
-import { ChevronRight, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
+import { SUBCATEGORY_IMAGES } from '../../constants/images';
 
 interface SubcategoryMetadata {
   displayName?: string;
@@ -22,104 +23,50 @@ interface Subcategory {
 
 interface SubcategoryCardProps {
   subcategory: Subcategory;
+  categorySlug?: string;
   onClick: () => void;
 }
 
-// Map icon names to emojis as fallback
-const getIconEmoji = (iconName?: string): string => {
-  const iconMap: Record<string, string> = {
-    'scissors': '✂️',
-    'palette': '🎨',
-    'hand': '💅',
-    'sparkles': '✨',
-    'massage': '🪷',
-    'eye': '👁️',
-    'person-running': '🏃',
-    'users': '👥',
-    'yoga': '🧘',
-    'apple': '🍎',
-    'medical': '🩺',
-    'heart': '❤️',
-    'stethoscope': '🩺',
-    'syringe': '💉',
-    'test-tube': '🧪',
-    'shield': '🛡️',
-    'video': '📹',
-    'ambulance': '🚑',
-    'graduation-cap': '🎓',
-    'globe': '🌍',
-    'laptop': '💻',
-    'music-note': '🎵',
-    'briefcase': '💼',
-    'heart-pulse': '💓',
-    'building-maintenance': '🏗️',
-    'medical-cross': '➕',
-    'concierge': '🛎️',
-    'settings': '⚙️',
-    'broom': '🧹',
-    'wrench': '🔧',
-    'zap': '⚡',
-    'thermometer': '🌡️',
-    'hammer': '🔨',
-    'wifi': '📶',
-  };
-  return iconMap[iconName || ''] || '📦';
-};
+const SubcategoryCard: React.FC<SubcategoryCardProps> = ({ subcategory, categorySlug, onClick }) => {
+  const displayName = subcategory.metadata?.displayName || subcategory.name;
+  const price = subcategory.metadata?.averagePrice;
+  const duration = subcategory.metadata?.averageDuration;
 
-const SubcategoryCard: React.FC<SubcategoryCardProps> = ({ subcategory, onClick }) => {
+  // Get image from centralized image library
+  const image = (categorySlug && SUBCATEGORY_IMAGES[categorySlug]?.[subcategory.slug])
+    || subcategory.metadata?.heroImage
+    || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&q=80&fit=crop';
+
   return (
     <button
       onClick={onClick}
-      className="
-        bg-white rounded-2xl p-5 md:p-6 text-left w-full
-        border border-gray-100
-        shadow-sm hover:shadow-lg
-        hover:border-gray-200 hover:-translate-y-0.5
-        transition-all duration-300 ease-out
-        group relative overflow-hidden
-      "
+      className="bg-white rounded-2xl overflow-hidden text-left w-full border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 group"
     >
-      {/* Subtle gradient overlay on hover */}
-      <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/0 to-purple-50/0 group-hover:from-indigo-50/50 group-hover:to-purple-50/50 transition-all duration-300" />
+      {/* Image */}
+      <div className="relative h-[140px] md:h-[160px] overflow-hidden">
+        <img
+          src={image}
+          alt={displayName}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+      </div>
 
       {/* Content */}
-      <div className="relative">
-        {/* Icon */}
-        <div className="mb-4">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center group-hover:from-indigo-50 group-hover:to-purple-50 transition-colors">
-            {subcategory.metadata?.iconImage ? (
-              <img
-                src={subcategory.metadata.iconImage}
-                alt=""
-                className="w-9 h-9 object-contain"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = 'none';
-                  const parent = target.parentElement;
-                  if (parent) {
-                    parent.innerHTML = `<span class="text-3xl">${getIconEmoji(subcategory.icon)}</span>`;
-                  }
-                }}
-              />
-            ) : (
-              <span className="text-3xl">{getIconEmoji(subcategory.icon)}</span>
-            )}
-          </div>
-        </div>
-
-        {/* Title */}
-        <h3 className="font-semibold text-gray-900 text-base md:text-lg mb-1.5 group-hover:text-indigo-600 transition-colors">
-          {subcategory.metadata?.displayName || subcategory.name}
+      <div className="p-4">
+        <h3 className="font-semibold text-gray-900 text-base mb-1 group-hover:text-nilin-primary transition-colors">
+          {displayName}
         </h3>
 
-        {/* Description + Arrow */}
-        <div className="flex items-center justify-between gap-2">
-          <p className="text-gray-500 text-sm leading-relaxed flex-1 line-clamp-2">
-            {subcategory.description || 'At-home premium experience'}
-          </p>
-          <div className="w-8 h-8 rounded-full bg-gray-100 group-hover:bg-indigo-100 flex items-center justify-center flex-shrink-0 transition-colors">
-            <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-indigo-600 group-hover:translate-x-0.5 transition-all" />
-          </div>
+        <div className="flex items-center gap-3 text-sm text-gray-500 mb-2">
+          {price && <span>From AED {price}</span>}
+          {price && duration && <span className="text-gray-300">|</span>}
+          {duration && <span>{duration} min</span>}
+        </div>
+
+        <div className="flex items-center gap-1 text-nilin-primary">
+          <span className="text-xs font-medium">View details</span>
+          <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
         </div>
       </div>
     </button>

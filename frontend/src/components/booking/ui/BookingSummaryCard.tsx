@@ -65,8 +65,8 @@ const BookingSummaryCard: React.FC<BookingSummaryCardProps> = ({
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
       {/* Service Info */}
       <div className="flex items-start gap-3 pb-4 border-b border-gray-100">
-        <div className="w-10 h-10 bg-[#8B9B7C]/10 rounded-lg flex items-center justify-center">
-          <Briefcase className="w-5 h-5 text-[#8B9B7C]" />
+        <div className="w-10 h-10 bg-nilin-primary/10 rounded-lg flex items-center justify-center">
+          <Briefcase className="w-5 h-5 text-nilin-primary" />
         </div>
         <div>
           <h3 className="font-semibold text-gray-800">{serviceName}</h3>
@@ -81,7 +81,7 @@ const BookingSummaryCard: React.FC<BookingSummaryCardProps> = ({
       <div className="flex items-center gap-2 py-3 border-b border-gray-100">
         <MapPin className="w-4 h-4 text-gray-400" />
         <span className="text-gray-700">{locationLabel}</span>
-        <span className="ml-auto px-2 py-0.5 bg-[#8B9B7C]/10 text-[#8B9B7C] text-xs rounded-full">
+        <span className="ml-auto px-2 py-0.5 bg-nilin-primary/10 text-nilin-primary text-xs rounded-full">
           Scheduled
         </span>
       </div>
