@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from './stores/authStore';
+import { useBackButton } from './hooks/useBackButton';
 
 // Scroll to top on route change
 function ScrollToTop() {
@@ -86,6 +87,7 @@ const NotFound = () => (
 
 function App() {
   const { initialize, isInitialized } = useAuthStore();
+  useBackButton();
 
   useEffect(() => {
     if (!isInitialized) {
