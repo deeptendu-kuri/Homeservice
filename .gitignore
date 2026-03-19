@@ -7,8 +7,8 @@ pnpm-lock.yaml
 # Environment variables
 .env
 .env.local
-.env.production
 .env.development
+# .env.production is committed (contains non-secret API URL needed for Capacitor/Codemagic builds)
 
 # Build outputs
 dist/
@@ -68,6 +68,13 @@ public/uploads/
 *.sqlite
 *.sqlite3
 *.db
+
+# Capacitor native build artifacts
+frontend/android/app/build/
+frontend/android/.gradle/
+frontend/android/capacitor-cordova-android-plugins/build/
+frontend/ios/App/Pods/
+frontend/ios/App/build/
 
 # Deployment
 .vercel
