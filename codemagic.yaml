@@ -6,9 +6,8 @@ workflows:
     environment:
       node: 22
       xcode: latest
-      cocoapods: default
       vars:
-        XCODE_WORKSPACE: "frontend/ios/App/App.xcworkspace"
+        XCODE_PROJECT: "frontend/ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
     scripts:
       - name: Install dependencies
@@ -23,18 +22,20 @@ workflows:
         script: |
           cd frontend
           npx cap sync ios
-      - name: Install CocoaPods
+      - name: Resolve Swift packages
         script: |
-          cd frontend/ios/App
-          pod install
+          xcodebuild -resolvePackageDependencies \
+            -project "$XCODE_PROJECT" \
+            -scheme "$XCODE_SCHEME"
       - name: Build unsigned
         script: |
-          xcode-project build-ipa \
-            --workspace "$XCODE_WORKSPACE" \
-            --scheme "$XCODE_SCHEME" \
-            --archive-flags="-destination 'generic/platform=iOS' CODE_SIGNING_ALLOWED=NO"
+          xcodebuild build \
+            -project "$XCODE_PROJECT" \
+            -scheme "$XCODE_SCHEME" \
+            -destination "generic/platform=iOS" \
+            CODE_SIGNING_ALLOWED=NO
     artifacts:
-      - frontend/ios/App/build/ios/ipa/*.ipa
+      - frontend/ios/App/build/**/*.app
       - /tmp/xcodebuild_logs/*.log
 
   android-build:
