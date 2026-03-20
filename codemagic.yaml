@@ -7,10 +7,7 @@ workflows:
       node: 22
       xcode: latest
       cocoapods: default
-      groups:
-        - ios_credentials
       vars:
-        BUNDLE_ID: "com.nilin.app"
         XCODE_WORKSPACE: "frontend/ios/App/App.xcworkspace"
         XCODE_SCHEME: "App"
     scripts:
@@ -30,24 +27,15 @@ workflows:
         script: |
           cd frontend/ios/App
           pod install
-      - name: Set up code signing
-        script: |
-          keychain initialize
-          app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE
-          keychain add-certificates
-          xcode-project use-profiles
-      - name: Build IPA
+      - name: Build unsigned
         script: |
           xcode-project build-ipa \
             --workspace "$XCODE_WORKSPACE" \
-            --scheme "$XCODE_SCHEME"
+            --scheme "$XCODE_SCHEME" \
+            --archive-flags="-destination 'generic/platform=iOS' CODE_SIGNING_ALLOWED=NO"
     artifacts:
       - frontend/ios/App/build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
-    publishing:
-      app_store_connect:
-        auth: integration
-        submit_to_testflight: true
 
   android-build:
     name: NILIN Android Build
